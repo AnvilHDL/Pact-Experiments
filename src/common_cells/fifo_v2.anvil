@@ -5,7 +5,7 @@ chan fifo_ch<Tp : type> {
     right empty : (logic@#1) @dyn - @#1
 }
 
-interface fifo_itfc(ep : left fifo_ch<data_t>) =  (ep.full >> ep.pop >> #1) + (ep.empty >> ep.push >> #1 ) + &(ep.push:#1, ep.pop:#1);
+interface fifo_itfc(ep : left fifo_ch<data_t>) =  ((ep.full >> ep.pop) + (ep.empty >> ep.push) + &(ep.push, ep.pop)) >> #1;
 proc fifo < data_t : type, depth: int, address_depth : int>(fifo_itfc) {
     reg mem : data_t[depth];
     reg head : logic[address_depth];
