@@ -8,16 +8,31 @@ all: obj_dir/V$(MODULE_NAME)
 
 .PHONY: run clean
 
+ANVIL_FLAGS=
 ifdef LTOFF
-    ANVIL_FLAGS = -disable-lt-checks -O 3
-else
-    ANVIL_FLAGS = -O 3
+    ANVIL_FLAGS += -disable-lt-checks
+endif
+
+ifdef DEBUG
+	ANVIL_FLAGS += -verbose
+endif
+
+ifdef NOOPT
+	ANVIL_FLAGS += -O 0
+endif
+
+ifdef SESSIONOFF
+	ANVIL_FLAGS += -disable-session-checks
 endif
 
 $(MODULE_NAME).anvil.sv: $(MODULE_NAME).anvil
 	anvil $(ANVIL_FLAGS) $< > $@
 
+ifdef DEBUG
+	python3 debug.py
+endif
 obj_dir/V$(MODULE_NAME): $(MODULE_NAME)_driver.cpp $(MODULE_NAME).anvil.sv
+# 	verilator --cc --exe --build $(VERILATOR_FLAGS) $^ > /dev/null 2>&1
 	verilator --cc --exe --build $(VERILATOR_FLAGS) $^
 
 $(MODULE_NAME)_driver.cpp: $(TEST_DRIVER)
@@ -27,4 +42,4 @@ run: obj_dir/V$(MODULE_NAME)
 	@ $< $(TIMEOUT)
 
 clean:
-	rm -rf *.anvil.sv *_driver.cpp obj_dir
+	rm -rf *.anvil.sv *_driver.cpp obj_dir *.dot *.png
