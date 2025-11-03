@@ -1,0 +1,79 @@
+//To DO add both handshake protoocol to and 
+
+chan push_ch <dtype : type> {// stream fifo says ready all the time there is space to receive and when there is a pop and push in parallel
+    left push : (dtype@#1)
+}
+
+chan pop_ch <dtype : type> {// stream fifo says ready all the time there is data to send
+    right pop : (dtype@#1) <<
+}
+
+
+interface stream_fifo_if (push_ep : left push_ch<type_t>, pop_ep : left pop_ch<type_t>) = ((&(push_ep.push: #1,pop_ep.pop:#1)) + (pop_ep.pop >> &(push_ep.push: #1,*: #1)) + (push_ep.push >> #1)) ;
+
+
+proc stream_fifo <Depth : int, type_t : type, WIDTH : int> (stream_fifo_if) {
+    reg stream_fifo : type_t[Depth];
+    reg head : logic[WIDTH];
+    reg tail : logic[WIDTH];
+    reg full : logic;
+    loop {
+        let empty = (*head == *tail)&&(*full == 1'd0) >>
+        let fulli = (*head == *tail)&&(*full == 1'd1) >>
+        if((~empty) && (~fulli)){
+            offer{
+                send pop_ep.pop(*stream_fifo[*head]) => (
+                    set head := *head + 3'd1
+                ),
+                y = recv push_ep.push => (
+                    set stream_fifo[*tail] := y;
+                    set tail := *tail + 3'd1;
+                    if((*head == (*tail+3'd1)) && (~(probe pop_ep.pop)) ){
+                        set full := 1'd1
+                    }
+                    else{
+                        set full := 1'd0
+                    }
+                )
+            }
+        }
+        else{
+            if(fulli){
+                send pop_ep.pop(*stream_fifo[*head]) >>
+                offer{
+                    y = recv push_ep.push =>(
+                        set stream_fifo[*tail] := y;
+                        set tail := *tail + 3'd1;
+                        set full := 1'd1;
+                        set head := *head + 3'd1
+                    ),
+                    # => (set head := *head + 3'd1;set full := 1'd0)
+                }
+            }
+            else{
+                let x = recv push_ep.push >>
+                set stream_fifo[*tail] := x;
+                set tail := *tail + 3'd1;
+                if((*head == (*tail+3'd1))){
+                    set full := 1'd1
+                }
+                else{
+                    set full := 1'd0
+                }
+            }
+        }
+
+    }   
+
+}
+
+
+proc stream_fifo_v2(){
+    chan ep_le -- ep_ri : push_ch<logic[32]>;
+    chan ep_lo -- ep_ro : pop_ch<logic[32]>;
+    spawn stream_fifo<8,logic[32],3>(ep_le,ep_lo);
+    loop{
+        cycle 10 >>
+        dfinish
+    }
+}

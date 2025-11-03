@@ -26,8 +26,7 @@ ifdef SESSIONOFF
 endif
 
 $(MODULE_NAME).anvil.sv: $(MODULE_NAME).anvil
-	anvil $(ANVIL_FLAGS) $< > $@
-
+	anvil $(ANVIL_FLAGS) $< > $@ 2> compile.log
 ifdef DEBUG
 	python3 debug.py
 endif
@@ -42,4 +41,4 @@ run: obj_dir/V$(MODULE_NAME)
 	@ $< $(TIMEOUT)
 
 clean:
-	rm -rf *.anvil.sv *_driver.cpp obj_dir *.dot *.png
+	rm -rf *.anvil.sv *_driver.cpp *.png *.dot *.log obj_dir
