@@ -1,0 +1,35 @@
+chan rr_arbiter_ch<Tp : type> {
+    left req : (Tp@#1)
+}
+
+
+interface rr_arbiter_itfc(ep1 : left rr_arbiter_ch<Tp>, ep2 : left rr_arbiter_ch<Tp>, ep3 : left rr_arbiter_ch<Tp>, ep4 : left rr_arbiter_ch<Tp>) =  ^(ep1.req, ep2.req, ep3.req, ep4.req) >> #1;
+
+proc rr_arbiter_v2 < Tp : type >(rr_arbiter_itfc) {
+    reg curr : logic[2];
+    loop {
+        xoffer {
+            x = recv ep1.req => dprint "[RR Arbiter] Granted EP1: %p" (x), 
+            y = recv ep2.req => dprint "[RR Arbiter] Granted EP2: %p" (y),
+            z = recv ep3.req => dprint "[RR Arbiter] Granted EP3: %p" (z),
+            w = recv ep4.req => dprint "[RR Arbiter] Granted EP4: %p" (w)
+        } >>
+        cycle 1
+    }
+}
+
+
+
+proc rr_arbiter_v2_top(){
+    chan ep1_le -- ep1_ri : rr_arbiter_ch<logic[32]>;
+    chan ep2_le -- ep2_ri : rr_arbiter_ch<logic[32]>;
+    chan ep3_le -- ep3_ri : rr_arbiter_ch<logic[32]>;
+    chan ep4_le -- ep4_ri : rr_arbiter_ch<logic[32]>;
+    spawn rr_arbiter_v2<logic[32]>(ep1_le, ep2_le, ep3_le, ep4_le);
+    loop{
+        cycle 100 >>
+        dfinish >>
+        cycle 1
+    }
+
+}
