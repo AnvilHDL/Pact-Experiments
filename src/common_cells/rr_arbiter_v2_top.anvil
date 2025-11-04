@@ -1,18 +1,29 @@
-chan rr_arbiter_ch<Tp : type> {
-    left req : (Tp@#1)
+chan arbiter_slave_ch<Tp : type> {
+    right req : (Tp@#1)
 }
+chan  arbiter_master_ch<Tp : type> {
+    right req : (Tp@#1)
+}
+    
 
 
-interface rr_arbiter_itfc(ep1 : left rr_arbiter_ch<Tp>, ep2 : left rr_arbiter_ch<Tp>, ep3 : left rr_arbiter_ch<Tp>, ep4 : left rr_arbiter_ch<Tp>) =  ^(ep1.req, ep2.req, ep3.req, ep4.req) >> #1;
+interface rr_arbiter_itfc(slv_ep1 : right arbiter_slave_ch<Tp>, slv_ep2 : right arbiter_slave_ch<Tp>, slv_ep3 : right arbiter_slave_ch<Tp>, slv_ep4 : right arbiter_slave_ch<Tp>, slv_ep5 : right arbiter_slave_ch<Tp>, slv_ep6 : right arbiter_slave_ch<Tp>, slv_ep7 : right arbiter_slave_ch<Tp>, slv_ep8 : right arbiter_slave_ch<Tp>, mst_ep : left arbiter_master_ch<Tp>) =  
+
+^(slv_ep1.req, slv_ep2.req , slv_ep3.req, slv_ep4.req, slv_ep5.req, slv_ep6.req, slv_ep7.req, slv_ep8.req) >> mst_ep.req  >> #1;
+
 
 proc rr_arbiter_v2 < Tp : type >(rr_arbiter_itfc) {
     reg curr : logic[2];
     loop {
         xoffer {
-            x = recv ep1.req => dprint "[RR Arbiter] Granted EP1: %p" (x), 
-            y = recv ep2.req => dprint "[RR Arbiter] Granted EP2: %p" (y),
-            z = recv ep3.req => dprint "[RR Arbiter] Granted EP3: %p" (z),
-            w = recv ep4.req => dprint "[RR Arbiter] Granted EP4: %p" (w)
+            a = recv slv_ep1.req => send mst_ep.req(a) , 
+            b = recv slv_ep2.req => send mst_ep.req(b) ,
+            c = recv slv_ep3.req => send mst_ep.req(c) ,
+            d = recv slv_ep4.req => send mst_ep.req(d) ,
+            e = recv slv_ep5.req => send mst_ep.req(e) ,
+            f = recv slv_ep6.req => send mst_ep.req(f) ,
+            g = recv slv_ep7.req => send mst_ep.req(g) ,
+            h = recv slv_ep8.req => send mst_ep.req(h)
         } >>
         cycle 1
     }
@@ -21,11 +32,17 @@ proc rr_arbiter_v2 < Tp : type >(rr_arbiter_itfc) {
 
 
 proc rr_arbiter_v2_top(){
-    chan ep1_le -- ep1_ri : rr_arbiter_ch<logic[32]>;
-    chan ep2_le -- ep2_ri : rr_arbiter_ch<logic[32]>;
-    chan ep3_le -- ep3_ri : rr_arbiter_ch<logic[32]>;
-    chan ep4_le -- ep4_ri : rr_arbiter_ch<logic[32]>;
-    spawn rr_arbiter_v2<logic[32]>(ep1_le, ep2_le, ep3_le, ep4_le);
+    chan slv_ep1_le -- slv_ep1_ri : arbiter_slave_ch<logic[32]>;
+    chan slv_ep2_le -- slv_ep2_ri : arbiter_slave_ch<logic[32]>;
+    chan slv_ep3_le -- slv_ep3_ri : arbiter_slave_ch<logic[32]>;
+    chan slv_ep4_le -- slv_ep4_ri : arbiter_slave_ch<logic[32]>;
+    chan slv_ep5_le -- slv_ep5_ri : arbiter_slave_ch<logic[32]>;
+    chan slv_ep6_le -- slv_ep6_ri : arbiter_slave_ch<logic[32]>;
+    chan slv_ep7_le -- slv_ep7_ri : arbiter_slave_ch<logic[32]>;
+    chan slv_ep8_le -- slv_ep8_ri : arbiter_slave_ch<logic[32]>;
+    chan mst_ep_le -- mst_ep_ri : arbiter_master_ch<logic[32]>;
+    spawn rr_arbiter_v2<logic[32]>(slv_ep1_le, slv_ep2_le, slv_ep3_le, slv_ep4_le, slv_ep5_le, slv_ep6_le, slv_ep7_le, slv_ep8_le, mst_ep_le);
+
     loop{
         cycle 100 >>
         dfinish >>
