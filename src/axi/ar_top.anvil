@@ -1,0 +1,42 @@
+import "common_cells.anvilh"
+import "ar_arbiter.anvil"
+import "ar_slave.anvil"
+import "spill_reg_ar.anvil"
+import "ar_master.anvil"
+import "spill_reg_r.anvil"
+
+
+pool read_transaction_pool {
+    slv_ep1 -- arb_ep1 : arbiter_slave_ch,
+    slv_ep2 -- arb_ep2 : arbiter_slave_ch,
+    slv_ep3 -- arb_ep3 : arbiter_slave_ch,
+    slv_ep4 -- arb_ep4 : arbiter_slave_ch,
+    slv_ep5 -- arb_ep5 : arbiter_slave_ch,
+    slv_ep6 -- arb_ep6 : arbiter_slave_ch,
+    slv_ep7 -- arb_ep7 : arbiter_slave_ch,
+    slv_ep8 -- arb_ep8 : arbiter_slave_ch,
+    arb_reg_ep -- reg_arb_ep : req_inp_ch,
+    reg_mst_ep -- mst_reg_ep : reg_out_ch,
+    mst_ep_reg -- reg_ep_r : req_inp_Rch,
+    reg_ep_slv -- slv_ep_r : reg_out__Rch;
+
+    i1 : slave_itfc(slv_ep1 , slv_ep_r);
+    i2 : rr_arbiter_itfc(slv_ep1, slv_ep2, slv_ep3, slv_ep4, slv_ep5, slv_ep6, slv_ep7, slv_ep8, arb_reg_ep);
+    i3 : spill_register_itfc(reg_arb_ep, reg_mst_ep);
+    i4 : master_itfc(mst_reg_ep, mst_ep_reg);
+    i5 : spill_register_r_itfc(reg_ep_r, reg_ep_slv)
+}
+
+proc ar_top(){
+    pool p1 : read_transaction_pool;
+    spawn ar_slave[p1.i1];
+    spawn ar_arbiter[p1.i2];
+    spawn spill_reg_ar[p1.i3];
+    spawn ar_master[p1.i4];
+    spawn spill_reg_r[p1.i5];
+
+    loop{
+        cycle 1
+    }
+
+}

@@ -1,0 +1,66 @@
+import "common_cells.anvilh"
+
+chan  req_inp_ch {
+    right req : (ar_sel_pack_t@#1)
+}
+
+chan reg_out_ch {
+    right spill : (ar_sel_pack_t@#1) <<
+}
+
+
+interface spill_register_itfc(inp_ep : right req_inp_ch, out_ep : left reg_out_ch) = ((inp_ep.req >> #1) +  (&(inp_ep.req: #1, out_ep.spill: #1, *:#1)) + (out_ep.spill >> #1)) ;
+
+proc spill_reg_ar (spill_register_itfc){
+    reg a : ar_sel_pack_t;
+    reg b : ar_sel_pack_t;
+    reg afull : logic;
+    reg bfull : logic;
+    loop{
+        if (~ (*afull || *bfull)){
+            let in_data = recv inp_ep.req >>
+            set a := in_data;
+            set afull := 1'b1;
+            set bfull := 1'b0
+        }
+        else if (~ (*afull & *bfull)) {
+            let out = if(*bfull){
+                *b
+            }
+            else{
+                *a
+            } >>
+            offer {
+                in_data = recv inp_ep.req => (
+                    set a := in_data;
+                    set afull := 1'b1
+                ),
+                send out_ep.spill(out) => (
+                    if(*bfull){
+                        set bfull := 1'b0
+                    }
+                    else{
+                        set b := *a;
+                        set bfull := 1'b1
+                    }
+                ),
+                # => (
+                    set afull := 1'b0;
+                    set bfull := 1'b1;
+                    if (*afull){
+                        set b := *a
+                    }
+                    else{
+                        set b := *b
+                    }
+                )
+            }
+                
+        }
+        else {
+            send out_ep.spill(*b) >>
+            set afull := 1'b0;
+            set b := *a
+        }
+    }
+}
