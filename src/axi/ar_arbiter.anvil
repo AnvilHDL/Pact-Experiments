@@ -3,39 +3,38 @@ import "common_cells.anvilh"
 
 chan arbiter_slave_ch {
     left gnt : (logic@#1) @#1 - @dyn,
-    right req : (ar_pack_t@#1) @dyn - @#1
+    right req : (ar_pack_t@#1)
 }
 
-chan  req_inp_ch {
-    right req : (ar_sel_pack_t@#1)
-}
 
-interface rr_arbiter_itfc(slv_ep1 : right arbiter_slave_ch, slv_ep2 : right arbiter_slave_ch, slv_ep3 : right arbiter_slave_ch, slv_ep4 : right arbiter_slave_ch, slv_ep5 : right arbiter_slave_ch, slv_ep6 : right arbiter_slave_ch, slv_ep7 : right arbiter_slave_ch, slv_ep8 : right arbiter_slave_ch, mst_ep : left req_inp_ch) =
+interface rr_arbiter_itfc(slv_ep1 : right arbiter_slave_ch, slv_ep2 : right arbiter_slave_ch, slv_ep3 : right arbiter_slave_ch, slv_ep4 : right arbiter_slave_ch, slv_ep5 : right arbiter_slave_ch, slv_ep6 : right arbiter_slave_ch, slv_ep7 : right arbiter_slave_ch, slv_ep8 : right arbiter_slave_ch, mst_ep : left req_inp_ch<ar_sel_pack_t>) =
 
 ^( slv_ep1.req : mst_ep.req >> #slv_ep1.gnt,
-   slv_ep2.req : mst_ep.req >> #slv_ep2.gnt,
-   slv_ep3.req : mst_ep.req >> #slv_ep3.gnt,
-   slv_ep4.req : mst_ep.req >> #slv_ep4.gnt,
-   slv_ep5.req : mst_ep.req >> #slv_ep5.gnt,
-   slv_ep6.req : mst_ep.req >> #slv_ep6.gnt,
-   slv_ep7.req : mst_ep.req >> #slv_ep7.gnt,
-   slv_ep8.req : mst_ep.req >> #slv_ep8.gnt
+   slv_ep2.req : #slv_ep2.gnt,
+   slv_ep3.req : #slv_ep3.gnt,
+   slv_ep4.req :  #slv_ep4.gnt,
+   slv_ep5.req :  #slv_ep5.gnt,
+   slv_ep6.req :  #slv_ep6.gnt,
+   slv_ep7.req :  #slv_ep7.gnt,
+   slv_ep8.req :  #slv_ep8.gnt
    ) >> #1;
 
 
 proc ar_arbiter (rr_arbiter_itfc) {
-    reg curr : logic[2];
+    reg cyc : logic[8];
     loop {
         xoffer {
-            a = recv slv_ep1.req => (dprint "Recieved Request from slave 1" () >> send mst_ep.req(ar_sel_pack_t::{ar_pack = a; select = 3'd0}) >> send slv_ep1.gnt(1'd1)) ,
-            b = recv slv_ep2.req => (send mst_ep.req(ar_sel_pack_t::{ar_pack = b; select = 3'd1}) >> send slv_ep2.gnt(1'd1)) ,
-            c = recv slv_ep3.req => (send mst_ep.req(ar_sel_pack_t::{ar_pack = c; select = 3'd2}) >> send slv_ep3.gnt(1'd1)) ,
-            d = recv slv_ep4.req => (send mst_ep.req(ar_sel_pack_t::{ar_pack = d; select = 3'd3}) >> send slv_ep4.gnt(1'd1)) ,
-            e = recv slv_ep5.req => (send mst_ep.req(ar_sel_pack_t::{ar_pack = e; select = 3'd4}) >> send slv_ep5.gnt(1'd1)) ,
-            f = recv slv_ep6.req => (send mst_ep.req(ar_sel_pack_t::{ar_pack = f; select = 3'd5}) >> send slv_ep6.gnt(1'd1)) ,
-            g = recv slv_ep7.req => (send mst_ep.req(ar_sel_pack_t::{ar_pack = g; select = 3'd6}) >> send slv_ep7.gnt(1'd1)) ,
-            h = recv slv_ep8.req => (send mst_ep.req(ar_sel_pack_t::{ar_pack = h; select = 3'd7}) >> send slv_ep8.gnt(1'd1))
-            // # => ()
+            a = recv slv_ep1.req => (dprint "Recieved Request from slave 1" () >> 
+                                    send mst_ep.req(ar_sel_pack_t::{ar_pack = a; select = 3'd0}) >> 
+                                    dprint "Sent req to spill" () >> 
+                                    send slv_ep1.gnt(1'd1)) ,
+            b = recv slv_ep2.req => (send slv_ep2.gnt(1'd1)) ,
+            c = recv slv_ep3.req => ( send slv_ep3.gnt(1'd1)) ,
+            d = recv slv_ep4.req => ( send slv_ep4.gnt(1'd1)) ,
+            e = recv slv_ep5.req => ( send slv_ep5.gnt(1'd1)) ,
+            f = recv slv_ep6.req => ( send slv_ep6.gnt(1'd1)) ,
+            g = recv slv_ep7.req => ( send slv_ep7.gnt(1'd1)) ,
+            h = recv slv_ep8.req => ( send slv_ep8.gnt(1'd1))
         } >>
         cycle 1
     }

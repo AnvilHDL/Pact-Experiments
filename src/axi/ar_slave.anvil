@@ -1,17 +1,8 @@
 import "common_cells.anvilh"
-chan arbiter_slave_ch {
-    left gnt : (logic@#1) @#1 - @dyn,
-    right req : (ar_pack_t@#1)
-}
-
-
-chan reg_out__Rch {
-    right spill : (r_pack_t@#1) <<
-}
 
 // interface slave_itfc(req_ep :left arbiter_slave_ch , res_ep : right reg_out_ch) = req_ep.req >> &(req_ep.gnt : res_ep.spill >> #1 , *  : #1) ;
 
-interface slave_itfc(req_ep :left arbiter_slave_ch , res_ep_R : right reg_out__Rch) = req_ep.req >> req_ep.gnt >> res_ep_R.spill >> #1 ;
+interface slave_itfc(req_ep :left arbiter_slave_ch , res_ep_R : right reg_out_ch<r_pack_t>) = req_ep.req >> req_ep.gnt >> res_ep_R.spill >> #1 ;
 
 
 proc ar_slave(slave_itfc) {

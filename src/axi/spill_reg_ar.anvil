@@ -1,23 +1,26 @@
 import "common_cells.anvilh"
 
-chan  req_inp_ch {
-    right req : (ar_sel_pack_t@#1)
+chan  req_inp_ch<T : type> {
+    right req : (T@#1)
 }
 
-chan reg_out_ch {
-    right spill : (ar_sel_pack_t@#1) <<
+chan reg_out_ch<T : type>{
+    right spill : (T@#1)
 }
 
 
-interface spill_register_itfc(inp_ep : right req_inp_ch, out_ep : left reg_out_ch) = ((inp_ep.req >> #1) +  (&(inp_ep.req: #1, out_ep.spill: #1, *:#1)) + (out_ep.spill >> #1)) ;
+interface spill_register_itfc(inp_ep : right req_inp_ch<T>, out_ep : left reg_out_ch<T>) = ((inp_ep.req >> #1) +  (&(inp_ep.req: #1, out_ep.spill: #1, *:#1)) + (out_ep.spill >> #1)) ;
 
-proc spill_reg_ar (spill_register_itfc){
-    reg a : ar_sel_pack_t;
-    reg b : ar_sel_pack_t;
+proc spill_reg_ar<id: int , T : type> (spill_register_itfc){
+    reg a : T;
+    reg b : T;
     reg afull : logic;
     reg bfull : logic;
+    reg cyc : logic[8];
     loop{
+        dprint "[Cycle %d] [Spill Reg %d] Afull: %b | Bfull: %b" (*cyc, id, *afull, *bfull) >>
         if (~ (*afull || *bfull)){
+            dprint "[Cycle %d] [Spill Reg %d] Receiving data into spill reg | Cant do anything else" (*cyc, id) >>
             let in_data = recv inp_ep.req >>
             set a := in_data;
             set afull := 1'b1;
@@ -32,35 +35,62 @@ proc spill_reg_ar (spill_register_itfc){
             } >>
             offer {
                 in_data = recv inp_ep.req => (
+                    dprint "[Cycle %d] [Spill Reg %d] Receiving data into spill reg" (*cyc, id) >>
+                    let r = ready inp_ep.req >>
+                    let a = probe inp_ep.req >>
                     set a := in_data;
                     set afull := 1'b1
                 ),
                 send out_ep.spill(out) => (
+                    dprint "[Cycle %d] [Spill Reg %d] Sending out data from spill reg" (*cyc, id) >>
                     if(*bfull){
                         set bfull := 1'b0
                     }
                     else{
                         set b := *a;
+                        set afull := 1'b0;
                         set bfull := 1'b1
                     }
                 ),
                 # => (
-                    set afull := 1'b0;
-                    set bfull := 1'b1;
-                    if (*afull){
-                        set b := *a
-                    }
-                    else{
-                        set b := *b
-                    }
+                    dprint "[Cycle %d] [Spill Reg %d] No activity, maintaining state" (*cyc, id) >>
+                    set afull := 1'b0 ;
+                    set bfull := 1'b1 ;
+                    (
+                        if (*afull){
+                            set b := *a
+                        }
+                        else{
+                            set b := *b
+                        }
+                    )
                 )
             }
                 
         }
         else {
+            dprint "[Cycle %d] [Spill Reg %d] Both full, sending out data from spill reg" (*cyc, id) >>
             send out_ep.spill(*b) >>
             set afull := 1'b0;
             set b := *a
+
         }
     }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
 }
+
+// pool spill_reg_ar_pool{
+//     ep_le -- ep_ri : req_inp_ch<logic[2]>,
+//     epout_le -- epout_ri : reg_out_ch<logic[2]>;
+//     i1 : spill_register_itfc(ep_le, epout_ri)
+// }
+// proc spill_reg_ar_top(){
+
+//     spawn spill_reg_ar<0, logic[2]>[spill_reg_ar_pool.i1];
+//     loop{
+//         cycle 100 >>
+//         dfinish
+//     }
+// }

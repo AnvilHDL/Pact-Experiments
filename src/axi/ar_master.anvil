@@ -2,17 +2,9 @@ import "common_cells.anvilh"
 
 
 
-chan  req_inp_Rch {
-    right req : (r_pack_t@#1)
-}
+interface master_itfc(mst_req_ep : right reg_out_ch<ar_sel_pack_t>,  mst_res_ep : left req_inp_ch<r_pack_t>) = #4 >> mst_req_ep.spill >> mst_res_ep.req >> #1 ;
 
-chan reg_out_ch {
-    right spill : (ar_sel_pack_t@#1) <<
-}
-
-interface master_itfc(mst_req_ep : right reg_out_ch,  mst_res_ep : left req_inp_ch) = #4 >> mst_req_ep.spill >> mst_res_ep.req >> #1 ;
-
-proc ar_master(master_itfc) {
+proc ar_master (master_itfc) {
     reg mem : logic[8][32];
     reg addr : A;
     reg cyc : logic[8];
@@ -23,6 +15,7 @@ proc ar_master(master_itfc) {
         }) >>
         cycle 3 >>
         let addr_pack = recv mst_req_ep.spill >>
+        dprint "[Cycle %d] Master received req for Address: %d" (*cyc, addr_pack.ar_pack.addr[0+:3]) >>
         let res = *mem[addr_pack.ar_pack.addr[0+:3]] >>
         send mst_res_ep.req(r_pack_t::{data=res; resp = 2'd0}) >>
         dprint "[Cycle %d] Received Address: %d | Sent Data: %d" (*cyc, addr_pack.ar_pack.addr[0+:3], res) >>
