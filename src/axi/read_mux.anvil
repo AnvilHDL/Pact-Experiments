@@ -1,0 +1,85 @@
+
+chan ar_mast_ch{
+    left rdy : (logic@#1),
+    right data : (ar_pack_t@#1)
+}
+
+
+
+
+interface mux_main (
+    ar_req_ep : right reg_out_ch<ar_sel_pack_t>,
+    mst_req_ep : left ar_mast_ch <ar_pack_t>,
+    r_sr_ep : right reg_out_ch <r_pack_t>,
+    fifo_ep : right fifo_ch<select_t>,
+    slv_ep1 : right slv_r_ch<r_pack_t>,
+    slv_ep2 : right slv_r_ch<r_pack_t>,
+    slv_ep3 : right slv_r_ch<r_pack_t>,
+    slv_ep4 : right slv_r_ch<r_pack_t>,
+    slv_ep5 : right slv_r_ch<r_pack_t>,
+    slv_ep6 : right slv_r_ch<r_pack_t>,
+    slv_ep7 : right slv_r_ch<r_pack_t>,
+    slv_ep8 : right slv_r_ch<r_pack_t>
+) =^(
+        fifo_ep.full : r_sr_ep.spill >> #fifo_ep.pop >> (slv_ep1.res + slv_ep2.res + slv_ep3.res + slv_ep4.res + slv_ep5.res + slv_ep6.res + slv_ep7.res + slv_ep8.res),
+        fifo_ep.empty : mst_req_ep.rdy >> ar_req_ep.spill >> mst_req_ep.data >> #fifo_ep.push,
+        * : & (mst_req_ep.rdy : ar_req_ep.spill >> mst_req_ep.data >> #fifo_ep.push, r_sr_ep.spill : fifo_ep.pop >> (slv_ep1.res + slv_ep2.res + slv_ep3.res + slv_ep4.res + slv_ep5.res + slv_ep6.res + slv_ep7.res + slv_ep8.res))
+    ) >> #1 ;
+
+func data_send(data, sel){
+    match sel {
+        3'd0 => send slv_ep1.res(data),
+        3'd1 => send slv_ep2.res(data),
+        3'd2 => send slv_ep3.res(data),
+        3'd3 => send slv_ep4.res(data),
+        3'd4 => send slv_ep5.res(data),
+        3'd5 => send slv_ep6.res(data),
+        3'd6 => send slv_ep7.res(data),
+        _ => send slv_ep8.res(data)
+    }
+}
+
+proc read_mux(mux_main){
+    reg cyc : logic[8];
+    loop{
+        xoffer{
+            f = recv fifo_ep.full =>(
+                dprint "[Cycle %d] Recv full from fifo" (*cyc) >>
+                let data = recv r_sr_ep.spill >>
+                let sel =  recv fifo_ep.pop >>
+                call data_send(data, sel)
+            ), 
+            e = recv fifo_ep.empty =>(
+                dprint "[Cycle %d] Recv empty from fifo" (*cyc) >>
+                let rdy = recv mst_req_ep.rdy >>
+                let ar_req = recv ar_req_ep.spill >>
+                send mst_req_ep.data(ar_req.ar_pack) >>
+                send fifo_ep.push(ar_req.select)
+            ),
+            # => (
+                dprint "[Cycle %d] Here We are" (*cyc) >>
+                offer{
+                    rdy = recv mst_req_ep.rdy =>(
+                        let v = ready ar_req_ep.spill >>
+                        dprint "[Cycle %d] Serving this %d | valid o ar_req_ep = %d" (*cyc,rdy,v) >>
+                        let ar_req = recv ar_req_ep.spill >>
+                        dprint "[Cycle %d] Got back a resp %d" (*cyc,ar_req.ar_pack) >>
+                        send mst_req_ep.data(ar_req.ar_pack) >>
+                        send fifo_ep.push(ar_req.select)
+                    ), 
+                    r_req = recv r_sr_ep.spill =>(
+                        dprint "[Cycle %d] Received r_req: %0h" (*cyc, r_req) >>
+                        let sel = recv fifo_ep.pop >>
+                        call data_send(r_req, sel)
+                    )
+                }
+            )
+
+        } >>
+        cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+ 

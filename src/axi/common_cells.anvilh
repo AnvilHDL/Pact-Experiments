@@ -1,6 +1,6 @@
-import "../common_cells/fifo.anvil"
-import "../common_cells/rr_arbiter.anvil"
-import "../common_cells/spill_reg.anvil"
+// import "../common_cells/fifo.anvil"
+// import "../common_cells/rr_arbiter.anvil"
+// import "../common_cells/spill_reg.anvil"
 
 type prot_t = logic[3];
 type resp_t = logic[2];

@@ -24,6 +24,9 @@ endif
 ifdef SESSIONOFF
 	ANVIL_FLAGS += -disable-session-checks
 endif
+ifdef COMPATOFF
+	ANVIL_FLAGS += -disable-compat-checks
+endif
 
 ifdef WTC
 	ANVIL_FLAGS += -weak-typecasts

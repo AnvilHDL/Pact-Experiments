@@ -35,11 +35,19 @@ proc spill_reg_ar<id: int , T : type> (spill_register_itfc){
             } >>
             offer {
                 in_data = recv inp_ep.req => (
-                    dprint "[Cycle %d] [Spill Reg %d] Receiving data into spill reg" (*cyc, id) >>
                     let r = ready inp_ep.req >>
                     let a = probe inp_ep.req >>
+                    dprint "[Cycle %d] [Spill Reg %d] Receiving data into spill reg %b | %b" (*cyc, id, a, r) >>
                     set a := in_data;
-                    set afull := 1'b1
+                    set afull := 1'b1;
+                    if ((~(probe out_ep.spill))&&(*afull == 1'b1)){
+                        set b := *a;
+                        set bfull := 1'b1
+                    }
+                    else{
+                        ()
+                    }
+
                 ),
                 send out_ep.spill(out) => (
                     dprint "[Cycle %d] [Spill Reg %d] Sending out data from spill reg" (*cyc, id) >>
@@ -53,15 +61,15 @@ proc spill_reg_ar<id: int , T : type> (spill_register_itfc){
                     }
                 ),
                 # => (
-                    dprint "[Cycle %d] [Spill Reg %d] No activity, maintaining state" (*cyc, id) >>
-                    set afull := 1'b0 ;
-                    set bfull := 1'b1 ;
+                    // dprint "[Cycle %d] [Spill Reg %d] No activity, maintaining state" (*cyc, id) >>
                     (
                         if (*afull){
-                            set b := *a
+                            set afull := 1'b0;
+                            set b := *a;
+                            set bfull := 1'b1
                         }
                         else{
-                            set b := *b
+                            cycle 1
                         }
                     )
                 )
@@ -81,16 +89,16 @@ proc spill_reg_ar<id: int , T : type> (spill_register_itfc){
     }
 }
 
-// pool spill_reg_ar_pool{
-//     ep_le -- ep_ri : req_inp_ch<logic[2]>,
-//     epout_le -- epout_ri : reg_out_ch<logic[2]>;
-//     i1 : spill_register_itfc(ep_le, epout_ri)
-// }
-// proc spill_reg_ar_top(){
-
-//     spawn spill_reg_ar<0, logic[2]>[spill_reg_ar_pool.i1];
-//     loop{
-//         cycle 100 >>
-//         dfinish
-//     }
-// }
+pool spill_reg_ar_pool{
+    ep_le -- ep_ri : req_inp_ch<logic[2]>,
+    epout_le -- epout_ri : reg_out_ch<logic[2]>;
+    i1 : spill_register_itfc(ep_le, epout_ri)
+}
+proc spill_reg_ar_top(){
+    pool p : spill_reg_ar_pool;
+    spawn spill_reg_ar<0, logic[2]>[p.i1];
+    loop{
+        cycle 100 >>
+        dfinish
+    }
+}
