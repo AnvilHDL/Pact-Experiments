@@ -44,32 +44,36 @@ proc read_mux(mux_main){
     loop{
         xoffer{
             f = recv fifo_ep.full =>(
-                dprint "[Cycle %d] Recv full from fifo" (*cyc) >>
+                // dprint "[Cycle %d][Mux] Recv full from fifo" (*cyc) >>
                 let data = recv r_sr_ep.spill >>
                 let sel =  recv fifo_ep.pop >>
                 call data_send(data, sel)
+                // dprint "[Cycle %d][Mux] Sent data to slave %d from fifo" (*cyc, sel)
             ), 
             e = recv fifo_ep.empty =>(
-                dprint "[Cycle %d] Recv empty from fifo" (*cyc) >>
+                // dprint "[Cycle %d][Mux] Recv empty from fifo" (*cyc) >>
                 let rdy = recv mst_req_ep.rdy >>
                 let ar_req = recv ar_req_ep.spill >>
                 send mst_req_ep.data(ar_req.ar_pack) >>
                 send fifo_ep.push(ar_req.select)
+                // dprint "[Cycle %d][Mux] Sent ar req to master and pushed to fifo" (*cyc)
             ),
             # => (
-                dprint "[Cycle %d] Here We are" (*cyc) >>
+                // dprint "[Cycle %d][Mux] Waiting for ar or r req in mux" (*cyc) >>
                 offer{
+
                     rdy = recv mst_req_ep.rdy =>(
+                        // dprint "[Cycle %d][Mux] Recieved rdy" (*cyc) >>
                         let v = ready ar_req_ep.spill >>
-                        dprint "[Cycle %d] Serving this %d | valid o ar_req_ep = %d" (*cyc,rdy,v) >>
                         let ar_req = recv ar_req_ep.spill >>
-                        dprint "[Cycle %d] Got back a resp %d" (*cyc,ar_req.ar_pack) >>
                         send mst_req_ep.data(ar_req.ar_pack) >>
                         send fifo_ep.push(ar_req.select)
-                    ), 
+                    ),
                     r_req = recv r_sr_ep.spill =>(
-                        dprint "[Cycle %d] Received r_req: %0h" (*cyc, r_req) >>
+                        // dprint "[Cycle %d][Mux] Recieved r_req" (*cyc) >>
                         let sel = recv fifo_ep.pop >>
+                        let r = probe slv_ep3.res >>
+                        let v = ready slv_ep3.res >>
                         call data_send(r_req, sel)
                     )
                 }

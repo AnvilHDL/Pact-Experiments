@@ -1,8 +1,8 @@
 chan fifo_ch<Tp : type> {
     left push : (Tp@#1),
     right pop : (Tp@#1) <<,
-    right full : (logic@#1) @#1 - @dyn,
-    right empty : (logic@#1) @dyn - @#1
+    right full : (logic@#1),
+    right empty : (logic@#1)
 }
 
 interface fifo_itfc(ep : left fifo_ch<data_t>) =  ((ep.full >> ep.pop) + (ep.empty >> ep.push) + &(ep.push, ep.pop)) >> #1;
@@ -11,12 +11,16 @@ proc fifo < data_t : type, depth: int, address_depth : int>(fifo_itfc) {
     reg head : logic[address_depth];
     reg tail : logic[address_depth];
     reg full : logic;
+    reg cyc : logic[8];
 
     loop{
+        // dprint"[Cycle %d][fifo] Waiting for input" (*cyc) >>
         if (*full == 1'b0 && *head != *tail){
             // can recieve both push and pop
+            // dprint"[Cycle %d][fifo] Ready to recieve" (*cyc) >>
             offer{
                 inp = recv ep.push => {
+                    // dprint "[Cycle %d][fifo] Recieved %d" (*cyc, inp) >>
                     set mem[*tail] := inp;
                     set tail := *tail + 3'd1;
                     if(((*tail + 3'd1) == *head) && ~(probe ep.pop)){
@@ -27,24 +31,30 @@ proc fifo < data_t : type, depth: int, address_depth : int>(fifo_itfc) {
                     }
                 },
                 send ep.pop(*mem[*head]) => {
+                    // dprint "[Cycle %d][fifo] Sent %d" (*cyc, *mem[*head]) >>
                     set head := *head + 3'd1
                 }  
             }
         }
         else{
             if(*full == 1'b1){
+                dprint "[Cycle %d][fifo] FIFO Full, can only pop" (*cyc) >>
                 send ep.full(1'b1) >>
                 send ep.pop(*mem[*head]) >>
                 set head := *head + 3'd1;
                 set full := 1'b0
             }
             else{
+                dprint "[Cycle %d][fifo] FIFO Empty, can only push" (*cyc) >>
                 send ep.empty(1'b1) >>
                 let inp = recv ep.push >>
                 set mem[*tail] := inp;
                 set tail := *tail + 3'd1
             }
         }
+    }
+    loop{
+        set cyc := *cyc + 8'd1
     }
 }
 

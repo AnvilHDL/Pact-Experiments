@@ -18,9 +18,9 @@ proc spill_reg_ar<id: int , T : type> (spill_register_itfc){
     reg bfull : logic;
     reg cyc : logic[8];
     loop{
-        dprint "[Cycle %d] [Spill Reg %d] Afull: %b | Bfull: %b" (*cyc, id, *afull, *bfull) >>
+        // dprint "[Cycle %d] [Spill Reg %d] Afull: %b | Bfull: %b" (*cyc, id, *afull, *bfull) >>
         if (~ (*afull || *bfull)){
-            dprint "[Cycle %d] [Spill Reg %d] Receiving data into spill reg | Cant do anything else" (*cyc, id) >>
+            dprint "[Cycle %d][Spill Reg %d] Receiving data into spill reg | Cant do anything else (empty)" (*cyc, id) >>
             let in_data = recv inp_ep.req >>
             set a := in_data;
             set afull := 1'b1;
@@ -37,7 +37,7 @@ proc spill_reg_ar<id: int , T : type> (spill_register_itfc){
                 in_data = recv inp_ep.req => (
                     let r = ready inp_ep.req >>
                     let a = probe inp_ep.req >>
-                    dprint "[Cycle %d] [Spill Reg %d] Receiving data into spill reg %b | %b" (*cyc, id, a, r) >>
+                    // dprint "[Cycle %d] [Spill Reg %d] Receiving data into spill reg %b | %b" (*cyc, id, a, r) >>
                     set a := in_data;
                     set afull := 1'b1;
                     if ((~(probe out_ep.spill))&&(*afull == 1'b1)){
@@ -45,12 +45,12 @@ proc spill_reg_ar<id: int , T : type> (spill_register_itfc){
                         set bfull := 1'b1
                     }
                     else{
-                        ()
+                        cycle 1
                     }
 
                 ),
                 send out_ep.spill(out) => (
-                    dprint "[Cycle %d] [Spill Reg %d] Sending out data from spill reg" (*cyc, id) >>
+                    // dprint "[Cycle %d] [Spill Reg %d] Sending out data from spill reg" (*cyc, id) >>
                     if(*bfull){
                         set bfull := 1'b0
                     }
@@ -63,6 +63,9 @@ proc spill_reg_ar<id: int , T : type> (spill_register_itfc){
                 # => (
                     // dprint "[Cycle %d] [Spill Reg %d] No activity, maintaining state" (*cyc, id) >>
                     (
+                        let v = ready out_ep.spill >>
+                        let r = probe out_ep.spill >>
+                        // dprint "[Cycle %d] [Spill Reg %d] No activity,| vld for spill reg %b | ack %b" (*cyc, id, v, r) >>
                         if (*afull){
                             set afull := 1'b0;
                             set b := *a;
@@ -77,8 +80,9 @@ proc spill_reg_ar<id: int , T : type> (spill_register_itfc){
                 
         }
         else {
-            dprint "[Cycle %d] [Spill Reg %d] Both full, sending out data from spill reg" (*cyc, id) >>
+            dprint "[Cycle %d][Spill Reg %d] Both full, only sending out data possible" (*cyc, id) >>
             send out_ep.spill(*b) >>
+            //dprint "[Cycle %d] [Spill Reg %d] Sent out data from spill reg, moving a to b" (*cyc, id) >>
             set afull := 1'b0;
             set b := *a
 

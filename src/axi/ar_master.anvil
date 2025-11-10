@@ -14,17 +14,14 @@ proc ar_master (master_itfc) {
     loop{
         (
         generate (i : 0, 7, 1){
-            set mem[i] := < (i) :: logic[32] >
+            set mem[i] := < (i) :: logic[32] > + 32'd1
         }) >>
         cycle 3 >>
-        dprint "[Cycle %d] Master will send rdy" (*cyc) >>
         send mst_req_ep.rdy(1'd1) >>
-        dprint "[Cycle %d] Master will send data" (*cyc) >>
         let addr_pack = recv mst_req_ep.data >>
-        dprint "[Cycle %d] Master received req for Address: %d" (*cyc, addr_pack.addr[0+:3]) >>
         let res = *mem[addr_pack.addr[0+:3]] >>
         send mst_res_ep.req(r_pack_t::{data=res; resp = 2'd0}) >>
-        dprint "[Cycle %d] Received Address: %d | Sent Data: %d" (*cyc, addr_pack.addr[0+:3], res) >>
+        dprint "[Cycle %d][Master] Received Address: %d | Sent Data: %d" (*cyc, addr_pack.addr[0+:3], res) >>
         set addr := *addr + 32'd4           
     }
 

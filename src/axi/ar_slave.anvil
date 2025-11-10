@@ -3,7 +3,7 @@ import "common_cells.anvilh"
 // interface slave_itfc(req_ep :left arbiter_slave_ch , res_ep : right reg_out_ch) = req_ep.req >> &(req_ep.gnt : res_ep.spill >> #1 , *  : #1) ;
 
 chan slv_r_ch<T : type>{
-    left res : (T@#1)
+    left res : (T@#1) >>
 }
 
 interface slave_itfc(req_ep :left arbiter_slave_ch , slv_r_ep : left slv_r_ch<r_pack_t>) = req_ep.req >> req_ep.gnt >> slv_r_ep.res >> #1 ;
@@ -15,7 +15,6 @@ proc ar_slave<id : int> (slave_itfc) {
     loop{
             dprint "[Cycle %d][Slave %d] Slave sending req" (*cyc, id) >>
             send req_ep.req(ar_pack_t::{addr = *addr; prot = 3'b000}) >>
-            dprint "[Cycle %d][Slave %d] Slave waiting for gnt" (*cyc, id) >>
             let _ = recv req_ep.gnt >>
             dprint "[Cycle %d][Slave %d] Received Gnt" (*cyc, id) >>
             let data = recv slv_r_ep.res >>

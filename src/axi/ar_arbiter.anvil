@@ -26,42 +26,34 @@ proc ar_arbiter (rr_arbiter_itfc) {
         xoffer {
             a = recv slv_ep1.req => (
                                     send mst_ep.req(ar_sel_pack_t::{ar_pack = a; select = 3'd0}) >> 
-                                    dprint "[Cycle %d] Sending request from slave 1" (*cyc) >>
                                     send slv_ep1.gnt(1'd1)
                                 ) ,
             b = recv slv_ep2.req => (
                                     send mst_ep.req(ar_sel_pack_t::{ar_pack = b; select = 3'd1}) >>
-                                    dprint "[Cycle %d] Sending request from slave 2" (*cyc) >>
                                     send slv_ep2.gnt(1'd1)
                                 ) ,
             c = recv slv_ep3.req => (
                                     send mst_ep.req(ar_sel_pack_t::{ar_pack = c; select = 3'd2}) >>
-                                    dprint "[Cycle %d] Sending request from slave 3" (*cyc) >>
                                     send slv_ep3.gnt(1'd1)
                                 ),
             d = recv slv_ep4.req => (
                                     send mst_ep.req(ar_sel_pack_t::{ar_pack = d; select = 3'd3}) >>
-                                    dprint "[Cycle %d] Sending request from slave 4" (*cyc) >>
                                     send slv_ep4.gnt(1'd1)
                                 ),
             e = recv slv_ep5.req => ( 
                                     send mst_ep.req(ar_sel_pack_t::{ar_pack = e; select = 3'd4}) >>
-                                    dprint "[Cycle %d] Sending request from slave 5" (*cyc) >>
                                     send slv_ep5.gnt(1'd1)
                                 ) ,
             f = recv slv_ep6.req => ( 
                                     send mst_ep.req(ar_sel_pack_t::{ar_pack = f; select = 3'd5}) >>
-                                    dprint "[Cycle %d] Sending request from slave 6" (*cyc) >>
                                     send slv_ep6.gnt(1'd1)
                                 ) ,
             g = recv slv_ep7.req => ( 
                                     send mst_ep.req(ar_sel_pack_t::{ar_pack = g; select = 3'd6}) >>
-                                    dprint "[Cycle %d] Sending request from slave 7" (*cyc) >>
                                     send slv_ep7.gnt(1'd1)
                                 ) ,
             h = recv slv_ep8.req => ( 
                                     send mst_ep.req(ar_sel_pack_t::{ar_pack = h; select = 3'd7}) >>
-                                    dprint "[Cycle %d] Sending request from slave 8" (*cyc) >>
                                     send slv_ep8.gnt(1'd1)
                                 )
         } >>
