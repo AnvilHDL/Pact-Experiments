@@ -1,13 +1,13 @@
 
 import "common_cells.anvilh"
 
-chan arbiter_slave_ch {
+chan arbiter_slave_ch<T : type>{
     left gnt : (logic@#1) @#1 - @dyn,
-    right req : (ar_pack_t@#1)
+    right req : (T@#1)
 }
 
 
-interface rr_arbiter_itfc(slv_ep1 : right arbiter_slave_ch, slv_ep2 : right arbiter_slave_ch, slv_ep3 : right arbiter_slave_ch, slv_ep4 : right arbiter_slave_ch, slv_ep5 : right arbiter_slave_ch, slv_ep6 : right arbiter_slave_ch, slv_ep7 : right arbiter_slave_ch, slv_ep8 : right arbiter_slave_ch, mst_ep : left req_inp_ch<ar_sel_pack_t>) =
+interface rr_arbiter_itfc(slv_ep1 : right arbiter_slave_ch<T>, slv_ep2 : right arbiter_slave_ch<T>, slv_ep3 : right arbiter_slave_ch<T>, slv_ep4 : right arbiter_slave_ch<T>, slv_ep5 : right arbiter_slave_ch<T>, slv_ep6 : right arbiter_slave_ch<T>, slv_ep7 : right arbiter_slave_ch<T>, slv_ep8 : right arbiter_slave_ch<T>, mst_ep : left req_inp_ch<ar_sel_pack_t>) =
 
 ^( slv_ep1.req : mst_ep.req >> #slv_ep1.gnt,
    slv_ep2.req : mst_ep.req >> #slv_ep2.gnt,
@@ -20,7 +20,7 @@ interface rr_arbiter_itfc(slv_ep1 : right arbiter_slave_ch, slv_ep2 : right arbi
    ) >> #1;
 
 
-proc ar_arbiter (rr_arbiter_itfc) {
+proc ar_arbiter<T : type> (rr_arbiter_itfc) {
     reg cyc : logic[8];
     loop {
         xoffer {

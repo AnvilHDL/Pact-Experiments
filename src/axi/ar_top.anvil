@@ -9,14 +9,14 @@ import "read_mux.anvil"
 
 
 pool read_transaction_pool {
-    slv_ep1 -- arb_ep1 : arbiter_slave_ch,
-    slv_ep2 -- arb_ep2 : arbiter_slave_ch,
-    slv_ep3 -- arb_ep3 : arbiter_slave_ch,
-    slv_ep4 -- arb_ep4 : arbiter_slave_ch,
-    slv_ep5 -- arb_ep5 : arbiter_slave_ch,
-    slv_ep6 -- arb_ep6 : arbiter_slave_ch,
-    slv_ep7 -- arb_ep7 : arbiter_slave_ch,
-    slv_ep8 -- arb_ep8 : arbiter_slave_ch,
+    slv_ep1 -- arb_ep1 : arbiter_slave_ch<ar_pack_t>,
+    slv_ep2 -- arb_ep2 : arbiter_slave_ch<ar_pack_t>,
+    slv_ep3 -- arb_ep3 : arbiter_slave_ch<ar_pack_t>,
+    slv_ep4 -- arb_ep4 : arbiter_slave_ch<ar_pack_t>,
+    slv_ep5 -- arb_ep5 : arbiter_slave_ch<ar_pack_t>,
+    slv_ep6 -- arb_ep6 : arbiter_slave_ch<ar_pack_t>,
+    slv_ep7 -- arb_ep7 : arbiter_slave_ch<ar_pack_t>,
+    slv_ep8 -- arb_ep8 : arbiter_slave_ch<ar_pack_t>,
     
     slv_ep_r_1 -- mux_ep_r_1 : slv_r_ch<r_pack_t>,
     slv_ep_r_2 -- mux_ep_r_2 : slv_r_ch<r_pack_t>,
@@ -56,15 +56,15 @@ pool read_transaction_pool {
 
 proc ar_top(){
     pool p1 : read_transaction_pool;
-    spawn ar_slave<1>[p1.i1];
-    spawn ar_slave<2>[p1.i2];
-    spawn ar_slave<3>[p1.i3];
-    spawn ar_slave<4>[p1.i4];
-    spawn ar_slave<5>[p1.i5];
-    spawn ar_slave<6>[p1.i6];
-    spawn ar_slave<7>[p1.i7];
-    spawn ar_slave<8>[p1.i8];
-    spawn ar_arbiter[p1.i9];
+    spawn ar_slave<1,ar_pack_t>[p1.i1];
+    spawn ar_slave<2,ar_pack_t>[p1.i2];
+    spawn ar_slave<3,ar_pack_t>[p1.i3];
+    spawn ar_slave<4,ar_pack_t>[p1.i4];
+    spawn ar_slave<5,ar_pack_t>[p1.i5];
+    spawn ar_slave<6,ar_pack_t>[p1.i6];
+    spawn ar_slave<7,ar_pack_t>[p1.i7];
+    spawn ar_slave<8,ar_pack_t>[p1.i8];
+    spawn ar_arbiter<ar_pack_t>[p1.i9];
     spawn spill_reg_ar<1,ar_sel_pack_t>[p1.i10];
     spawn ar_master[p1.i11];
     spawn spill_reg_ar<2,r_pack_t>[p1.i12];

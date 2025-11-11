@@ -93,16 +93,16 @@ proc spill_reg_ar<id: int , T : type> (spill_register_itfc){
     }
 }
 
-pool spill_reg_ar_pool{
-    ep_le -- ep_ri : req_inp_ch<logic[2]>,
-    epout_le -- epout_ri : reg_out_ch<logic[2]>;
-    i1 : spill_register_itfc(ep_le, epout_ri)
-}
-proc spill_reg_ar_top(){
-    pool p : spill_reg_ar_pool;
-    spawn spill_reg_ar<0, logic[2]>[p.i1];
-    loop{
-        cycle 100 >>
-        dfinish
-    }
-}
+// pool spill_reg_ar_pool{
+//     ep_le -- ep_ri : req_inp_ch<logic[2]>,
+//     epout_le -- epout_ri : reg_out_ch<logic[2]>;
+//     i1 : spill_register_itfc(ep_le, epout_ri)
+// }
+// proc spill_reg_ar_top(){
+//     pool p : spill_reg_ar_pool;
+//     spawn spill_reg_ar<0, logic[2]>[p.i1];
+//     loop{
+//         cycle 100 >>
+//         dfinish
+//     }
+// }

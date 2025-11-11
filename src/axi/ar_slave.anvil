@@ -6,10 +6,10 @@ chan slv_r_ch<T : type>{
     left res : (T@#1) >>
 }
 
-interface slave_itfc(req_ep :left arbiter_slave_ch , slv_r_ep : left slv_r_ch<r_pack_t>) = req_ep.req >> req_ep.gnt >> slv_r_ep.res >> #1 ;
+interface slave_itfc(req_ep :left arbiter_slave_ch<T1> , slv_r_ep : left slv_r_ch<r_pack_t>) = req_ep.req >> req_ep.gnt >> slv_r_ep.res >> #1 ;
 
 
-proc ar_slave<id : int> (slave_itfc) {
+proc ar_slave<id : int, T1 : type> (slave_itfc) {
     reg addr : A;
     reg cyc : logic[8];
     loop{

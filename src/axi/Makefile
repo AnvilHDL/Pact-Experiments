@@ -14,7 +14,7 @@ ifdef LTOFF
 endif
 
 ifdef DEBUG
-	ANVIL_FLAGS += -verbose
+	ANVIL_FLAGS += -verbose -verbose-max
 endif
 
 ifdef NOOPT
