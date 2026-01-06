@@ -13,3 +13,6 @@
 [submodule "tiny-gpu"]
 	path = tiny-gpu
 	url = https://github.com/adam-maj/tiny-gpu.git
+[submodule "tilelink"]
+	path = tilelink
+	url = git@github.com:chipsalliance/tilelink.git

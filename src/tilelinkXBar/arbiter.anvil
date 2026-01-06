@@ -1,0 +1,117 @@
+chan arbiter_client_ch<T: type>{
+    right req : (void@#1),
+    left grant : (void@#1),
+    right data : (T@#1)
+}
+
+chan arbiter_server_ch<T : type>{
+    right req : (void@#1),
+    right data : (T@#1),
+    left rdy : (void@#1)
+}
+    
+// To Do: Add \forall construct 
+interface arbiter_ifc(ep[4] : right arbiter_client_ch<T>, server_ep : left arbiter_server_ch<T>) = (
+    server_ep.rdy >>
+    ^(
+        ep[0].req : server_ep.req >> ep[0].grant >> #ep[0].data >> #server_ep.data,
+        ep[1].req : server_ep.req >> ep[1].grant >> #ep[1].data >> #server_ep.data,
+        ep[2].req : server_ep.req >> ep[2].grant >> #ep[2].data >> #server_ep.data,
+        ep[3].req : server_ep.req >> ep[3].grant >> #ep[3].data >> #server_ep.data,
+        *
+    ) >> #1
+);
+
+// fixed priority arbiter
+proc priority_arbiter<T : type>(arbiter_ifc){
+    loop{
+        let _ = recv server_ep.rdy >>
+        xoffer{
+            _ = recv ep[0].req => (
+                send server_ep.req(()) >>
+                send ep[0].grant(()) >>
+                let data = recv ep[0].data >>
+                send server_ep.data(data)
+            ),
+            _ = recv ep[1].req => (
+                send server_ep.req(()) >>
+                send ep[1].grant(()) >>
+                let data = recv ep[1].data >>
+                send server_ep.data(data)
+            ),
+            _ = recv ep[2].req => (
+                send server_ep.req(()) >>
+                send ep[2].grant(()) >>
+                let data = recv ep[2].data >>
+                send server_ep.data(data)
+            ),
+            _ = recv ep[3].req => (
+                send server_ep.req(()) >>
+                send ep[3].grant(()) >>
+                let data = recv ep[3].data >>
+                send server_ep.data(data)
+            ),
+            # => ()
+        } >> 
+        cycle 1
+    }           
+}
+
+
+proc round_robin_arbiter<T : type>(arbiter_ifc){
+    // ToDo : configurable by bitwidth
+    reg p : logic[2];
+    loop{
+        let _ = recv server_ep.rdy >>
+        let priority = *p >>
+        let new_p = xoffer priority {
+            _ = recv ep[0].req => (
+                send server_ep.req(()) >>
+                send ep[0].grant(()) >>
+                let data = recv ep[0].data >>
+                send server_ep.data(data) >>
+                2'd1
+            ),
+            _ = recv ep[1].req => (
+                send server_ep.req(()) >>
+                send ep[1].grant(()) >>
+                let data = recv ep[1].data >>
+                send server_ep.data(data) >>
+                2'd2
+            ),
+            _ = recv ep[2].req => (
+                send server_ep.req(()) >>
+                send ep[2].grant(()) >>
+                let data = recv ep[2].data >>
+                send server_ep.data(data) >>
+                2'd3
+            ),
+            _ = recv ep[3].req => (
+                send server_ep.req(()) >>
+                send ep[3].grant(()) >>
+                let data = recv ep[3].data >>
+                send server_ep.data(data) >>
+                2'd0
+            ),
+            # => (
+                priority
+            )
+
+        } >>
+        set p := new_p
+    
+    }
+
+}
+
+
+
+proc arbiter(){
+    chan cl_ep_le -- cl_ep_ri : arbiter_client_ch<logic[32]>[8];
+    chan mst_ep_le -- mst_ep_ri : arbiter_server_ch<logic[32]>[2];
+    spawn round_robin_arbiter<logic[32]>(cl_ep_ri[0+:4], mst_ep_le[0]);
+    spawn priority_arbiter<logic[32]>(cl_ep_ri[4+:4], mst_ep_le[1]);
+    loop{
+        cycle 1
+    }
+}
