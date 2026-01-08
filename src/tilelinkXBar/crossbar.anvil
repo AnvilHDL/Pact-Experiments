@@ -7,8 +7,19 @@ chan client_ch<T : type> {
     right data : (T@#1)
 }
 
-
-proc tilelinkcrossbarChan<T : type>(client_ep[4] : right client_ch<T>, arb_cl_ep_le[4] : left arbiter_server_ch<T>){
+interface crossbar_itfc(client_ep[4] : right client_ch<T>, manager_ep[4] : left arbiter_server_ch<T>) = (
+    (
+    &(
+        client_ep[0].req : (^(arb_cl_ep_le1[0].req : ^(arb_cl_ep_le1[0].grant : client_ep[0].grant >> #client_ep[0].data >> arb_cl_ep_le1[0].data , *), *)) + (^(arb_cl_ep_le2[0].req : ^(arb_cl_ep_le2[0].grant : client_ep[0].grant >> #client_ep[0].data >> arb_cl_ep_le2[0].data , *), *)) + (^(arb_cl_ep_le3[0].req : ^(arb_cl_ep_le3[0].grant : client_ep[0].grant >> #client_ep[0].data >> arb_cl_ep_le3[0].data , *), *)) + (^(arb_cl_ep_le4[0].req : ^(arb_cl_ep_le4[0].grant : client_ep[0].grant >> #client_ep[0].data >> arb_cl_ep_le4[0].data , *), *)) ,
+        client_ep[1].req : (^(arb_cl_ep_le1[1].req : ^(arb_cl_ep_le1[1].grant : client_ep[1].grant >> #client_ep[1].data >> arb_cl_ep_le1[1].data , *), *)) + (^(arb_cl_ep_le2[1].req : ^(arb_cl_ep_le2[1].grant : client_ep[1].grant >> #client_ep[1].data >> arb_cl_ep_le2[1].data , *), *)) + (^(arb_cl_ep_le3[1].req : ^(arb_cl_ep_le3[1].grant : client_ep[1].grant >> #client_ep[1].data >> arb_cl_ep_le3[1].data , *), *)) + (^(arb_cl_ep_le4[1].req : ^(arb_cl_ep_le4[1].grant : client_ep[1].grant >> #client_ep[1].data >> arb_cl_ep_le4[1].data , *), *)) ,
+        client_ep[2].req : (^(arb_cl_ep_le1[2].req : ^(arb_cl_ep_le1[2].grant : client_ep[2].grant >> #client_ep[2].data >> arb_cl_ep_le1[2].data , *), *)) + (^(arb_cl_ep_le2[2].req : ^(arb_cl_ep_le2[2].grant : client_ep[2].grant >> #client_ep[2].data >> arb_cl_ep_le2[2].data , *), *)) + (^(arb_cl_ep_le3[2].req : ^(arb_cl_ep_le3[2].grant : client_ep[2].grant >> #client_ep[2].data >> arb_cl_ep_le3[2].data , *), *)) + (^(arb_cl_ep_le4[2].req : ^(arb_cl_ep_le4[2].grant : client_ep[2].grant >> #client_ep[2].data >> arb_cl_ep_le4[2].data , *), *)) ,
+        client_ep[3].req : (^(arb_cl_ep_le1[3].req : ^(arb_cl_ep_le1[3].grant : client_ep[3].grant >> #client_ep[3].data >> arb_cl_ep_le1[3].data , *), *)) + (^(arb_cl_ep_le2[3].req : ^(arb_cl_ep_le2[3].grant : client_ep[3].grant >> #client_ep[3].data >> arb_cl_ep_le2[3].data , *), *)) + (^(arb_cl_ep_le3[3].req : ^(arb_cl_ep_le3[3].grant : client_ep[3].grant >> #client_ep[3].data >> arb_cl_ep_le3[3].data , *), *)) + (^(arb_cl_ep_le4[3].req : ^(arb_cl_ep_le4[3].grant : client_ep[3].grant >> #client_ep[3].data >> arb_cl_ep_le4[3].data , *), *)) 
+     ) 
+    )
+     >>
+    #1
+);
+proc tilelinkcrossbarChan<T : type>(crossbar_itfc){
     // TileLink Crossbar implementation goes here
     chan arb_cl_ep_le1 -- arb_cl_ep_ri1 : arbiter_client_ch<T>[4];
     chan arb_cl_ep_le2 -- arb_cl_ep_ri2 : arbiter_client_ch<T>[4];
@@ -16,10 +27,10 @@ proc tilelinkcrossbarChan<T : type>(client_ep[4] : right client_ch<T>, arb_cl_ep
     chan arb_cl_ep_le4 -- arb_cl_ep_ri4 : arbiter_client_ch<T>[4];
 
  
-    spawn priority_arbiter<T>(arb_cl_ep_ri1[0+:4], arb_cl_ep_le[0]);
-    spawn priority_arbiter<T>(arb_cl_ep_ri2[0+:4], arb_cl_ep_le[1]);
-    spawn priority_arbiter<T>(arb_cl_ep_ri3[0+:4], arb_cl_ep_le[2]);
-    spawn priority_arbiter<T>(arb_cl_ep_ri4[0+:4], arb_cl_ep_le[3]);
+    spawn priority_arbiter<T>(arb_cl_ep_ri1[0+:4], manager_ep[0]);
+    spawn priority_arbiter<T>(arb_cl_ep_ri2[0+:4], manager_ep[1]);
+    spawn priority_arbiter<T>(arb_cl_ep_ri3[0+:4], manager_ep[2]);
+    spawn priority_arbiter<T>(arb_cl_ep_ri4[0+:4], manager_ep[3]);
 
     
     loop{

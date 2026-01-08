@@ -1,3 +1,4 @@
+# This is generated using claude-ai
 import os
 
 
@@ -5,7 +6,7 @@ def print_graph(file_names):
     # create image from dot file and compine into a single image
     for file_name in file_names:
         print(f"Processing graph file: {file_name}")
-        os.system(f"dot -Tpng {file_name} -o {file_name}.png")
+        os.system(f"dot -Tpdf {file_name} -o {file_name}.pdf")
 
 def get_all_dot_files(directory):
     dot_files = []
