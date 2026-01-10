@@ -16,3 +16,6 @@
 [submodule "tilelink"]
 	path = tilelink
 	url = git@github.com:chipsalliance/tilelink.git
+[submodule "ace"]
+	path = ace
+	url = git@github.com:pulp-platform/ace.git
