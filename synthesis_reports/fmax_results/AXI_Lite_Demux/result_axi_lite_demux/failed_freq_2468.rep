@@ -1,0 +1,289 @@
+Information: Updating design information... (UID-85)
+ 
+****************************************
+Report : design
+Design : axi_demux_wrapper
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:06:47 2025
+****************************************
+
+Design allows ideal nets on clock nets.
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Local Link Library:
+
+    {/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db, /home/yaswanth/GF22_mem/InvecasViews_w00512/model/timing/lib/bob_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_w00256/model/timing/lib/macro_m8_w256_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/./InvecasViews_w00512_m8/model/timing/lib/macro_m8_w512_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00512_m8/model/timing/lib/macro_s1c_m8_w512_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w32768_m16_c65KB/model/timing/lib/macro_s1c_w32768_m16_c65KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m4_c1KB/model/timing/lib/macro_s1c_w00256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m8_c512B/model/timing/lib/macro_s1c_w00256_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m16_c256B/model/timing/lib/macro_s1c_w00256_m16_c256B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w19648_m16_c40KB/model/timing/lib/macro_s1c_w19648_m16_c40KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db}
+
+Flip-Flop Types:
+
+    No flip-flop types specified.
+
+Latch Types:
+
+    No latch types specified.
+
+Operating Conditions:
+
+
+    Operating Condition Name : TT_0P80V_0P00V_0P00V_0P00V_25C
+    Library : GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+    Process :   1.00
+    Temperature :  25.00
+    Voltage :   0.80
+
+Wire Loading Model:
+
+    No wire loading specified.
+
+
+Wire Loading Model Mode: top.
+
+Timing Ranges:
+
+    No timing ranges specified.
+
+Pin Input Delays:
+
+    None specified.
+
+Pin Output Delays:
+
+    None specified.
+
+Disabled Timing Arcs:
+
+    No arcs disabled.
+
+Required Licenses:
+
+    None Required
+
+Design Parameters:
+
+    None specified.
+1
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 1
+        -transition_time
+Design : axi_demux_wrapper
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:06:47 2025
+****************************************
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+  Startpoint: i_dut/gen_demux.i_w_fifo/read_pointer_q_reg[2]
+              (rising edge-triggered flip-flop clocked by clk_i[0])
+  Endpoint: i_dut/gen_demux.i_b_fifo/mem_q_reg[2][1]
+            (rising edge-triggered flip-flop clocked by clk_i[0])
+  Path Group: clk_i[0]
+  Path Type: max
+
+Attributes:
+    d - dont_touch
+    u - dont_use
+   mo - map_only
+   so - size_only
+    i - ideal_net or ideal_network
+  inf - infeasible path
+
+  Point                                       Fanout     Trans      Incr       Path      Attributes
+  ---------------------------------------------------------------------------------------------------------
+  clock clk_i[0] (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                       0.00       0.00
+  i_dut/gen_demux.i_w_fifo/read_pointer_q_reg[2]/CLK (SC7P5T_DFFRQNX4_CSC28L)     0.00     0.00     0.00 r
+  i_dut/gen_demux.i_w_fifo/read_pointer_q_reg[2]/QN (SC7P5T_DFFRQNX4_CSC28L)    14.82    66.23    66.23 r
+  i_dut/gen_demux.i_w_fifo/n28 (net)            2                   0.00      66.23 r
+  i_dut/gen_demux.i_w_fifo/U51/Z (SC7P5T_INVX4_CSC28L)     7.31    12.53      78.76 f
+  i_dut/gen_demux.i_w_fifo/N17 (net)            4                   0.00      78.76 f
+  i_dut/gen_demux.i_w_fifo/U177/Z (SC7P5T_OA22IA1A2X3_CSC28L)    10.68    27.44   106.20 f
+  i_dut/gen_demux.i_w_fifo/n136 (net)           1                   0.00     106.20 f
+  i_dut/gen_demux.i_w_fifo/U176/Z (SC7P5T_AOI32X3_CSC28L)    15.68    19.40   125.60 r
+  i_dut/gen_demux.i_w_fifo/n140 (net)           1                   0.00     125.60 r
+  i_dut/gen_demux.i_w_fifo/U40/Z (SC7P5T_OAI221X4_CSC28L)    18.84    24.69   150.29 f
+  i_dut/gen_demux.i_w_fifo/data_o[1] (net)      2                   0.00     150.29 f
+  i_dut/gen_demux.i_w_fifo/data_o[1] (fifo_v3_0_00000008_2)         0.00     150.29 f
+  i_dut/N34 (net)                                                   0.00     150.29 f
+  i_dut/U212/Z (SC7P5T_CKBUFX4_CSC28L)                    5.58     23.21     173.50 f
+  i_dut/n1224 (net)                             2                   0.00     173.50 f
+  i_dut/U189/Z (SC7P5T_ND2X1_MR_CSC28L)                  10.03     12.05     185.55 r
+  i_dut/n57 (net)                               1                   0.00     185.55 r
+  i_dut/U218/Z (SC7P5T_ND2X2_CSC28L)                      7.73     13.05     198.60 f
+  i_dut/n58 (net)                               1                   0.00     198.60 f
+  i_dut/U248/Z (SC7P5T_CKINVX2_CSC28L)                    6.71     10.64     209.24 r
+  i_dut/n1262 (net)                             1                   0.00     209.24 r
+  i_dut/U267/Z (SC7P5T2G_MUXI2X4_CSC28L)                 16.71     16.80     226.04 f
+  i_dut/n1268 (net)                             1                   0.00     226.04 f
+  i_dut/U208/Z (SC7P5T2G_MUXI2X4_CSC28L)                 17.50     24.00     250.04 r
+  i_dut/n1302 (net)                             2                   0.00     250.04 r
+  i_dut/U1432/Z (SC7P5T_ND2IAX4_A_CSC28L)                11.56     17.25     267.29 f
+  i_dut/n1270 (net)                             1                   0.00     267.29 f
+  i_dut/U246/Z (SC7P5T_CKINVX6_CSC28L)                    9.69     14.64     281.93 r
+  i_dut/gen_demux.w_fifo_pop (net)              7                   0.00     281.93 r
+  i_dut/gen_demux.i_b_fifo/push_i (fifo_v3_0_00000008_1)            0.00     281.93 r
+  i_dut/gen_demux.i_b_fifo/push_i (net)                             0.00     281.93 r
+  i_dut/gen_demux.i_b_fifo/U37/Z (SC7P5T_CKND2X4_CSC28L)    12.70    13.72   295.64 f
+  i_dut/gen_demux.i_b_fifo/n11 (net)            2                   0.00     295.64 f
+  i_dut/gen_demux.i_b_fifo/U30/Z (SC7P5T_CKOR2X4_CSC28L)     7.75    22.68   318.32 f
+  i_dut/gen_demux.i_b_fifo/n114 (net)           3                   0.00     318.32 f
+  i_dut/gen_demux.i_b_fifo/U5/Z (SC7P5T_CKINVX4_CSC28L)     5.56     9.58    327.90 r
+  i_dut/gen_demux.i_b_fifo/n119 (net)           2                   0.00     327.90 r
+  i_dut/gen_demux.i_b_fifo/U21/Z (SC7P5T_AN3X6_CSC28L)    10.14    32.38     360.28 r
+  i_dut/gen_demux.i_b_fifo/n18 (net)            3                   0.00     360.28 r
+  i_dut/gen_demux.i_b_fifo/U89/Z (SC7P5T_MUXI2X1_L_CSC28L)    16.72    26.40   386.69 r
+  i_dut/gen_demux.i_b_fifo/n203 (net)           1                   0.00     386.69 r
+  i_dut/gen_demux.i_b_fifo/mem_q_reg[2][1]/D (SC7P5T_DFFRQX2_CSC28L)    16.72     0.00   386.69 r
+  data arrival time                                                          386.69
+
+  clock clk_i[0] (rise edge)                                      405.00     405.00
+  clock network delay (ideal)                                       0.00     405.00
+  i_dut/gen_demux.i_b_fifo/mem_q_reg[2][1]/CLK (SC7P5T_DFFRQX2_CSC28L)     0.00   405.00 r
+  library setup time                                              -26.19     378.81
+  data required time                                                         378.81
+  ---------------------------------------------------------------------------------------------------------
+  data required time                                                         378.81
+  data arrival time                                                         -386.69
+  ---------------------------------------------------------------------------------------------------------
+  slack (VIOLATED)                                                            -7.88
+
+
+1
+ 
+****************************************
+Report : area
+Design : axi_demux_wrapper
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:06:47 2025
+****************************************
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Number of ports:                         3461
+Number of nets:                          5891
+Number of cells:                         3385
+Number of combinational cells:           2962
+Number of sequential cells:               409
+Number of macros/black boxes:               0
+Number of buf/inv:                       1721
+Number of references:                       2
+
+Combinational area:                945.376806
+Buf/Inv area:                      300.393603
+Noncombinational area:             671.222413
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (No wire load specified)
+
+Total cell area:                  1616.599219
+Total area:                 undefined
+
+Hierarchical area distribution
+------------------------------
+
+                                  Global cell area          Local cell area
+                                  ------------------  --------------------------- 
+Hierarchical cell                 Absolute   Percent  Combi-    Noncombi-  Black-
+                                  Total      Total    national  national   boxes   Design
+--------------------------------  ---------  -------  --------  ---------  ------  --------------------------------------------
+axi_demux_wrapper                 1616.5992    100.0    0.1392     0.0000  0.0000  axi_demux_wrapper
+i_dut                             1616.4600    100.0  375.9096     1.6008  0.0000  axi_lite_demux_00000008_00000008_0_1_1_1_1_1
+i_dut/gen_demux.i_ar_spill_reg     216.2472     13.4    0.1392     0.0000  0.0000  spill_register_0_3
+i_dut/gen_demux.i_ar_spill_reg/spill_register_flushable_i  216.1080    13.4  90.7584  125.3496 0.0000 spill_register_flushable_0_3
+i_dut/gen_demux.i_aw_spill_reg     213.6720     13.2    0.1392     0.0000  0.0000  spill_register_0
+i_dut/gen_demux.i_aw_spill_reg/spill_register_flushable_i  213.5328    13.2  88.3920  125.1408 0.0000 spill_register_flushable_0
+i_dut/gen_demux.i_b_fifo           132.1704      8.2   76.4208    55.7496  0.0000  fifo_v3_0_00000008_1
+i_dut/gen_demux.i_b_spill_reg       17.6784      1.1    0.1392     0.0000  0.0000  spill_register_0_2
+i_dut/gen_demux.i_b_spill_reg/spill_register_flushable_i   17.5392     1.1   7.9344    9.6048 0.0000 spill_register_flushable_0_2
+i_dut/gen_demux.i_r_fifo           126.4632      7.8   69.3216    57.1416  0.0000  fifo_v3_0_00000008_0
+i_dut/gen_demux.i_r_spill_reg      197.5944     12.2    0.1392     0.0000  0.0000  spill_register_0_4
+i_dut/gen_demux.i_r_spill_reg/spill_register_flushable_i  197.4552    12.2  85.3992  112.0560 0.0000 spill_register_flushable_0_4
+i_dut/gen_demux.i_w_fifo           126.2544      7.8   68.9040    57.3504  0.0000  fifo_v3_0_00000008_2
+i_dut/gen_demux.i_w_spill_reg      208.8696     12.9    0.1392     0.0000  0.0000  spill_register_0_1
+i_dut/gen_demux.i_w_spill_reg/spill_register_flushable_i  208.7304    12.9  81.5016  127.2288 0.0000 spill_register_flushable_0_1
+--------------------------------  ---------  -------  --------  ---------  ------  --------------------------------------------
+Total                                                 945.3768   671.2224  0.0000
+
+1
+Loading db file '/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db'
+Information: Propagating switching activity (low effort zero delay simulation). (PWR-6)
+Warning: Design has unannotated primary inputs. (PWR-414)
+Warning: Design has unannotated sequential cell outputs. (PWR-415)
+ 
+****************************************
+Report : power
+        -hier
+        -analysis_effort low
+Design : axi_demux_wrapper
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:06:49 2025
+****************************************
+
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+
+Global Operating Voltage = 0.8  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000ff
+    Time Units = 1ps
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1uW
+
+
+--------------------------------------------------------------------------------
+                                       Switch   Int      Leak     Total
+Hierarchy                              Power    Power    Power    Power    %
+--------------------------------------------------------------------------------
+axi_demux_wrapper                         0.157    2.669    0.656    2.827 100.0
+  i_dut (axi_lite_demux_00000008_00000008_0_1_1_1_1_1)    0.157    2.669    0.656    2.827 100.0
+    gen_demux.i_r_spill_reg (spill_register_0_4) 1.17e-02    0.441 7.70e-02    0.453  16.0
+      spill_register_flushable_i (spill_register_flushable_0_4) 1.17e-02    0.441 7.70e-02    0.453  16.0
+    gen_demux.i_r_fifo (fifo_v3_0_00000008_0) 9.45e-03    0.220 4.98e-02    0.230   8.1
+    gen_demux.i_ar_spill_reg (spill_register_0_3) 2.52e-02    0.499 8.32e-02    0.525  18.6
+      spill_register_flushable_i (spill_register_flushable_0_3) 2.52e-02    0.499 8.32e-02    0.525  18.6
+    gen_demux.i_b_spill_reg (spill_register_0_2) 8.85e-04 3.79e-02 6.67e-03 3.88e-02   1.4
+      spill_register_flushable_i (spill_register_flushable_0_2) 8.85e-04 3.79e-02 6.66e-03 3.88e-02   1.4
+    gen_demux.i_b_fifo (fifo_v3_0_00000008_1) 7.52e-03    0.217 5.30e-02    0.224   7.9
+    gen_demux.i_w_spill_reg (spill_register_0_1) 2.53e-02    0.480 7.65e-02    0.505  17.9
+      spill_register_flushable_i (spill_register_flushable_0_1) 2.53e-02    0.480 7.65e-02    0.505  17.9
+    gen_demux.i_w_fifo (fifo_v3_0_00000008_2) 1.16e-02    0.221 4.91e-02    0.233   8.2
+    gen_demux.i_aw_spill_reg (spill_register_0) 2.60e-02    0.499 8.29e-02    0.525  18.6
+      spill_register_flushable_i (spill_register_flushable_0) 2.60e-02    0.499 8.29e-02    0.525  18.6
+1
+ 
+****************************************
+Report : saif
+Design : axi_demux_wrapper
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:06:49 2025
+****************************************
+
+  
+
+--------------------------------------------------------------------------------
+              User              Default           Propagated
+Object type   Annotated (%)     Activity (%)      Activity (%)       Total
+--------------------------------------------------------------------------------
+  
+ Nets         0(0.00%)          448(32.53%)       929(67.47%)        1377
+ Ports        0(0.00%)          447(32.49%)       929(67.51%)        1376
+ Pins         0(0.00%)          1(100.00%)        0(0.00%)           1
+--------------------------------------------------------------------------------
+1

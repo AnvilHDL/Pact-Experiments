@@ -1,0 +1,60 @@
+import "SA.anvil"
+proc SA_tb(){
+    reg cycle_count : logic[32];
+    chan main_le -- main_ri : Main_Itfc<logic[32]>;
+    spawn SA(main_le);
+    
+    loop{
+        set cycle_count := *cycle_count + 32'd1
+    }
+    
+    loop{
+        // Test Case 1: 
+        send main_ri.input_l0(32'd3) >>
+        send main_ri.input_l1(32'd6) >>
+        send main_ri.input_t0(32'd9) >>
+        send main_ri.input_t1(32'd12) >>
+        cycle 1 >>
+
+        // Test Case 2:
+        send main_ri.input_l0(32'd5) >>
+        send main_ri.input_l1(32'd10) >>
+        send main_ri.input_t0(32'd15) >>
+        send main_ri.input_t1(32'd20) >>
+        cycle 1 >>
+
+        // Test Case 3:
+        send main_ri.input_l0(32'd7) >>
+        send main_ri.input_l1(32'd14) >>
+        send main_ri.input_t0(32'd21) >>
+        send main_ri.input_t1(32'd28) >>
+        cycle 1
+    }
+
+    loop{
+        cycle 3 >>
+        let result00 = recv main_ri.out00 >>
+        let result01 = recv main_ri.out01 >>
+        let result10 = recv main_ri.out10 >>
+        let result11 = recv main_ri.out11 >>
+        dprint "[Cycle %d] Result 00: %d, Result 01: %d, Result 10: %d, Result 11: %d\n"  (*cycle_count, result00, result01, result10, result11);
+        cycle 1 >>
+
+        let result00 = recv main_ri.out00 >>
+        let result01 = recv main_ri.out01 >>
+        let result10 = recv main_ri.out10 >>
+        let result11 = recv main_ri.out11 >>
+        dprint "[Cycle %d] Result 00: %d, Result 01: %d, Result 10: %d, Result 11: %d\n"  (*cycle_count, result00, result01, result10, result11);
+        cycle 1 >>
+
+        let result00 = recv main_ri.out00 >>
+        let result01 = recv main_ri.out01 >>
+        let result10 = recv main_ri.out10 >>
+        let result11 = recv main_ri.out11 >>
+        dprint "[Cycle %d] Result 00: %d, Result 01: %d, Result 10: %d, Result 11: %d\n"  (*cycle_count, result00, result01, result10, result11);
+        cycle 1 >>
+        dfinish
+
+    }
+
+}

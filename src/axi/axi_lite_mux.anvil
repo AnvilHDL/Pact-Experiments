@@ -100,6 +100,7 @@ proc axi_lite_mux<
     // AW Channel Arbitration - collect requests from all slave ports and send based on priority
     loop {
     {
+    {
     
         let aw_default = aw_pack_t::{
             addr = <(32'h0)::A>;
@@ -263,7 +264,7 @@ proc axi_lite_mux<
             // send w_fifo_ep.pop(1'd1) >>
             let sel = recv w_fifo_ep.data_o  >>
             send b_fifo_ep.push(sel) >>
-            let null = 36'd0 >>
+            let null = 37'd0 >>
 
             let tc = match sel {
                 3'd0 =>{
@@ -333,7 +334,7 @@ proc axi_lite_mux<
             } >>
             if(tc[0]){
                 // dprint "[Cycle %d] Sending W req %h" (*cyc, tc[1+:35]) >>
-                send w_sr_le.req(tc[1+:35]) >>
+                send w_sr_le.req(tc[1+:36]) >>
                 send w_fifo_ep.pop(1'd1)
             }
 
@@ -777,7 +778,9 @@ proc axi_lite_mux<
                 send r_sr_le.req(tc[1+:34])
             }
         } 
-    } >>
+    }
+    } 
+    >>
     cycle 1
 }
 

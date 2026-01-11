@@ -1,0 +1,250 @@
+Information: Updating design information... (UID-85)
+Warning: Design 'cva6_default_tlb' contains 2 high-fanout nets. A fanout number of 1000 will be used for delay calculations involving these nets. (TIM-134)
+ 
+****************************************
+Report : design
+Design : cva6_default_tlb
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 04:09:58 2025
+****************************************
+
+Design allows ideal nets on clock nets.
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Local Link Library:
+
+    {/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db, /home/yaswanth/GF22_mem/InvecasViews_w00512/model/timing/lib/bob_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_w00256/model/timing/lib/macro_m8_w256_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/./InvecasViews_w00512_m8/model/timing/lib/macro_m8_w512_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00512_m8/model/timing/lib/macro_s1c_m8_w512_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w32768_m16_c65KB/model/timing/lib/macro_s1c_w32768_m16_c65KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m4_c1KB/model/timing/lib/macro_s1c_w00256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m8_c512B/model/timing/lib/macro_s1c_w00256_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m16_c256B/model/timing/lib/macro_s1c_w00256_m16_c256B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w19648_m16_c40KB/model/timing/lib/macro_s1c_w19648_m16_c40KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db}
+
+Flip-Flop Types:
+
+    No flip-flop types specified.
+
+Latch Types:
+
+    No latch types specified.
+
+Operating Conditions:
+
+
+    Operating Condition Name : TT_0P80V_0P00V_0P00V_0P00V_25C
+    Library : GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+    Process :   1.00
+    Temperature :  25.00
+    Voltage :   0.80
+
+Wire Loading Model:
+
+    No wire loading specified.
+
+
+Wire Loading Model Mode: top.
+
+Timing Ranges:
+
+    No timing ranges specified.
+
+Pin Input Delays:
+
+    None specified.
+
+Pin Output Delays:
+
+    None specified.
+
+Disabled Timing Arcs:
+
+    No arcs disabled.
+
+Required Licenses:
+
+    None Required
+
+Design Parameters:
+
+    None specified.
+1
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 1
+        -transition_time
+Design : cva6_default_tlb
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 04:09:58 2025
+****************************************
+
+ # A fanout number of 1000 was used for high fanout net computations.
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+  Startpoint: tags_q_reg[1][vpn][0][5]
+              (rising edge-triggered flip-flop clocked by clk_i)
+  Endpoint: tags_q_reg[11][vpn][0][4]
+            (rising edge-triggered flip-flop clocked by clk_i)
+  Path Group: clk_i
+  Path Type: max
+
+Attributes:
+    d - dont_touch
+    u - dont_use
+   mo - map_only
+   so - size_only
+    i - ideal_net or ideal_network
+  inf - infeasible path
+
+  Point                                       Fanout     Trans      Incr       Path      Attributes
+  ---------------------------------------------------------------------------------------------------------
+  clock clk_i (rise edge)                                           0.00       0.00
+  clock network delay (ideal)                                       0.00       0.00
+  tags_q_reg[1][vpn][0][5]/CLK (SC7P5T_DFFRQX4_CSC28L)     0.00     0.00 #     0.00 r
+  tags_q_reg[1][vpn][0][5]/Q (SC7P5T_DFFRQX4_CSC28L)      6.27     74.60      74.60 f
+  tags_q[1][vpn][0][5] (net)                    3                   0.00      74.60 f
+  U9984/Z (SC7P5T_XNR2X2_CSC28L)                          9.18     38.15     112.75 f
+  n4408 (net)                                   1                   0.00     112.75 f
+  U3677/Z (SC7P5T_ND3X3_CSC28L)                          10.68     12.43     125.18 r
+  n4409 (net)                                   2                   0.00     125.18 r
+  U5154/Z (SC7P5T_OAI311X3_CSC28L)                       16.99     25.41     150.59 f
+  n3928 (net)                                   1                   0.00     150.59 f
+  U5121/Z (SC7P5T_ND2X2_CSC28L)                           9.94     17.96     168.55 r
+  n6707 (net)                                   2                   0.00     168.55 r
+  U9995/Z (SC7P5T_AN4IAX4_CSC28L)                        12.01     44.88     213.43 r
+  n5101 (net)                                   2                   0.00     213.43 r
+  U5021/Z (SC7P5T_CKAN2X6_CSC28L)                         7.28     26.27     239.70 r
+  n3957 (net)                                   7                   0.00     239.70 r
+  U4868/Z (SC7P5T_ND2IAX1_CSC28L)                        13.26     16.66     256.36 f
+  n5390 (net)                                   1                   0.00     256.36 f
+  U10253/Z (SC7P5T_CKINVX2_CSC28L)                        6.98     12.55     268.91 r
+  n5412 (net)                                   1                   0.00     268.91 r
+  U4977/Z (SC7P5T_CKAN2X6_CSC28L)                        18.84     34.64     303.54 r
+  n3966 (net)                                  12                   0.00     303.54 r
+  U4484/Z (SC7P5T_BUFX12_CSC28L)                          8.88     25.83     329.38 r
+  n4239 (net)                                   5                   0.00     329.38 r
+  U3453/Z (SC7P5T_CKBUFX8_CSC28L)                        10.26     22.16     351.53 r
+  n4240 (net)                                   9                   0.00     351.53 r
+  U4685/Z (SC7P5T_MUXI2X1_L_CSC28L)                      18.35     26.46     377.99 r
+  n2389 (net)                                   1                   0.00     377.99 r
+  tags_q_reg[11][vpn][0][4]/D (SC7P5T_DFFRQX2_CSC28L)    18.35      0.00     377.99 r
+  data arrival time                                                          377.99
+
+  clock clk_i (rise edge)                                         405.00     405.00
+  clock network delay (ideal)                                       0.00     405.00
+  tags_q_reg[11][vpn][0][4]/CLK (SC7P5T_DFFRQX2_CSC28L)             0.00     405.00 r
+  library setup time                                              -26.99     378.01
+  data required time                                                         378.01
+  ---------------------------------------------------------------------------------------------------------
+  data required time                                                         378.01
+  data arrival time                                                         -377.99
+  ---------------------------------------------------------------------------------------------------------
+  slack (MET)                                                                  0.01
+
+
+1
+ 
+****************************************
+Report : area
+Design : cva6_default_tlb
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 04:09:58 2025
+****************************************
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Number of ports:                          420
+Number of nets:                          9388
+Number of cells:                         9166
+Number of combinational cells:           7375
+Number of sequential cells:              1791
+Number of macros/black boxes:               0
+Number of buf/inv:                       2513
+Number of references:                     169
+
+Combinational area:               3196.728040
+Buf/Inv area:                      503.764804
+Noncombinational area:            2941.296052
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (No wire load specified)
+
+Total cell area:                  6138.024092
+Total area:                 undefined
+
+Hierarchical area distribution
+------------------------------
+
+                                  Global cell area          Local cell area
+                                  ------------------  ---------------------------- 
+Hierarchical cell                 Absolute   Percent  Combi-     Noncombi-  Black-
+                                  Total      Total    national   national   boxes   Design
+--------------------------------  ---------  -------  ---------  ---------  ------  ---------
+cva6_default_tlb                  6138.0241    100.0  3196.7280  2941.2961  0.0000  cva6_default_tlb
+--------------------------------  ---------  -------  ---------  ---------  ------  ---------
+Total                                                 3196.7280  2941.2961  0.0000
+
+1
+Loading db file '/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db'
+Information: Propagating switching activity (low effort zero delay simulation). (PWR-6)
+Warning: Design has unannotated primary inputs. (PWR-414)
+Warning: Design has unannotated sequential cell outputs. (PWR-415)
+ 
+****************************************
+Report : power
+        -hier
+        -analysis_effort low
+Design : cva6_default_tlb
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 04:10:01 2025
+****************************************
+
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+
+Global Operating Voltage = 0.8  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000ff
+    Time Units = 1ps
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1uW
+
+
+--------------------------------------------------------------------------------
+                                       Switch   Int      Leak     Total
+Hierarchy                              Power    Power    Power    Power    %
+--------------------------------------------------------------------------------
+cva6_default_tlb                          0.175   11.603    2.464   11.781 100.0
+1
+ 
+****************************************
+Report : saif
+Design : cva6_default_tlb
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 04:10:01 2025
+****************************************
+
+  
+
+--------------------------------------------------------------------------------
+              User              Default           Propagated
+Object type   Annotated (%)     Activity (%)      Activity (%)       Total
+--------------------------------------------------------------------------------
+  
+ Nets         0(0.00%)          369(3.93%)        9019(96.07%)       9388
+ Ports        0(0.00%)          353(84.05%)       67(15.95%)         420
+ Pins         0(0.00%)          6935(22.48%)      23919(77.52%)      30854
+--------------------------------------------------------------------------------
+1

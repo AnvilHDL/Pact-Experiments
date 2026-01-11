@@ -1,0 +1,303 @@
+Information: Updating design information... (UID-85)
+ 
+****************************************
+Report : design
+Design : SA
+Version: Q-2019.12-SP5-1
+Date   : Tue Aug 19 21:50:13 2025
+****************************************
+
+Design allows ideal nets on clock nets.
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Local Link Library:
+
+    {/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db, /home/yaswanth/GF22_mem/InvecasViews_w00512/model/timing/lib/bob_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_w00256/model/timing/lib/macro_m8_w256_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/./InvecasViews_w00512_m8/model/timing/lib/macro_m8_w512_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00512_m8/model/timing/lib/macro_s1c_m8_w512_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w32768_m16_c65KB/model/timing/lib/macro_s1c_w32768_m16_c65KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m4_c1KB/model/timing/lib/macro_s1c_w00256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m8_c512B/model/timing/lib/macro_s1c_w00256_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m16_c256B/model/timing/lib/macro_s1c_w00256_m16_c256B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w19648_m16_c40KB/model/timing/lib/macro_s1c_w19648_m16_c40KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db}
+
+Flip-Flop Types:
+
+    No flip-flop types specified.
+
+Latch Types:
+
+    No latch types specified.
+
+Operating Conditions:
+
+
+    Operating Condition Name : TT_0P80V_0P00V_0P00V_0P00V_25C
+    Library : GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+    Process :   1.00
+    Temperature :  25.00
+    Voltage :   0.80
+
+Wire Loading Model:
+
+    No wire loading specified.
+
+
+Wire Loading Model Mode: top.
+
+Timing Ranges:
+
+    No timing ranges specified.
+
+Pin Input Delays:
+
+    None specified.
+
+Pin Output Delays:
+
+    None specified.
+
+Disabled Timing Arcs:
+
+    No arcs disabled.
+
+Required Licenses:
+
+    None Required
+
+Design Parameters:
+
+    None specified.
+1
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 1
+        -transition_time
+Design : SA
+Version: Q-2019.12-SP5-1
+Date   : Tue Aug 19 21:50:13 2025
+****************************************
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+  Startpoint: _spawn_1/_spawn_0/r_q_reg[11]
+              (rising edge-triggered flip-flop clocked by clk_i[0])
+  Endpoint: _spawn_1/_spawn_0/ot_q_reg[31]
+            (rising edge-triggered flip-flop clocked by clk_i[0])
+  Path Group: clk_i[0]
+  Path Type: max
+
+Attributes:
+    d - dont_touch
+    u - dont_use
+   mo - map_only
+   so - size_only
+    i - ideal_net or ideal_network
+  inf - infeasible path
+
+  Point                                       Fanout     Trans      Incr       Path      Attributes
+  ---------------------------------------------------------------------------------------------------------
+  clock clk_i[0] (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                       0.00       0.00
+  _spawn_1/_spawn_0/r_q_reg[11]/CLK (SC7P5T_DFFRQX4_CSC28L)     0.00     0.00     0.00 r
+  _spawn_1/_spawn_0/r_q_reg[11]/Q (SC7P5T_DFFRQX4_CSC28L)     8.37    67.27    67.27 r
+  _spawn_1/_spawn_0/thread_0_wire$3[11] (net)     3                 0.00      67.27 r
+  _spawn_1/_spawn_0/_spawn_0/_endp_input_r_0[11] (MultComb_2)       0.00      67.27 r
+  _spawn_1/_spawn_0/_spawn_0/_endp_input_r_0[11] (net)              0.00      67.27 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/B[11] (MultComb_2_DW01_add_J6_0)     0.00    67.27 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/B[11] (net)                     0.00      67.27 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/U285/Z (SC7P5T_OR2X4_A_CSC28L)     5.56    19.32    86.59 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/n236 (net)     4                0.00      86.59 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/U77/Z (SC7P5T_ND4IABX4_CSC28L)    10.39    55.31   141.90 f
+  _spawn_1/_spawn_0/_spawn_0/add_66/n225 (net)     3                0.00     141.90 f
+  _spawn_1/_spawn_0/_spawn_0/add_66/U304/Z (SC7P5T_CKNR2X1_CSC28L)     7.66    11.99   153.89 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/n242 (net)     1                0.00     153.89 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/U32/Z (SC7P5T_AN2X4_CSC28L)     7.78    24.92   178.81 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/n39 (net)     3                 0.00     178.81 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/U82/Z (SC7P5T_AOI21IAX1_L_CSC28L)    17.88    21.45   200.26 f
+  _spawn_1/_spawn_0/_spawn_0/add_66/n106 (net)     1                0.00     200.26 f
+  _spawn_1/_spawn_0/_spawn_0/add_66/U133/Z (SC7P5T_AOI21X1_L_CSC28L)    13.53    23.70   223.96 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/n102 (net)     1                0.00     223.96 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/U115/Z (SC7P5T_NR2X1_CSC28L)     9.27    14.84   238.81 f
+  _spawn_1/_spawn_0/_spawn_0/add_66/n99 (net)     1                 0.00     238.81 f
+  _spawn_1/_spawn_0/_spawn_0/add_66/U46/Z (SC7P5T_NR2X2_CSC28L)     8.97    13.18   251.98 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/n98 (net)     1                 0.00     251.98 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/U79/Z (SC7P5T_AN4IAX2_CSC28L)     9.45    11.19   263.18 f
+  _spawn_1/_spawn_0/_spawn_0/add_66/n93 (net)     1                 0.00     263.18 f
+  _spawn_1/_spawn_0/_spawn_0/add_66/U315/Z (SC7P5T_XNR2X2_CSC28L)     7.76    38.04   301.22 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/SUM[31] (net)     1             0.00     301.22 r
+  _spawn_1/_spawn_0/_spawn_0/add_66/SUM[31] (MultComb_2_DW01_add_J6_0)     0.00   301.22 r
+  _spawn_1/_spawn_0/_spawn_0/_endp_output_0[31] (net)               0.00     301.22 r
+  _spawn_1/_spawn_0/_spawn_0/_endp_output_0[31] (MultComb_2)        0.00     301.22 r
+  _spawn_1/_spawn_0/_mult_ri_output_0[31] (net)                     0.00     301.22 r
+  _spawn_1/_spawn_0/U11/Z (SC7P5T_CKINVX2_CSC28L)         5.20      8.95     310.17 f
+  _spawn_1/_spawn_0/n317 (net)                  1                   0.00     310.17 f
+  _spawn_1/_spawn_0/U4/Z (SC7P5T_MUXI2X2_CSC28L)         12.84     14.54     324.72 r
+  _spawn_1/_spawn_0/n447 (net)                  1                   0.00     324.72 r
+  _spawn_1/_spawn_0/ot_q_reg[31]/D (SC7P5T_DFFRQX2_CSC28L)    12.84     0.00   324.72 r
+  data arrival time                                                          324.72
+
+  clock clk_i[0] (rise edge)                                      349.00     349.00
+  clock network delay (ideal)                                       0.00     349.00
+  _spawn_1/_spawn_0/ot_q_reg[31]/CLK (SC7P5T_DFFRQX2_CSC28L)        0.00     349.00 r
+  library setup time                                              -24.28     324.72
+  data required time                                                         324.72
+  ---------------------------------------------------------------------------------------------------------
+  data required time                                                         324.72
+  data arrival time                                                         -324.72
+  ---------------------------------------------------------------------------------------------------------
+  slack (MET)                                                                  0.01
+
+
+1
+ 
+****************************************
+Report : area
+Design : SA
+Version: Q-2019.12-SP5-1
+Date   : Tue Aug 19 21:50:13 2025
+****************************************
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Number of ports:                         2627
+Number of nets:                          7540
+Number of cells:                         5105
+Number of combinational cells:           4270
+Number of sequential cells:               811
+Number of macros/black boxes:               0
+Number of buf/inv:                       1323
+Number of references:                      18
+
+Combinational area:               1703.181610
+Buf/Inv area:                      231.141602
+Noncombinational area:            1393.809611
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (No wire load specified)
+
+Total cell area:                  3096.991222
+Total area:                 undefined
+
+Hierarchical area distribution
+------------------------------
+
+                                  Global cell area          Local cell area
+                                  ------------------  ---------------------------- 
+Hierarchical cell                 Absolute   Percent  Combi-     Noncombi-  Black-
+                                  Total      Total    national   national   boxes   Design
+--------------------------------  ---------  -------  ---------  ---------  ------  ------------------------
+SA                                3096.9912    100.0    75.3768   210.4704  0.0000  SA
+_spawn_0                           694.8864     22.4    24.9864    66.2592  0.0000  Process_3
+_spawn_0/_spawn_0                  466.5288     15.1   106.4880   226.8960  0.0000  FastMult_3
+_spawn_0/_spawn_0/_spawn_0         133.1448      4.3     0.1392     0.0000  0.0000  MultComb_3
+_spawn_0/_spawn_0/_spawn_0/add_66  133.0056      4.3   133.0056     0.0000  0.0000  MultComb_3_DW01_add_J5_0
+_spawn_0/_spawn_1                  137.1120      4.4     0.1392     0.0000  0.0000  Add_3
+_spawn_0/_spawn_1/add_22           136.9728      4.4   136.9728     0.0000  0.0000  Add_3_DW01_add_J1_0
+_spawn_1                           699.4800     22.6    25.5432    67.3728  0.0000  Process_2
+_spawn_1/_spawn_0                  469.3128     15.2   105.8616   229.3320  0.0000  FastMult_2
+_spawn_1/_spawn_0/_spawn_0         134.1192      4.3     0.1392     0.0000  0.0000  MultComb_2
+_spawn_1/_spawn_0/_spawn_0/add_66  133.9800      4.3   133.9800     0.0000  0.0000  MultComb_2_DW01_add_J6_0
+_spawn_1/_spawn_1                  137.2512      4.4     0.1392     0.0000  0.0000  Add_2
+_spawn_1/_spawn_1/add_22           137.1120      4.4   137.1120     0.0000  0.0000  Add_2_DW01_add_J2_0
+_spawn_2                           710.1984     22.9    27.6312    67.5120  0.0000  Process_1
+_spawn_2/_spawn_0                  473.3496     15.3    98.8320   230.0280  0.0000  FastMult_1
+_spawn_2/_spawn_0/_spawn_0         144.4896      4.7     0.1392     0.0000  0.0000  MultComb_1
+_spawn_2/_spawn_0/_spawn_0/add_66  144.3504      4.7   144.3504     0.0000  0.0000  MultComb_1_DW01_add_1
+_spawn_2/_spawn_1                  141.7056      4.6     0.1392     0.0000  0.0000  Add_1
+_spawn_2/_spawn_1/add_22           141.5664      4.6   141.5664     0.0000  0.0000  Add_1_DW01_add_J3_0
+_spawn_3                           706.5792     22.8    25.4736    67.5120  0.0000  Process_0
+_spawn_3/_spawn_0                  473.1408     15.3   105.3048   228.4272  0.0000  FastMult_0
+_spawn_3/_spawn_0/_spawn_0         139.4088      4.5     0.1392     0.0000  0.0000  MultComb_0
+_spawn_3/_spawn_0/_spawn_0/add_66  139.2696      4.5   139.2696     0.0000  0.0000  MultComb_0_DW01_add_J7_0
+_spawn_3/_spawn_1                  140.4528      4.5     0.1392     0.0000  0.0000  Add_0
+_spawn_3/_spawn_1/add_22           140.3136      4.5   140.3136     0.0000  0.0000  Add_0_DW01_add_J4_0
+--------------------------------  ---------  -------  ---------  ---------  ------  ------------------------
+Total                                                 1703.1816  1393.8096  0.0000
+
+1
+Loading db file '/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db'
+Information: Propagating switching activity (low effort zero delay simulation). (PWR-6)
+Warning: Design has unannotated primary inputs. (PWR-414)
+Warning: Design has unannotated sequential cell outputs. (PWR-415)
+ 
+****************************************
+Report : power
+        -hier
+        -analysis_effort low
+Design : SA
+Version: Q-2019.12-SP5-1
+Date   : Tue Aug 19 21:50:15 2025
+****************************************
+
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+
+Global Operating Voltage = 0.8  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000ff
+    Time Units = 1ps
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1uW
+
+
+--------------------------------------------------------------------------------
+                                       Switch   Int      Leak     Total
+Hierarchy                              Power    Power    Power    Power    %
+--------------------------------------------------------------------------------
+SA                                        0.492    6.540    1.309    7.033 100.0
+  _spawn_3 (Process_0)                    0.110    1.365    0.301    1.476  21.0
+    _spawn_1 (Add_0)                   2.67e-02 3.57e-02 6.06e-02 6.24e-02   0.9
+      add_22 (Add_0_DW01_add_J4_0)     2.67e-02 3.57e-02 6.05e-02 6.24e-02   0.9
+    _spawn_0 (FastMult_0)              6.88e-02    1.029    0.200    1.098  15.6
+      _spawn_0 (MultComb_0)            1.97e-02 2.59e-02 6.14e-02 4.57e-02   0.6
+        add_66 (MultComb_0_DW01_add_J7_0) 1.97e-02 2.59e-02 6.13e-02 4.57e-02   0.6
+  _spawn_2 (Process_1)                    0.119    1.397    0.304    1.517  21.6
+    _spawn_1 (Add_1)                   3.05e-02 4.18e-02 6.20e-02 7.23e-02   1.0
+      add_22 (Add_1_DW01_add_J3_0)     3.05e-02 4.18e-02 6.20e-02 7.23e-02   1.0
+    _spawn_0 (FastMult_1)              7.23e-02    1.050    0.201    1.122  16.0
+      _spawn_0 (MultComb_1)            2.09e-02 2.99e-02 6.18e-02 5.08e-02   0.7
+        add_66 (MultComb_1_DW01_add_1) 2.09e-02 2.99e-02 6.18e-02 5.08e-02   0.7
+  _spawn_1 (Process_2)                    0.121    1.397    0.301    1.519  21.6
+    _spawn_1 (Add_2)                   3.17e-02 4.34e-02 6.07e-02 7.52e-02   1.1
+      add_22 (Add_2_DW01_add_J2_0)     3.17e-02 4.34e-02 6.07e-02 7.52e-02   1.1
+    _spawn_0 (FastMult_2)              7.27e-02    1.051    0.199    1.123  16.0
+      _spawn_0 (MultComb_2)            1.99e-02 2.93e-02 5.78e-02 4.93e-02   0.7
+        add_66 (MultComb_2_DW01_add_J6_0) 1.99e-02 2.93e-02 5.78e-02 4.93e-02   0.7
+  _spawn_0 (Process_3)                    0.119    1.394    0.294    1.513  21.5
+    _spawn_1 (Add_3)                   3.02e-02 3.95e-02 5.69e-02 6.97e-02   1.0
+      add_22 (Add_3_DW01_add_J1_0)     3.02e-02 3.95e-02 5.69e-02 6.97e-02   1.0
+    _spawn_0 (FastMult_3)              7.40e-02    1.052    0.198    1.126  16.0
+      _spawn_0 (MultComb_3)            2.10e-02 3.03e-02 5.87e-02 5.13e-02   0.7
+        add_66 (MultComb_3_DW01_add_J5_0) 2.10e-02 3.03e-02 5.87e-02 5.13e-02   0.7
+1
+ 
+****************************************
+Report : saif
+Design : SA
+Version: Q-2019.12-SP5-1
+Date   : Tue Aug 19 21:50:15 2025
+****************************************
+
+  
+
+--------------------------------------------------------------------------------
+              User              Default           Propagated
+Object type   Annotated (%)     Activity (%)      Activity (%)       Total
+--------------------------------------------------------------------------------
+  
+ Nets         0(0.00%)          134(24.91%)       404(75.09%)        538
+ Ports        0(0.00%)          131(50.58%)       128(49.42%)        259
+ Pins         0(0.00%)          398(32.97%)       809(67.03%)        1207
+--------------------------------------------------------------------------------
+1

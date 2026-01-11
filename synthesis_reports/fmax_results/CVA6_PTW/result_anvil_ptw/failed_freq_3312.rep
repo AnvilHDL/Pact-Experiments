@@ -1,0 +1,245 @@
+Information: Updating design information... (UID-85)
+ 
+****************************************
+Report : design
+Design : anvil_ptw
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:25:32 2025
+****************************************
+
+Design allows ideal nets on clock nets.
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Local Link Library:
+
+    {/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db, /home/yaswanth/GF22_mem/InvecasViews_w00512/model/timing/lib/bob_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_w00256/model/timing/lib/macro_m8_w256_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/./InvecasViews_w00512_m8/model/timing/lib/macro_m8_w512_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00512_m8/model/timing/lib/macro_s1c_m8_w512_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w32768_m16_c65KB/model/timing/lib/macro_s1c_w32768_m16_c65KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m4_c1KB/model/timing/lib/macro_s1c_w00256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m8_c512B/model/timing/lib/macro_s1c_w00256_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m16_c256B/model/timing/lib/macro_s1c_w00256_m16_c256B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w19648_m16_c40KB/model/timing/lib/macro_s1c_w19648_m16_c40KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db}
+
+Flip-Flop Types:
+
+    No flip-flop types specified.
+
+Latch Types:
+
+    No latch types specified.
+
+Operating Conditions:
+
+
+    Operating Condition Name : TT_0P80V_0P00V_0P00V_0P00V_25C
+    Library : GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+    Process :   1.00
+    Temperature :  25.00
+    Voltage :   0.80
+
+Wire Loading Model:
+
+    No wire loading specified.
+
+
+Wire Loading Model Mode: top.
+
+Timing Ranges:
+
+    No timing ranges specified.
+
+Pin Input Delays:
+
+    None specified.
+
+Pin Output Delays:
+
+    None specified.
+
+Disabled Timing Arcs:
+
+    No arcs disabled.
+
+Required Licenses:
+
+    None Required
+
+Design Parameters:
+
+    None specified.
+1
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 1
+        -transition_time
+Design : anvil_ptw
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:25:32 2025
+****************************************
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+  Startpoint: _thread_0_event_counter_49_1_q_reg
+              (rising edge-triggered flip-flop clocked by clk_i[0])
+  Endpoint: ptw_pptr_q_reg[36]
+            (rising edge-triggered flip-flop clocked by clk_i[0])
+  Path Group: clk_i[0]
+  Path Type: max
+
+Attributes:
+    d - dont_touch
+    u - dont_use
+   mo - map_only
+   so - size_only
+    i - ideal_net or ideal_network
+  inf - infeasible path
+
+  Point                                       Fanout     Trans      Incr       Path      Attributes
+  ---------------------------------------------------------------------------------------------------------
+  clock clk_i[0] (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                       0.00       0.00
+  _thread_0_event_counter_49_1_q_reg/CLK (SC7P5T_DFFRQNX4_CSC28L)     0.00     0.00     0.00 r
+  _thread_0_event_counter_49_1_q_reg/QN (SC7P5T_DFFRQNX4_CSC28L)    11.20    61.13    61.13 r
+  n479 (net)                                    1                   0.00      61.13 r
+  U663/Z (SC7P5T_INVX2_CSC28L)                            6.09     10.62      71.75 f
+  n480 (net)                                    1                   0.00      71.75 f
+  U1159/Z (SC7P5T_OR6X6_CSC28L)                          13.99     38.33     110.08 f
+  n569 (net)                                    1                   0.00     110.08 f
+  U1160/Z (SC7P5T_CKINVX4_CSC28L)                         8.17     13.93     124.01 r
+  n573 (net)                                    2                   0.00     124.01 r
+  U600/Z (SC7P5T_ND2X6_CSC28L)                           14.67     16.57     140.58 f
+  n570 (net)                                    5                   0.00     140.58 f
+  U653/Z (SC7P5T_CKINVX4_CSC28L)                          5.38     10.09     150.67 r
+  n625 (net)                                    1                   0.00     150.67 r
+  U598/Z (SC7P5T_OR2X4_A_CSC28L)                          6.81     18.58     169.25 r
+  n549 (net)                                    5                   0.00     169.25 r
+  U621/Z (SC7P5T_INVX2_CSC28L)                            7.55     10.59     179.84 f
+  n799 (net)                                    3                   0.00     179.84 f
+  U562/Z (SC7P5T_CKOR2X6_CSC28L)                          7.47     26.43     206.27 f
+  n505 (net)                                    3                   0.00     206.27 f
+  U584/Z (SC7P5T_CKBUFX4_CSC28L)                         15.11     25.38     231.64 f
+  n490 (net)                                   24                   0.00     231.64 f
+  U832/Z (SC7P5T_OA22IA1A2X1_L_CSC28L)                   16.64     32.68     264.32 f
+  n733 (net)                                    1                   0.00     264.32 f
+  U831/Z (SC7P5T_ND2X1_CSC28L)                           10.69     16.23     280.55 r
+  n154 (net)                                    1                   0.00     280.55 r
+  ptw_pptr_q_reg[36]/D (SC7P5T_DFFRQX2_CSC28L)           10.69      0.00     280.55 r
+  data arrival time                                                          280.55
+
+  clock clk_i[0] (rise edge)                                      304.00     304.00
+  clock network delay (ideal)                                       0.00     304.00
+  ptw_pptr_q_reg[36]/CLK (SC7P5T_DFFRQX2_CSC28L)                    0.00     304.00 r
+  library setup time                                              -23.21     280.79
+  data required time                                                         280.79
+  ---------------------------------------------------------------------------------------------------------
+  data required time                                                         280.79
+  data arrival time                                                         -280.55
+  ---------------------------------------------------------------------------------------------------------
+  slack (MET)                                                                  0.24
+
+
+1
+ 
+****************************************
+Report : area
+Design : anvil_ptw
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:25:32 2025
+****************************************
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Number of ports:                          622
+Number of nets:                          1164
+Number of cells:                          965
+Number of combinational cells:            745
+Number of sequential cells:               220
+Number of macros/black boxes:               0
+Number of buf/inv:                        238
+Number of references:                     102
+
+Combinational area:                266.985601
+Buf/Inv area:                       47.049600
+Noncombinational area:             361.502407
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (No wire load specified)
+
+Total cell area:                   628.488008
+Total area:                 undefined
+
+Hierarchical area distribution
+------------------------------
+
+                                  Global cell area          Local cell area
+                                  ------------------  --------------------------- 
+Hierarchical cell                 Absolute   Percent  Combi-    Noncombi-  Black-
+                                  Total      Total    national  national   boxes   Design
+--------------------------------  ---------  -------  --------  ---------  ------  ---------
+anvil_ptw                          628.4880    100.0  266.9856   361.5024  0.0000  anvil_ptw
+--------------------------------  ---------  -------  --------  ---------  ------  ---------
+Total                                                 266.9856   361.5024  0.0000
+
+1
+Loading db file '/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db'
+Information: Propagating switching activity (low effort zero delay simulation). (PWR-6)
+Warning: Design has unannotated primary inputs. (PWR-414)
+Warning: Design has unannotated sequential cell outputs. (PWR-415)
+ 
+****************************************
+Report : power
+        -hier
+        -analysis_effort low
+Design : anvil_ptw
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:25:34 2025
+****************************************
+
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+
+Global Operating Voltage = 0.8  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000ff
+    Time Units = 1ps
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1uW
+
+
+--------------------------------------------------------------------------------
+                                       Switch   Int      Leak     Total
+Hierarchy                              Power    Power    Power    Power    %
+--------------------------------------------------------------------------------
+anvil_ptw                              2.92e-02    1.874    0.259    1.904 100.0
+1
+ 
+****************************************
+Report : saif
+Design : anvil_ptw
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:25:34 2025
+****************************************
+
+  
+
+--------------------------------------------------------------------------------
+              User              Default           Propagated
+Object type   Annotated (%)     Activity (%)      Activity (%)       Total
+--------------------------------------------------------------------------------
+  
+ Nets         0(0.00%)          334(28.69%)       830(71.31%)        1164
+ Ports        0(0.00%)          332(53.38%)       290(46.62%)        622
+ Pins         0(0.00%)          933(28.63%)       2326(71.37%)       3259
+--------------------------------------------------------------------------------
+1

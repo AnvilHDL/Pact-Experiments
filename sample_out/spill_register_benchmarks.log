@@ -1,0 +1,53 @@
+sed "s/Vtop/Vspill_reg_top/g" sim_main.cpp > spill_reg_top_driver.cpp
+anvil -O 3 spill_reg_top.anvil > spill_reg_top.anvil.sv 2>/dev/null
+verilator --cc --exe --build --top spill_reg_top -j 1 spill_reg_top_driver.cpp spill_reg_top.anvil.sv > /dev/null 2>/dev/null
+[Cycle          0] Sent req          1
+[Cycle          0] No response to receive
+============================[Cycle          0] Baseline Spill Register Operations Start========================
+[Cycle          1] Draining res          1
+[Cycle          2] Sent req          2
+[Cycle          2] Spill Reg has nothing to read
+============================[Cycle          2] Will test (push||read) ; 1 cycle; push||spill========================
+[Cycle          3] Sent req          3
+[Cycle          3] Draining res          2
+[Cycle          4] Draining res          3
+============================[Cycle          4] Will try spilling last pushed data========================
+[Cycle          5] Sent req          4
+[Cycle          5] Spill Reg has nothing to read
+============================[Cycle          5] Will fill up the spill register and drain it========================
+[Cycle          6] Sent req          5
+[Cycle          6] Spill Reg has          4 ready to read
+[Cycle          7] spill reg is busy
+[Cycle          7] Draining res          4
+============================[Cycle          7] Spill register should be full now, should not be able to send next req========================
+[Cycle          8] Draining res          5
+============================[Cycle          8 Draining remaining data from spill reg========================
+[Cycle          9] No response to receive
+============================[Cycle          9] Baseline Spill Register Operations End========================
+[Cycle          0] Sent req          1
+[Cycle          0] No response to receive
+============================[Cycle          0] Anvil Spill Register Operations Start========================
+[Cycle          1] Draining res          1
+[Cycle          2] Sent req          2
+[Cycle          2] Spill Reg has nothing to read
+============================[Cycle          2] Will test (push||read);cycle 1;(push||drain)========================
+[Cycle          3] Sent req          3
+[Cycle          3] Draining res          2
+[Cycle          4] Draining res          3
+============================[Cycle          4] Will try spilling last pushed data========================
+[Cycle          5] Sent req          4
+[Cycle          5] Spill Reg has nothing to read
+============================[Cycle          5] Will fill up the spill register and drain it========================
+[Cycle          6] Sent req          5
+[Cycle          6] Spill Reg has          4 ready to read
+[Cycle          7] spill reg is busy
+[Cycle          7] Draining res          4
+============================[Cycle          7] Spill register should be full now, should not be able to send next req========================
+[Cycle          8] Draining res          5
+============================[Cycle          8 Draining remaining data from spill reg========================
+[Cycle          9] No response to receive
+- spill_reg_top.anvil.sv:1136: Verilog $finish
+============================[Cycle          9] Anvil Spill Register Operations End========================
+- S i m u l a t i o n   R e p o r t: Verilator 5.036 2025-04-27
+- Verilator: $finish at 49ps; walltime 0.005 s; speed 7.774 ns/s
+- Verilator: cpu 0.006 s on 1 threads; alloced 505 MB

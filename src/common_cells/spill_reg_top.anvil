@@ -2,14 +2,14 @@ import "spill_reg.anvil"
 extern import "spill_register.sv"
 
 
-// proc spill_reg_extern(ep : right spill_ch<logic[4]>) extern("spill_register #( .T(logic[3:0]), .Bypass(1'b0))"){
-//     clk_i("clk_i");
-//     rst_ni("rst_ni");
-//     ep.req("data_i" : "valid_i" :);
-//     ep.res("data_o" : "valid_o" :);
-//     ep.rdy("ready_o" : :);
-//     ep.spill( : "ready_i" :);
-// }
+proc spill_reg_extern(ep : right spill_ch<logic[4]>) extern("spill_register #( .T(logic[3:0]), .Bypass(1'b0))"){
+    clk_i("clk_i");
+    rst_ni("rst_ni");
+    ep.req("data_i" : "valid_i" :);
+    ep.res("data_o" : "valid_o" :);
+    ep.rdy("ready_o" : :);
+    ep.spill( : "ready_i" :);
+}
 
 func send_req(inp){
     let r = recv ep_le.rdy >>
@@ -23,42 +23,138 @@ func send_req(inp){
 }
 
 func recv_res(){
-    let r = recv ep_le.res >>
-    dprint "[Cycle %d] Received res %d" (*cyc, r) >>
-    send ep_le.spill(1'd1)
 
+    try r = recv ep_le.res {
+        dprint "[Cycle %d] Draining res %d" (*cyc, r) >>
+        send ep_le.spill(1'd1)
+    } else {
+        dprint "[Cycle %d] No response to receive" (*cyc)
+    }
 }
 
+func read_res(){
+    try r = recv ep_le.res {
+        dprint "[Cycle %d] Spill Reg has %d ready to read" (*cyc, r)
+    } else {
+        dprint "[Cycle %d] Spill Reg has nothing to read" (*cyc)
+    }
+}
+
+
+func send_req2(inp){
+    let r = recv ep_le_an.rdy >>
+    if(r==1'd0){
+        dprint "[Cycle %d] spill reg is busy" (*cyc - *test_end)
+    }
+    else{
+        send ep_le_an.req(inp) >>
+        dprint "[Cycle %d] Sent req %d" (*cyc - *test_end, inp)
+    }
+}
+
+func recv_res2(){
+    try r = recv ep_le_an.res {
+        dprint "[Cycle %d] Draining res %d" (*cyc - *test_end, r) >>
+        send ep_le_an.spill(1'd1)
+    } else {
+        dprint "[Cycle %d] No response to receive" (*cyc - *test_end)
+    }
+}
+
+func read_res2(){
+    try r = recv ep_le_an.res {
+        dprint "[Cycle %d] Spill Reg has %d ready to read" (*cyc - *test_end, r)
+    } else {
+        dprint "[Cycle %d] Spill Reg has nothing to read" (*cyc - *test_end)
+    }
+}
 proc spill_reg_top(){
     chan ep_le -- ep_ri : spill_ch<logic[32]>;
-    spawn spill_reg<1,logic[32], 0>(ep_ri);
-    // spawn spill_reg_extern(ep_ri);
+    chan ep_le_an -- ep_ri_an : spill_ch<logic[32]>;
+    spawn spill_reg<1,logic[32], 0>(ep_ri_an);
+    spawn spill_reg_extern(ep_ri);
     reg cyc : logic[32];
+    reg test_end : logic[32];
     loop{
         set cyc := *cyc + 32'd1
     }
     loop{
         
         //===================Test 1=========================
+        dprint "============================[Cycle %d] Baseline Spill Register Operations Start========================" ((*cyc)) >>
         call send_req(32'd1) >>
         call recv_res() >>
         cycle 1 >>
-        //===================Test 2=========================
+        call recv_res() >>
+        cycle 1  >>
+        // ===================Test 2=========================
+            dprint "============================[Cycle %d] Will test (push||read) ; 1 cycle; push||spill========================" ((*cyc)) >>
             call send_req(32'd2) >>
+            call read_res() >>
             cycle 1 >>
             call send_req(32'd3) >>
-            dprint "[Cycle %d] Sent req 2 and 3 Now trying to recv" (*cyc) >>
             call recv_res() >>
             cycle 1 >>
+        // =====================================================================================Test 3 Ends=================================
+            dprint "============================[Cycle %d] Will try spilling last pushed data========================" ((*cyc)) >> 
             call recv_res() >>
             cycle 1 >>
         // ===================Test 3=========================
+            dprint "============================[Cycle %d] Will fill up the spill register and drain it========================" ((*cyc)) >>
             call send_req(32'd4) >>
+            call read_res() >>
             cycle 1 >>
             call send_req(32'd5) >>
+            call read_res() >>
             cycle 1 >>
+            dprint "============================[Cycle %d] Spill register should be full now, should not be able to send next req========================" ((*cyc)) >>
             call send_req(32'd6) >>
+            call recv_res() >>
             cycle 1 >>
+            dprint "============================[Cycle %d Draining remaining data from spill reg========================" ((*cyc)) >>
+            call recv_res() >>
+            cycle 1 >>
+            call recv_res() >>
+            dprint "============================[Cycle %d] Baseline Spill Register Operations End========================" ((*cyc)) >>
+            set test_end := *cyc + 32'd1 >>
+
+            // ------------------------------------------------------------------------------------------------------------------------------------
+            //===================Anvil Spill Reg Tests=========================
+            dprint "============================[Cycle %d] Anvil Spill Register Operations Start========================" ((*cyc - *test_end)) >>
+            call send_req2(32'd1) >>
+            call recv_res2() >>
+            cycle 1 >>
+            call recv_res2() >>
+            cycle 1 >>
+            //===================Test 2=========================
+            dprint "============================[Cycle %d] Will test (push||read);cycle 1;(push||drain)========================" ((*cyc - *test_end)) >>
+            call send_req2(32'd2) >>
+            call read_res2() >>
+            cycle 1 >>
+            call send_req2(32'd3) >>
+            call recv_res2() >>
+            cycle 1 >>
+        // =====================================================================================Test 3 Ends=================================
+            dprint "============================[Cycle %d] Will try spilling last pushed data========================" ((*cyc - *test_end)) >> 
+            call recv_res2() >>
+            cycle 1 >>
+        // ===================Test 3=========================
+            dprint "============================[Cycle %d] Will fill up the spill register and drain it========================" ((*cyc - *test_end)) >>
+            call send_req2(32'd4) >>
+            call read_res2() >>
+            cycle 1 >>
+            call send_req2(32'd5) >>
+            call read_res2() >>
+            cycle 1 >>
+            dprint "============================[Cycle %d] Spill register should be full now, should not be able to send next req========================" ((*cyc - *test_end)) >>
+            call send_req2(32'd6) >>
+            call recv_res2() >>
+            cycle 1 >>
+            dprint "============================[Cycle %d Draining remaining data from spill reg========================" ((*cyc - *test_end)) >>
+            call recv_res2() >>
+            cycle 1 >>
+            call recv_res2() >>
+            dprint "============================[Cycle %d] Anvil Spill Register Operations End========================" ((*cyc - *test_end)) >>
             dfinish >>
             cycle 1
     }

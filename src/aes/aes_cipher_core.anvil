@@ -66,8 +66,7 @@ func KEY_GEN (){
 
 }
 
-func ROUND_0(){
-    let key_len = recv ep.key_len_i >>
+func ROUND_0(key_len){
     let c = recv ep.ctrl >>
     let op = c.op_i  >>
 
@@ -111,8 +110,7 @@ func ROUND_0(){
     }
 }
 
-func ROUND_NORMAL(i){
-    let key_len = recv ep.key_len_i  >>
+func ROUND_NORMAL(i,key_len){
     let c = recv ep.ctrl >>
     let op = c.op_i  >>
 
@@ -165,10 +163,9 @@ func ROUND_NORMAL(i){
     set round := *round + 4'd1
 }
 
-func ROUND_FINISH(){
+func ROUND_FINISH(key_len){
     let c = recv ep.ctrl >>
     let op = c.op_i >>
-    let key_len = recv ep.key_len_i >>
     send sub_bytes_ri.req(data_in_pack::{data = *cipher_state; op = op}) >>
     let sub_bytes_out = recv sub_bytes_ri.res >>
 
@@ -219,13 +216,13 @@ func ENCRYPT(){
         _ => 4'd1
     } >>
     if(i == 4'd0){
-        call ROUND_0()
+        call ROUND_0(key_len)
     }
     else if (i < last_round){
-        call ROUND_NORMAL(i)
+        call ROUND_NORMAL(i, key_len)
     }
     else{
-        call ROUND_FINISH() 
+        call ROUND_FINISH(key_len) 
     }
 }
 

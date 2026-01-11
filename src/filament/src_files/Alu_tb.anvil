@@ -1,0 +1,80 @@
+import "Alu.anvil"
+enum op {
+    ADD,
+    SUB
+}
+proc Alu_tb(){
+    reg cycle_count : logic[32];
+    chan alu_le -- alu_ri : Alu_itfc<logic[32]>;
+    spawn anvilALU<logic[32]> (alu_le);
+
+    loop{
+        set cycle_count := *cycle_count + 32'd1
+    }
+    loop{
+        // Test Case 1: 
+        send alu_ri.input_l(32'd5) >>
+        send alu_ri.input_r(32'd5) >>
+        cycle 1 >>
+
+        // Test Case 2:
+        send alu_ri.input_l(32'd10) >>
+        send alu_ri.input_r(32'd5) >>
+        cycle 1 >>
+
+        // Test Case 3:
+        send alu_ri.input_l(32'd15) >>
+        send alu_ri.input_r(32'd5) >>
+        cycle 1 >>
+
+        // Test Case 4:
+        send alu_ri.input_l(32'd20) >>
+        send alu_ri.input_r(32'd5) >>
+        cycle 1 >>
+
+        // Test Case 5:
+        send alu_ri.input_l(32'd25) >>
+        send alu_ri.input_r(32'd5) >>
+        cycle 5
+    }
+    loop{
+        cycle 2 >>
+        send alu_ri.input_op(op::ADD) >>
+        cycle 1 >>
+        send alu_ri.input_op(op::SUB) >>
+        cycle 1 >>
+        send alu_ri.input_op(op::ADD) >>
+        cycle 1 >>
+        send alu_ri.input_op(op::SUB) >>
+        cycle 1 >>
+        send alu_ri.input_op(op::ADD) >>
+        cycle 5
+
+
+    }
+
+
+    loop{
+        cycle 2 >>
+        
+        let result = recv alu_ri.output >>
+        dprint  "[Cycle %d] ALU Result for add (5+5): %d\n" (*cycle_count, result);
+        cycle 1 >>
+        
+        let result = recv alu_ri.output >>
+        dprint "[Cycle %d] ALU Result for sub (10-5): %d\n" (*cycle_count, result);
+        cycle 1 >>
+        
+        let result = recv alu_ri.output >>
+        dprint "[Cycle %d] ALU Result for add (15+5): %d\n" (*cycle_count, result);
+        cycle 1 >>
+        
+        let result = recv alu_ri.output >>
+        dprint "[Cycle %d] ALU Result for sub (20-5): %d\n" (*cycle_count, result);
+        cycle 1 >>
+        
+        let result = recv alu_ri.output >>
+        dprint "[Cycle %d] ALU Result for add (25+5): %d\n" (*cycle_count, result);
+        dfinish
+    }
+}

@@ -1,0 +1,70 @@
+====Running CVA6 with baseline (SV)======== 
+
+
+ 
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/rv64ui-v-add.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/rv64ui-v-add.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 7641 matched
+
+1 PASSED, 0 FAILED
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/rv64ui-v-ld.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/rv64ui-v-ld.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 12499 matched
+
+2 PASSED, 0 FAILED
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/rv64ui-v-sd.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/rv64ui-v-sd.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 12730 matched
+
+3 PASSED, 0 FAILED
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/rv64ui-v-beq.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/rv64ui-v-beq.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 7494 matched
+
+4 PASSED, 0 FAILED
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/rv64ui-v-jal.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/rv64ui-v-jal.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 7430 matched
+
+5 PASSED, 0 FAILED
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/hello_world.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/hello_world.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 720 matched
+
+6 PASSED, 0 FAILED
+
+
+====Running CVA6 with Anvil PTW and TLB======== 
+
+
+ 
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/rv64ui-v-add.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/rv64ui-v-add.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 7641 matched
+
+1 PASSED, 0 FAILED
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/rv64ui-v-ld.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/rv64ui-v-ld.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 12499 matched
+
+2 PASSED, 0 FAILED
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/rv64ui-v-sd.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/rv64ui-v-sd.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 12730 matched
+
+3 PASSED, 0 FAILED
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/rv64ui-v-beq.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/rv64ui-v-beq.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 7494 matched
+
+4 PASSED, 0 FAILED
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/rv64ui-v-jal.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/rv64ui-v-jal.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 7430 matched
+
+5 PASSED, 0 FAILED
+spike : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/spike_sim/hello_world.cv64a6_imafdc_sv39_hpdcache.csv
+veri-testharness : /home/aditya/Workspace/Anvil-Experiments/cva6_ariane/verif/sim/out_2025-12-09/veri-testharness_sim/hello_world.cv64a6_imafdc_sv39_hpdcache.csv
+[PASSED]: 720 matched
+
+6 PASSED, 0 FAILED

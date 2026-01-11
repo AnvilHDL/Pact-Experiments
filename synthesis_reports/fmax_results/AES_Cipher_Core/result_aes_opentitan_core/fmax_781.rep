@@ -1,0 +1,695 @@
+Information: Updating design information... (UID-85)
+ 
+****************************************
+Report : design
+Design : aes_cipher_core_wrapper
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:46:21 2025
+****************************************
+
+Design allows ideal nets on clock nets.
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Local Link Library:
+
+    {/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db, /home/yaswanth/GF22_mem/InvecasViews_w00512/model/timing/lib/bob_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_w00256/model/timing/lib/macro_m8_w256_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/./InvecasViews_w00512_m8/model/timing/lib/macro_m8_w512_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00512_m8/model/timing/lib/macro_s1c_m8_w512_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w32768_m16_c65KB/model/timing/lib/macro_s1c_w32768_m16_c65KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m4_c1KB/model/timing/lib/macro_s1c_w00256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m8_c512B/model/timing/lib/macro_s1c_w00256_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m16_c256B/model/timing/lib/macro_s1c_w00256_m16_c256B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w19648_m16_c40KB/model/timing/lib/macro_s1c_w19648_m16_c40KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db}
+
+Flip-Flop Types:
+
+    No flip-flop types specified.
+
+Latch Types:
+
+    No latch types specified.
+
+Operating Conditions:
+
+
+    Operating Condition Name : TT_0P80V_0P00V_0P00V_0P00V_25C
+    Library : GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+    Process :   1.00
+    Temperature :  25.00
+    Voltage :   0.80
+
+Wire Loading Model:
+
+    No wire loading specified.
+
+
+Wire Loading Model Mode: top.
+
+Timing Ranges:
+
+    No timing ranges specified.
+
+Pin Input Delays:
+
+    None specified.
+
+Pin Output Delays:
+
+    None specified.
+
+Disabled Timing Arcs:
+
+    No arcs disabled.
+
+Required Licenses:
+
+    None Required
+
+Design Parameters:
+
+    None specified.
+1
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 1
+        -transition_time
+Design : aes_cipher_core_wrapper
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:46:21 2025
+****************************************
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+  Startpoint: dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs/u_state_flop/q_o_reg[0]
+              (rising edge-triggered flip-flop clocked by clk_i[0])
+  Endpoint: dut_core/key_full_q_reg[0][7][18]
+            (rising edge-triggered flip-flop clocked by clk_i[0])
+  Path Group: clk_i[0]
+  Path Type: max
+
+Attributes:
+    d - dont_touch
+    u - dont_use
+   mo - map_only
+   so - size_only
+    i - ideal_net or ideal_network
+  inf - infeasible path
+
+  Point                                       Fanout     Trans      Incr       Path      Attributes
+  ---------------------------------------------------------------------------------------------------------
+  clock clk_i[0] (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                       0.00       0.00
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs/u_state_flop/q_o_reg[0]/CLK (SC7P5T_DFFSQX4_CSC28L)     0.00     0.00     0.00 r
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs/u_state_flop/q_o_reg[0]/Q (SC7P5T_DFFSQX4_CSC28L)    10.72    82.19    82.19 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs/u_state_flop/q_o[0] (net)     9     0.00    82.19 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs/u_state_flop/q_o[0] (prim_flop_6_09_1)     0.00    82.19 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs/state_o[0] (net)     0.00    82.19 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs/state_o[0] (prim_sparse_fsm_flop_6_09_1_1)     0.00    82.19 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/aes_cipher_ctrl_cs[0] (net)     0.00    82.19 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/U10/Z (SC7P5T_NR2IAX4_CSC28L)     7.22    21.46   103.66 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/n53 (net)     1     0.00   103.66 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/U76/Z (SC7P5T_ND3X4_CSC28L)     8.31    12.56   116.22 r
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/n154 (net)     1     0.00   116.22 r
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/U13/Z (SC7P5T_CKINVX4_CSC28L)     9.23    12.63   128.85 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/in_ready_o (net)     7     0.00   128.85 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/in_ready_o (aes_cipher_control_fsm_0_0_1)     0.00   128.85 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/out[47] (net)     0.00   128.85 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_prim_buf_out/in_i[47] (prim_buf_Width48_1)     0.00   128.85 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_prim_buf_out/in_i[47] (net)     0.00   128.85 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_prim_buf_out/U1/Z (SC7P5T_BUFX8_CSC28L)     4.14    17.58   146.42 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_prim_buf_out/out_o[47] (net)     2     0.00   146.42 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_prim_buf_out/out_o[47] (prim_buf_Width48_1)     0.00   146.42 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/in_ready_o (net)     0.00   146.42 f
+  dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/in_ready_o (aes_cipher_control_fsm_p_0_0_0)     0.00   146.42 f
+  dut_core/u_aes_cipher_control/in_ready_o[1] (net)                 0.00     146.42 f
+  dut_core/u_aes_cipher_control/in_ready_o[1] (aes_cipher_control_0_0_0)     0.00   146.42 f
+  dut_core/in_ready_o[1] (net)                                      0.00     146.42 f
+  dut_core/in_ready_o[1] (aes_cipher_core_AES192Enable0_CiphOpFwdOnly0_SecMasking0_SecSBoxImpl0_SecAllowForcingMasks0_SecSkipPRNGReseeding0_EntropyWidth1)     0.00   146.42 f
+  in_ready_o[1] (net)                                               0.00     146.42 f
+  U148/Z (SC7P5T_INVX4_CSC28L)                            3.84      6.64     153.07 r
+  n139 (net)                                    1                   0.00     153.07 r
+  U149/Z (SC7P5T_OR4IAX6_CSC28L)                          7.34     18.57     171.64 r
+  n1 (net)                                      2                   0.00     171.64 r
+  dut_core/in_valid_i[2] (aes_cipher_core_AES192Enable0_CiphOpFwdOnly0_SecMasking0_SecSBoxImpl0_SecAllowForcingMasks0_SecSkipPRNGReseeding0_EntropyWidth1)     0.00   171.64 r
+  dut_core/in_valid_i[2] (net)                                      0.00     171.64 r
+  dut_core/u_aes_cipher_control/in_valid_i[2] (aes_cipher_control_0_0_0)     0.00   171.64 r
+  dut_core/u_aes_cipher_control/in_valid_i[2] (net)                 0.00     171.64 r
+  dut_core/u_aes_cipher_control/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/sel_i[2] (aes_sel_buf_chk_2_3_0_5)     0.00   171.64 r
+  dut_core/u_aes_cipher_control/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/sel_i[2] (net)     0.00   171.64 r
+  dut_core/u_aes_cipher_control/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/gen_buf.u_prim_buf_sel_i/in_i[2] (prim_buf_Width3_16)     0.00   171.64 r
+  dut_core/u_aes_cipher_control/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/gen_buf.u_prim_buf_sel_i/in_i[2] (net)     0.00   171.64 r
+  dut_core/u_aes_cipher_control/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/gen_buf.u_prim_buf_sel_i/U3/Z (SC7P5T_CKBUFX2_CSC28L)     5.87    19.17   190.81 r
+  dut_core/u_aes_cipher_control/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/gen_buf.u_prim_buf_sel_i/out_o[2] (net)     2     0.00   190.81 r
+  dut_core/u_aes_cipher_control/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/gen_buf.u_prim_buf_sel_i/out_o[2] (prim_buf_Width3_16)     0.00   190.81 r
+  dut_core/u_aes_cipher_control/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/sel_o[2] (net)     0.00   190.81 r
+  dut_core/u_aes_cipher_control/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/sel_o[2] (aes_sel_buf_chk_2_3_0_5)     0.00   190.81 r
+  dut_core/u_aes_cipher_control/sp2v_sig_chk_raw[0][2] (net)        0.00     190.81 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/in_valid_ni (aes_cipher_control_fsm_n_0_0)     0.00   190.81 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/in_valid_ni (net)     0.00   190.81 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_in/in_i[25] (prim_buf_Width26_0)     0.00   190.81 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_in/in_i[25] (net)     0.00   190.81 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_in/U7/Z (SC7P5T_CKBUFX2_CSC28L)     8.35    20.76   211.57 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_in/out_o[25] (net)     1     0.00   211.57 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_in/out_o[25] (prim_buf_Width26_0)     0.00   211.57 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/in_buf[0] (net)     0.00   211.57 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/U1/Z (SC7P5T_INVX4_CSC28L)     4.93     8.93   220.50 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/n8 (net)     3     0.00   220.50 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/in_valid_i (aes_cipher_control_fsm_0_0_0)     0.00   220.50 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/in_valid_i (net)     0.00   220.50 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/U89/Z (SC7P5T_ND2IAX2_CSC28L)    10.19    10.92   231.42 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/n121 (net)     2     0.00   231.42 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/U38/Z (SC7P5T_INVX3_CSC28L)     7.10    11.52   242.93 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/n87 (net)     3     0.00   242.93 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/U18/Z (SC7P5T_ND2X4_CSC28L)     8.85    11.25   254.18 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/n218 (net)     2     0.00   254.18 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/U10/Z (SC7P5T_INVX4_CSC28L)     7.70    11.63   265.81 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/key_full_sel_o[3] (net)     5     0.00   265.81 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/U61/Z (SC7P5T_AN2X4_A_CSC28L)     5.57    18.90   284.71 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/state_sel_o[1] (net)     3     0.00   284.71 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/U119/Z (SC7P5T_BUFX4_CSC28L)     4.09    15.88   300.59 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/state_sel_o[2] (net)     1     0.00   300.59 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/state_sel_o[2] (aes_cipher_control_fsm_0_0_0)     0.00   300.59 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/state_sel[2] (net)     0.00   300.59 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_out/in_i[40] (prim_buf_Width48_0)     0.00   300.59 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_out/in_i[40] (net)     0.00   300.59 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_out/U18/Z (SC7P5T_BUFX4_CSC28L)     4.73    15.82   316.41 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_out/out_o[40] (net)     2     0.00   316.41 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_out/out_o[40] (prim_buf_Width48_0)     0.00   316.41 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/state_sel_o[2] (net)     0.00   316.41 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/state_sel_o[2] (aes_cipher_control_fsm_n_0_0)     0.00   316.41 f
+  dut_core/u_aes_cipher_control/mr_state_sel[2][2] (net)            0.00     316.41 f
+  dut_core/u_aes_cipher_control/U54/Z (SC7P5T_OR3X2_CSC28L)     9.40    38.42   354.83 f
+  dut_core/u_aes_cipher_control/state_sel_o[2] (net)     1          0.00     354.83 f
+  dut_core/u_aes_cipher_control/state_sel_o[2] (aes_cipher_control_0_0_0)     0.00   354.83 f
+  dut_core/state_sel_ctrl[2] (net)                                  0.00     354.83 f
+  dut_core/u_aes_state_sel_buf_chk/sel_i[2] (aes_sel_buf_chk_3_5_1_1)     0.00   354.83 f
+  dut_core/u_aes_state_sel_buf_chk/sel_i[2] (net)                   0.00     354.83 f
+  dut_core/u_aes_state_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/in_i[2] (prim_sec_anchor_buf_Width5_3)     0.00   354.83 f
+  dut_core/u_aes_state_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/in_i[2] (net)     0.00   354.83 f
+  dut_core/u_aes_state_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf/in_i[2] (prim_buf_Width5_3)     0.00   354.83 f
+  dut_core/u_aes_state_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf/in_i[2] (net)     0.00   354.83 f
+  dut_core/u_aes_state_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf/U5/Z (SC7P5T_CKBUFX4_CSC28L)     6.06    19.16   373.98 f
+  dut_core/u_aes_state_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf/out_o[2] (net)     4     0.00   373.98 f
+  dut_core/u_aes_state_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf/out_o[2] (prim_buf_Width5_3)     0.00   373.98 f
+  dut_core/u_aes_state_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/out_o[2] (net)     0.00   373.98 f
+  dut_core/u_aes_state_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/out_o[2] (prim_sec_anchor_buf_Width5_3)     0.00   373.98 f
+  dut_core/u_aes_state_sel_buf_chk/sel_o[2] (net)                   0.00     373.98 f
+  dut_core/u_aes_state_sel_buf_chk/U3/Z (SC7P5T_CKOR2X6_CSC28L)     7.59    24.56   398.54 f
+  dut_core/u_aes_state_sel_buf_chk/n3 (net)     2                   0.00     398.54 f
+  dut_core/u_aes_state_sel_buf_chk/U9/Z (SC7P5T_NR3IAX3_CSC28L)    14.59    22.15   420.69 r
+  dut_core/u_aes_state_sel_buf_chk/n8 (net)     1                   0.00     420.69 r
+  dut_core/u_aes_state_sel_buf_chk/U8/Z (SC7P5T_OAI311X3_CSC28L)    15.92    22.47   443.16 f
+  dut_core/u_aes_state_sel_buf_chk/err_o (net)     1                0.00     443.16 f
+  dut_core/u_aes_state_sel_buf_chk/err_o (aes_sel_buf_chk_3_5_1_1)     0.00   443.16 f
+  dut_core/state_sel_err (net)                                      0.00     443.16 f
+  dut_core/U193/Z (SC7P5T_OR6X3_CSC28L)                  14.35     33.10     476.27 f
+  dut_core/mux_sel_err (net)                    1                   0.00     476.27 f
+  dut_core/u_aes_cipher_control/mux_sel_err_i (aes_cipher_control_0_0_0)     0.00   476.27 f
+  dut_core/u_aes_cipher_control/mux_sel_err_i (net)                 0.00     476.27 f
+  dut_core/u_aes_cipher_control/U43/Z (SC7P5T_OR6X4_CSC28L)    14.98    34.02   510.29 f
+  dut_core/u_aes_cipher_control/n113 (net)      3                   0.00     510.29 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/mux_sel_err_i (aes_cipher_control_fsm_n_0_0)     0.00   510.29 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/mux_sel_err_i (net)     0.00   510.29 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_in/in_i[12] (prim_buf_Width26_0)     0.00   510.29 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_in/in_i[12] (net)     0.00   510.29 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_in/U1/Z (SC7P5T_CKBUFX2_CSC28L)     7.22    24.45   534.74 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_in/out_o[12] (net)     1     0.00   534.74 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_in/out_o[12] (prim_buf_Width26_0)     0.00   534.74 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/in_buf[13] (net)     0.00   534.74 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/mux_sel_err_i (aes_cipher_control_fsm_0_0_0)     0.00   534.74 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/mux_sel_err_i (net)     0.00   534.74 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/U103/Z (SC7P5T_CKINVX4_CSC28L)     4.43     8.28   543.02 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/n25 (net)     2     0.00   543.02 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/U295/Z (SC7P5T_AOI32X3_CSC28L)    19.40     9.77   552.79 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/dec_key_gen_d_o (net)     1     0.00   552.79 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/dec_key_gen_d_o (aes_cipher_control_fsm_0_0_0)     0.00   552.79 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/dec_key_gen_d (net)     0.00   552.79 f
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/U8/Z (SC7P5T_CKINVX2_CSC28L)     7.83    13.98   566.76 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/n9 (net)     1     0.00   566.76 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_out/in_i[3] (prim_buf_Width48_0)     0.00   566.76 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_out/in_i[3] (net)     0.00   566.76 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_out/U45/Z (SC7P5T_BUFX4_CSC28L)     5.46    17.13   583.89 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_out/out_o[3] (net)     2     0.00   583.89 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_out/out_o[3] (prim_buf_Width48_0)     0.00   583.89 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/dec_key_gen_d_no (net)     0.00   583.89 r
+  dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/dec_key_gen_d_no (aes_cipher_control_fsm_n_0_0)     0.00   583.89 r
+  dut_core/u_aes_cipher_control/sp_dec_key_gen_d[2] (net)           0.00     583.89 r
+  dut_core/u_aes_cipher_control/U137/Z (SC7P5T_ND3IAX6_CSC28L)    10.08    20.25   604.14 r
+  dut_core/u_aes_cipher_control/n108 (net)      2                   0.00     604.14 r
+  dut_core/u_aes_cipher_control/U42/Z (SC7P5T_INVX3_CSC28L)     7.00    11.38   615.52 f
+  dut_core/u_aes_cipher_control/n111 (net)      1                   0.00     615.52 f
+  dut_core/u_aes_cipher_control/U138/Z (SC7P5T_NR3IBX6_CSC28L)    18.85    19.48   635.01 r
+  dut_core/u_aes_cipher_control/key_expand_op_o[1] (net)     5      0.00     635.01 r
+  dut_core/u_aes_cipher_control/key_expand_op_o[1] (aes_cipher_control_0_0_0)     0.00   635.01 r
+  dut_core/key_expand_op[0] (net)                                   0.00     635.01 r
+  dut_core/u_aes_key_expand/op_i[1] (aes_key_expand_0_0_0)          0.00     635.01 r
+  dut_core/u_aes_key_expand/op_i[1] (net)                           0.00     635.01 r
+  dut_core/u_aes_key_expand/U295/Z (SC7P5T_AOI32X3_CSC28L)    23.98    30.76   665.76 f
+  dut_core/u_aes_key_expand/n256 (net)          1                   0.00     665.76 f
+  dut_core/u_aes_key_expand/U105/Z (SC7P5T_ND3X4_CSC28L)    12.09    17.41   683.17 r
+  dut_core/u_aes_key_expand/n258 (net)          2                   0.00     683.17 r
+  dut_core/u_aes_key_expand/U103/Z (SC7P5T_NR2IAX3_CSC28L)    16.61    28.32   711.49 r
+  dut_core/u_aes_key_expand/n114 (net)          2                   0.00     711.49 r
+  dut_core/u_aes_key_expand/U292/Z (SC7P5T_CKINVX4_CSC28L)    18.38    23.80   735.28 f
+  dut_core/u_aes_key_expand/n345 (net)         18                   0.00     735.28 f
+  dut_core/u_aes_key_expand/U370/Z (SC7P5T_OA22X1_CSC28L)    10.53    35.90   771.18 f
+  dut_core/u_aes_key_expand/n127 (net)          1                   0.00     771.18 f
+  dut_core/u_aes_key_expand/U603/Z (SC7P5T_ND2X2_CSC28L)    17.94    16.59   787.77 r
+  dut_core/u_aes_key_expand/sub_word_in[17] (net)     3             0.00     787.77 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/data_i[1] (aes_sbox_SecSBoxImpl0_1)     0.00   787.77 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/data_i[1] (net)     0.00   787.77 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/data_i[1] (aes_sbox_lut_1)     0.00   787.77 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/data_i[1] (net)     0.00   787.77 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U67/Z (SC7P5T_INVX3_CSC28L)     7.93    13.84   801.61 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n90 (net)     2     0.00   801.61 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U162/Z (SC7P5T_AN2X4_A_CSC28L)     6.85    20.22   821.83 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n86 (net)     4     0.00   821.83 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U151/Z (SC7P5T_ND2X1_MR_CSC28L)    15.97    17.07   838.90 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n358 (net)     2     0.00   838.90 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U104/Z (SC7P5T_INVX3_CSC28L)    14.22    20.00   858.90 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n262 (net)    16     0.00   858.90 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U94/Z (SC7P5T_ND2X1_MR_CSC28L)    15.97    22.11   881.01 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n299 (net)     3     0.00   881.01 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U93/Z (SC7P5T_INVX2_CSC28L)     8.02    13.70   894.72 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n506 (net)     2     0.00   894.72 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U40/Z (SC7P5T_NR3IBX3_CSC28L)    11.61    14.38   909.09 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n132 (net)     1     0.00   909.09 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U1032/Z (SC7P5T_ND2X2_CSC28L)     9.93    14.20   923.30 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n890 (net)     2     0.00   923.30 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U348/Z (SC7P5T_ND2IAX3_CSC28L)     8.06    21.76   945.06 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n144 (net)     1     0.00   945.06 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U66/Z (SC7P5T_OR6X4_CSC28L)    16.80    34.23   979.29 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n404 (net)     2     0.00   979.29 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U43/Z (SC7P5T_ND3IABX3_CSC28L)    12.32    31.20  1010.48 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n415 (net)     1     0.00  1010.48 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U65/Z (SC7P5T_AN4IAX2_CSC28L)    11.18    14.20  1024.68 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/n542 (net)     1     0.00  1024.68 r
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/U221/Z (SC7P5T_MUXI2X2_CSC28L)    23.58    26.29  1050.98 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/data_o[2] (net)     4     0.00  1050.98 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox/data_o[2] (aes_sbox_lut_1)     0.00  1050.98 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/data_o[2] (net)     0.00  1050.98 f
+  dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/data_o[2] (aes_sbox_SecSBoxImpl0_1)     0.00  1050.98 f
+  dut_core/u_aes_key_expand/sub_word_out[18] (net)                  0.00    1050.98 f
+  dut_core/u_aes_key_expand/U1120/Z (SC7P5T_CKXOR2X2_CSC28L)     8.62    50.98  1101.96 r
+  dut_core/u_aes_key_expand/n125 (net)          2                   0.00    1101.96 r
+  dut_core/u_aes_key_expand/U177/Z (SC7P5T_INVX1_CSC28L)     6.73    10.89  1112.85 f
+  dut_core/u_aes_key_expand/n22 (net)           1                   0.00    1112.85 f
+  dut_core/u_aes_key_expand/U270/Z (SC7P5T_ND2X2_CSC28L)     7.07     9.79  1122.63 r
+  dut_core/u_aes_key_expand/n25 (net)           1                   0.00    1122.63 r
+  dut_core/u_aes_key_expand/U271/Z (SC7P5T_ND2X2_CSC28L)    15.03    17.34  1139.97 f
+  dut_core/u_aes_key_expand/n1435 (net)         3                   0.00    1139.97 f
+  dut_core/u_aes_key_expand/U296/Z (SC7P5T_INVX2_CSC28L)     9.68    16.34  1156.31 r
+  dut_core/u_aes_key_expand/n1359 (net)         2                   0.00    1156.31 r
+  dut_core/u_aes_key_expand/U499/Z (SC7P5T_ND2X2_CSC28L)    31.88    12.86  1169.17 f
+  dut_core/u_aes_key_expand/n1437 (net)         2                   0.00    1169.17 f
+  dut_core/u_aes_key_expand/U1125/Z (SC7P5T_MUXI2X1_CSC28L)    19.51    30.44  1199.61 r
+  dut_core/u_aes_key_expand/key_o[0][7][18] (net)     2             0.00    1199.61 r
+  dut_core/u_aes_key_expand/key_o[0][7][18] (aes_key_expand_0_0_0)     0.00  1199.61 r
+  dut_core/key_expand_out[0][7][18] (net)                           0.00    1199.61 r
+  dut_core/U710/Z (SC7P5T_AOI22X1_CSC28L)                56.31     26.53    1226.14 f
+  dut_core/n3370 (net)                          1                   0.00    1226.14 f
+  dut_core/U640/Z (SC7P5T_OAI211X2_CSC28L)               21.49     25.26    1251.40 r
+  dut_core/n1596 (net)                          1                   0.00    1251.40 r
+  dut_core/key_full_q_reg[0][7][18]/D (SC7P5T_DFFRQX2_CSC28L)    21.49     0.00  1251.40 r
+  data arrival time                                                         1251.40
+
+  clock clk_i[0] (rise edge)                                     1280.00    1280.00
+  clock network delay (ideal)                                       0.00    1280.00
+  dut_core/key_full_q_reg[0][7][18]/CLK (SC7P5T_DFFRQX2_CSC28L)     0.00    1280.00 r
+  library setup time                                              -28.58    1251.42
+  data required time                                                        1251.42
+  ---------------------------------------------------------------------------------------------------------
+  data required time                                                        1251.42
+  data arrival time                                                        -1251.40
+  ---------------------------------------------------------------------------------------------------------
+  slack (MET)                                                                  0.02
+
+
+1
+ 
+****************************************
+Report : area
+Design : aes_cipher_core_wrapper
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:46:21 2025
+****************************************
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Number of ports:                         8305
+Number of nets:                         33508
+Number of cells:                        27255
+Number of combinational cells:          26423
+Number of sequential cells:               700
+Number of macros/black boxes:               0
+Number of buf/inv:                       5140
+Number of references:                      13
+
+Combinational area:               8983.968054
+Buf/Inv area:                      880.440008
+Noncombinational area:            1127.172025
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (No wire load specified)
+
+Total cell area:                 10111.140079
+Total area:                 undefined
+
+Hierarchical area distribution
+------------------------------
+
+                                  Global cell area           Local cell area
+                                  -------------------  ---------------------------- 
+Hierarchical cell                 Absolute    Percent  Combi-     Noncombi-  Black-
+                                  Total       Total    national   national   boxes   Design
+--------------------------------  ----------  -------  ---------  ---------  ------  -------------------------------------------------------------------------------------------------------------------------------
+aes_cipher_core_wrapper           10111.1401    100.0    25.3344     0.0000  0.0000  aes_cipher_core_wrapper
+dut_core                          10085.8057     99.7  1348.9872  1026.1128  0.0000  aes_cipher_core_AES192Enable0_CiphOpFwdOnly0_SecMasking0_SecSBoxImpl0_SecAllowForcingMasks0_SecSkipPRNGReseeding0_EntropyWidth1
+dut_core/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i     2.5752     0.0    1.9488    0.0000 0.0000 aes_sel_buf_chk_2_3_1_8
+dut_core/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/gen_sec_buf.u_prim_buf_sel_i     0.6264     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width3_8
+dut_core/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     0.6264     0.0    0.6264    0.0000 0.0000 prim_buf_Width3_8
+dut_core/gen_sel_buf_chk[1].u_aes_sp2v_sig_buf_chk_i     2.5752     0.0    1.9488    0.0000 0.0000 aes_sel_buf_chk_2_3_1_7
+dut_core/gen_sel_buf_chk[1].u_aes_sp2v_sig_buf_chk_i/gen_sec_buf.u_prim_buf_sel_i     0.6264     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width3_7
+dut_core/gen_sel_buf_chk[1].u_aes_sp2v_sig_buf_chk_i/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     0.6264     0.0    0.6264    0.0000 0.0000 prim_buf_Width3_7
+dut_core/gen_sel_buf_chk[2].u_aes_sp2v_sig_buf_chk_i     2.5752     0.0    1.9488    0.0000 0.0000 aes_sel_buf_chk_2_3_1_6
+dut_core/gen_sel_buf_chk[2].u_aes_sp2v_sig_buf_chk_i/gen_sec_buf.u_prim_buf_sel_i     0.6264     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width3_6
+dut_core/gen_sel_buf_chk[2].u_aes_sp2v_sig_buf_chk_i/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     0.6264     0.0    0.6264    0.0000 0.0000 prim_buf_Width3_6
+dut_core/gen_shares_round_key[0].u_aes_key_mix_columns   563.7600     5.6    0.0000    0.0000 0.0000 aes_mix_columns_0
+dut_core/gen_shares_round_key[0].u_aes_key_mix_columns/gen_mix_column[0].u_aes_mix_column_i   140.9400     1.4  140.9400    0.0000 0.0000 aes_mix_single_column_3
+dut_core/gen_shares_round_key[0].u_aes_key_mix_columns/gen_mix_column[1].u_aes_mix_column_i   140.9400     1.4  140.9400    0.0000 0.0000 aes_mix_single_column_2
+dut_core/gen_shares_round_key[0].u_aes_key_mix_columns/gen_mix_column[2].u_aes_mix_column_i   140.9400     1.4  140.9400    0.0000 0.0000 aes_mix_single_column_1
+dut_core/gen_shares_round_key[0].u_aes_key_mix_columns/gen_mix_column[3].u_aes_mix_column_i   140.9400     1.4  140.9400    0.0000 0.0000 aes_mix_single_column_0
+dut_core/gen_shares_shift_mix[0].u_aes_mix_columns   563.9688     5.6    0.2088    0.0000 0.0000 aes_mix_columns_1
+dut_core/gen_shares_shift_mix[0].u_aes_mix_columns/gen_mix_column[0].u_aes_mix_column_i   140.9400     1.4  140.9400    0.0000 0.0000 aes_mix_single_column_7
+dut_core/gen_shares_shift_mix[0].u_aes_mix_columns/gen_mix_column[1].u_aes_mix_column_i   140.9400     1.4  140.9400    0.0000 0.0000 aes_mix_single_column_6
+dut_core/gen_shares_shift_mix[0].u_aes_mix_columns/gen_mix_column[2].u_aes_mix_column_i   140.9400     1.4  140.9400    0.0000 0.0000 aes_mix_single_column_5
+dut_core/gen_shares_shift_mix[0].u_aes_mix_columns/gen_mix_column[3].u_aes_mix_column_i   140.9400     1.4  140.9400    0.0000 0.0000 aes_mix_single_column_4
+dut_core/gen_shares_shift_mix[0].u_aes_shift_rows    52.8264     0.5   52.8264    0.0000 0.0000 aes_shift_rows
+dut_core/u_aes_add_rk_sel_buf_chk     3.6192      0.0     2.1576     0.0000  0.0000  aes_sel_buf_chk_3_5_1_0
+dut_core/u_aes_add_rk_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i     1.4616     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width5_2
+dut_core/u_aes_add_rk_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     1.4616     0.0    1.4616    0.0000 0.0000 prim_buf_Width5_2
+dut_core/u_aes_cipher_control       529.8648      5.2    70.9224     4.8024  0.0000  aes_cipher_control_0_0_0
+dut_core/u_aes_cipher_control/gen_fsm[0].gen_fsm_p.u_aes_cipher_control_fsm_i   131.8224     1.3    0.0000    0.0000 0.0000 aes_cipher_control_fsm_p_0_0_1
+dut_core/u_aes_cipher_control/gen_fsm[0].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm   111.3600     1.1   87.0696   12.8064 0.0000 aes_cipher_control_fsm_0_0_2
+dut_core/u_aes_cipher_control/gen_fsm[0].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs    11.4840     0.1    0.0000    0.0000 0.0000 prim_sparse_fsm_flop_6_09_1_2
+dut_core/u_aes_cipher_control/gen_fsm[0].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs/u_state_flop    11.4840     0.1    0.2088   11.2752 0.0000 prim_flop_6_09_2
+dut_core/u_aes_cipher_control/gen_fsm[0].gen_fsm_p.u_aes_cipher_control_fsm_i/u_prim_buf_in     6.1944     0.1    6.1944    0.0000 0.0000 prim_buf_Width26_2
+dut_core/u_aes_cipher_control/gen_fsm[0].gen_fsm_p.u_aes_cipher_control_fsm_i/u_prim_buf_out    14.2680     0.1   14.2680    0.0000 0.0000 prim_buf_Width48_2
+dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i   139.2000     1.4    0.0000    0.0000 0.0000 aes_cipher_control_fsm_p_0_0_0
+dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm   116.8584     1.2   92.7072   12.8064 0.0000 aes_cipher_control_fsm_0_0_1
+dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs    11.3448     0.1    0.0000    0.0000 0.0000 prim_sparse_fsm_flop_6_09_1_1
+dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs/u_state_flop    11.3448     0.1    0.2088   11.1360 0.0000 prim_flop_6_09_1
+dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_prim_buf_in     7.5168     0.1    7.5168    0.0000 0.0000 prim_buf_Width26_1
+dut_core/u_aes_cipher_control/gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i/u_prim_buf_out    14.8248     0.1   14.8248    0.0000 0.0000 prim_buf_Width48_1
+dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i   146.4384     1.4    3.4104    0.0000 0.0000 aes_cipher_control_fsm_n_0_0
+dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm   120.7560     1.2   94.5864   12.8064 0.0000 aes_cipher_control_fsm_0_0_0
+dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs    13.3632     0.1    0.0000    0.0000 0.0000 prim_sparse_fsm_flop_6_09_1_0
+dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_aes_cipher_control_fsm/u_state_regs/u_state_flop    13.3632     0.1    0.3480   13.0152 0.0000 prim_flop_6_09_0
+dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_in     6.4728     0.1    6.4728    0.0000 0.0000 prim_buf_Width26_0
+dut_core/u_aes_cipher_control/gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i/u_prim_buf_out    15.7992     0.2   15.7992    0.0000 0.0000 prim_buf_Width48_0
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i     4.1064     0.0    2.2272    0.0000 0.0000 aes_sel_buf_chk_2_3_0_5
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i/gen_buf.u_prim_buf_sel_i     1.8792     0.0    1.8792    0.0000 0.0000 prim_buf_Width3_16
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[1].u_aes_sp2v_sig_buf_chk_i     2.5752     0.0    1.9488    0.0000 0.0000 aes_sel_buf_chk_2_3_0_4
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[1].u_aes_sp2v_sig_buf_chk_i/gen_buf.u_prim_buf_sel_i     0.6264     0.0    0.6264    0.0000 0.0000 prim_buf_Width3_15
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[2].u_aes_sp2v_sig_buf_chk_i     2.5752     0.0    1.9488    0.0000 0.0000 aes_sel_buf_chk_2_3_0_3
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[2].u_aes_sp2v_sig_buf_chk_i/gen_buf.u_prim_buf_sel_i     0.6264     0.0    0.6264    0.0000 0.0000 prim_buf_Width3_14
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[3].u_aes_sp2v_sig_buf_chk_i     2.5752     0.0    1.9488    0.0000 0.0000 aes_sel_buf_chk_2_3_0_2
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[3].u_aes_sp2v_sig_buf_chk_i/gen_buf.u_prim_buf_sel_i     0.6264     0.0    0.6264    0.0000 0.0000 prim_buf_Width3_13
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[4].u_aes_sp2v_sig_buf_chk_i     2.8536     0.0    2.2272    0.0000 0.0000 aes_sel_buf_chk_2_3_0_1
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[4].u_aes_sp2v_sig_buf_chk_i/gen_buf.u_prim_buf_sel_i     0.6264     0.0    0.6264    0.0000 0.0000 prim_buf_Width3_12
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[5].u_aes_sp2v_sig_buf_chk_i     3.5496     0.0    2.2272    0.0000 0.0000 aes_sel_buf_chk_2_3_0_0
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[5].u_aes_sp2v_sig_buf_chk_i/gen_buf.u_prim_buf_sel_i     1.3224     0.0    1.3224    0.0000 0.0000 prim_buf_Width3_11
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[6].u_aes_sp2v_sig_buf_chk_i     4.5936     0.0    3.0624    0.0000 0.0000 aes_sel_buf_chk_2_3_1_1
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[6].u_aes_sp2v_sig_buf_chk_i/gen_sec_buf.u_prim_buf_sel_i     1.5312     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width3_1
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[6].u_aes_sp2v_sig_buf_chk_i/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     1.5312     0.0    1.5312    0.0000 0.0000 prim_buf_Width3_1
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[7].u_aes_sp2v_sig_buf_chk_i     4.2456     0.0    2.9232    0.0000 0.0000 aes_sel_buf_chk_2_3_1_0
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[7].u_aes_sp2v_sig_buf_chk_i/gen_sec_buf.u_prim_buf_sel_i     1.3224     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width3_0
+dut_core/u_aes_cipher_control/gen_sel_buf_chk[7].u_aes_sp2v_sig_buf_chk_i/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     1.3224     0.0    1.3224    0.0000 0.0000 prim_buf_Width3_0
+dut_core/u_aes_cipher_control/u_crypt_regs     4.8024     0.0    0.0000    4.8024 0.0000 prim_flop_3_4_1
+dut_core/u_aes_cipher_control/u_dec_key_gen_regs     4.8024     0.0    0.0000    4.8024 0.0000 prim_flop_3_4_0
+dut_core/u_aes_key_dec_sel_buf_chk     3.1320     0.0     2.5056     0.0000  0.0000  aes_sel_buf_chk_2_3_1_10
+dut_core/u_aes_key_dec_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i     0.6264     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width3_10
+dut_core/u_aes_key_dec_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     0.6264     0.0    0.6264    0.0000 0.0000 prim_buf_Width3_10
+dut_core/u_aes_key_expand          2204.8584     21.8   769.3584    12.8064  0.0000  aes_key_expand_0_0_0
+dut_core/u_aes_key_expand/gen_sbox[0].u_aes_sbox_i   360.1800     3.6    4.3848    0.0000 0.0000 aes_sbox_SecSBoxImpl0_3
+dut_core/u_aes_key_expand/gen_sbox[0].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   355.7952     3.5  355.7952    0.0000 0.0000 aes_sbox_lut_3
+dut_core/u_aes_key_expand/gen_sbox[1].u_aes_sbox_i   339.3000     3.4    4.3152    0.0000 0.0000 aes_sbox_SecSBoxImpl0_2
+dut_core/u_aes_key_expand/gen_sbox[1].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   334.9848     3.3  334.9848    0.0000 0.0000 aes_sbox_lut_2
+dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i   356.3520     3.5    4.5240    0.0000 0.0000 aes_sbox_SecSBoxImpl0_1
+dut_core/u_aes_key_expand/gen_sbox[2].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   351.8280     3.5  351.8280    0.0000 0.0000 aes_sbox_lut_1
+dut_core/u_aes_key_expand/gen_sbox[3].u_aes_sbox_i   360.3192     3.6    4.4544    0.0000 0.0000 aes_sbox_SecSBoxImpl0_0
+dut_core/u_aes_key_expand/gen_sbox[3].u_aes_sbox_i/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   355.8648     3.5  355.8648    0.0000 0.0000 aes_sbox_lut_0
+dut_core/u_aes_key_expand/u_aes_key_expand_en_buf_chk     3.9672     0.0    1.9488    0.0000 0.0000 aes_sel_buf_chk_2_3_1_3
+dut_core/u_aes_key_expand/u_aes_key_expand_en_buf_chk/gen_sec_buf.u_prim_buf_sel_i     2.0184     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width3_3
+dut_core/u_aes_key_expand/u_aes_key_expand_en_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     2.0184     0.0    2.0184    0.0000 0.0000 prim_buf_Width3_3
+dut_core/u_aes_key_expand/u_aes_key_expand_out_ack_buf_chk     2.5752     0.0    1.9488    0.0000 0.0000 aes_sel_buf_chk_2_3_1_2
+dut_core/u_aes_key_expand/u_aes_key_expand_out_ack_buf_chk/gen_sec_buf.u_prim_buf_sel_i     0.6264     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width3_2
+dut_core/u_aes_key_expand/u_aes_key_expand_out_ack_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     0.6264     0.0    0.6264    0.0000 0.0000 prim_buf_Width3_2
+dut_core/u_aes_key_full_sel_buf_chk     6.6816     0.1    4.1064     0.0000  0.0000  aes_sel_buf_chk_4_5_1_1
+dut_core/u_aes_key_full_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i     2.5752     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width5_1
+dut_core/u_aes_key_full_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     2.5752     0.0    2.5752    0.0000 0.0000 prim_buf_Width5_1
+dut_core/u_aes_key_words_sel_buf_chk     6.1248     0.1    3.8280    0.0000  0.0000  aes_sel_buf_chk_4_5_1_0
+dut_core/u_aes_key_words_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i     2.2968     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width5_0
+dut_core/u_aes_key_words_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     2.2968     0.0    2.2968    0.0000 0.0000 prim_buf_Width5_0
+dut_core/u_aes_round_key_sel_buf_chk     3.4104     0.0    2.7144    0.0000  0.0000  aes_sel_buf_chk_2_3_1_9
+dut_core/u_aes_round_key_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i     0.6960     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width3_9
+dut_core/u_aes_round_key_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     0.6960     0.0    0.6960    0.0000 0.0000 prim_buf_Width3_9
+dut_core/u_aes_state_sel_buf_chk      9.1872      0.1     6.8904     0.0000  0.0000  aes_sel_buf_chk_3_5_1_1
+dut_core/u_aes_state_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i     2.2968     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width5_3
+dut_core/u_aes_state_sel_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     2.2968     0.0    2.2968    0.0000 0.0000 prim_buf_Width5_3
+dut_core/u_aes_sub_bytes           3755.5464     37.1    31.5984     0.0000  0.0000  aes_sub_bytes_SecSBoxImpl0
+dut_core/u_aes_sub_bytes/gen_sbox_j[0].gen_sbox_i[0].u_aes_sbox_ij   232.3944     2.3    4.4544    0.0000 0.0000 aes_sbox_SecSBoxImpl0_19
+dut_core/u_aes_sub_bytes/gen_sbox_j[0].gen_sbox_i[0].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_19
+dut_core/u_aes_sub_bytes/gen_sbox_j[0].gen_sbox_i[1].u_aes_sbox_ij   232.1856     2.3    4.2456    0.0000 0.0000 aes_sbox_SecSBoxImpl0_18
+dut_core/u_aes_sub_bytes/gen_sbox_j[0].gen_sbox_i[1].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_18
+dut_core/u_aes_sub_bytes/gen_sbox_j[0].gen_sbox_i[2].u_aes_sbox_ij   232.1856     2.3    4.2456    0.0000 0.0000 aes_sbox_SecSBoxImpl0_17
+dut_core/u_aes_sub_bytes/gen_sbox_j[0].gen_sbox_i[2].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_17
+dut_core/u_aes_sub_bytes/gen_sbox_j[0].gen_sbox_i[3].u_aes_sbox_ij   232.1856     2.3    4.2456    0.0000 0.0000 aes_sbox_SecSBoxImpl0_16
+dut_core/u_aes_sub_bytes/gen_sbox_j[0].gen_sbox_i[3].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_16
+dut_core/u_aes_sub_bytes/gen_sbox_j[1].gen_sbox_i[0].u_aes_sbox_ij   232.4640     2.3    4.5240    0.0000 0.0000 aes_sbox_SecSBoxImpl0_15
+dut_core/u_aes_sub_bytes/gen_sbox_j[1].gen_sbox_i[0].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_15
+dut_core/u_aes_sub_bytes/gen_sbox_j[1].gen_sbox_i[1].u_aes_sbox_ij   232.2552     2.3    4.3152    0.0000 0.0000 aes_sbox_SecSBoxImpl0_14
+dut_core/u_aes_sub_bytes/gen_sbox_j[1].gen_sbox_i[1].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_14
+dut_core/u_aes_sub_bytes/gen_sbox_j[1].gen_sbox_i[2].u_aes_sbox_ij   232.2552     2.3    4.3152    0.0000 0.0000 aes_sbox_SecSBoxImpl0_13
+dut_core/u_aes_sub_bytes/gen_sbox_j[1].gen_sbox_i[2].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_13
+dut_core/u_aes_sub_bytes/gen_sbox_j[1].gen_sbox_i[3].u_aes_sbox_ij   232.2552     2.3    4.3152    0.0000 0.0000 aes_sbox_SecSBoxImpl0_12
+dut_core/u_aes_sub_bytes/gen_sbox_j[1].gen_sbox_i[3].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_12
+dut_core/u_aes_sub_bytes/gen_sbox_j[2].gen_sbox_i[0].u_aes_sbox_ij   232.4640     2.3    4.5240    0.0000 0.0000 aes_sbox_SecSBoxImpl0_11
+dut_core/u_aes_sub_bytes/gen_sbox_j[2].gen_sbox_i[0].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_11
+dut_core/u_aes_sub_bytes/gen_sbox_j[2].gen_sbox_i[1].u_aes_sbox_ij   232.4640     2.3    4.5240    0.0000 0.0000 aes_sbox_SecSBoxImpl0_10
+dut_core/u_aes_sub_bytes/gen_sbox_j[2].gen_sbox_i[1].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_10
+dut_core/u_aes_sub_bytes/gen_sbox_j[2].gen_sbox_i[2].u_aes_sbox_ij   232.4640     2.3    4.5240    0.0000 0.0000 aes_sbox_SecSBoxImpl0_9
+dut_core/u_aes_sub_bytes/gen_sbox_j[2].gen_sbox_i[2].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_9
+dut_core/u_aes_sub_bytes/gen_sbox_j[2].gen_sbox_i[3].u_aes_sbox_ij   232.2552     2.3    4.3152    0.0000 0.0000 aes_sbox_SecSBoxImpl0_8
+dut_core/u_aes_sub_bytes/gen_sbox_j[2].gen_sbox_i[3].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_8
+dut_core/u_aes_sub_bytes/gen_sbox_j[3].gen_sbox_i[0].u_aes_sbox_ij   232.4640     2.3    4.5240    0.0000 0.0000 aes_sbox_SecSBoxImpl0_7
+dut_core/u_aes_sub_bytes/gen_sbox_j[3].gen_sbox_i[0].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_7
+dut_core/u_aes_sub_bytes/gen_sbox_j[3].gen_sbox_i[1].u_aes_sbox_ij   232.3944     2.3    4.4544    0.0000 0.0000 aes_sbox_SecSBoxImpl0_6
+dut_core/u_aes_sub_bytes/gen_sbox_j[3].gen_sbox_i[1].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_6
+dut_core/u_aes_sub_bytes/gen_sbox_j[3].gen_sbox_i[2].u_aes_sbox_ij   232.2552     2.3    4.3152    0.0000 0.0000 aes_sbox_SecSBoxImpl0_5
+dut_core/u_aes_sub_bytes/gen_sbox_j[3].gen_sbox_i[2].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_5
+dut_core/u_aes_sub_bytes/gen_sbox_j[3].gen_sbox_i[3].u_aes_sbox_ij   232.2552     2.3    4.3152    0.0000 0.0000 aes_sbox_SecSBoxImpl0_4
+dut_core/u_aes_sub_bytes/gen_sbox_j[3].gen_sbox_i[3].u_aes_sbox_ij/gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox   227.9400     2.3  227.9400    0.0000 0.0000 aes_sbox_lut_4
+dut_core/u_aes_sub_bytes/u_aes_sb_en_buf_chk     4.1760     0.0    1.9488    0.0000 0.0000 aes_sel_buf_chk_2_3_1_5
+dut_core/u_aes_sub_bytes/u_aes_sb_en_buf_chk/gen_sec_buf.u_prim_buf_sel_i     2.2272     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width3_5
+dut_core/u_aes_sub_bytes/u_aes_sb_en_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     2.2272     0.0    2.2272    0.0000 0.0000 prim_buf_Width3_5
+dut_core/u_aes_sub_bytes/u_aes_sb_out_ack_buf_chk     2.5752     0.0    1.9488    0.0000 0.0000 aes_sel_buf_chk_2_3_1_4
+dut_core/u_aes_sub_bytes/u_aes_sb_out_ack_buf_chk/gen_sec_buf.u_prim_buf_sel_i     0.6264     0.0    0.0000    0.0000 0.0000 prim_sec_anchor_buf_Width3_4
+dut_core/u_aes_sub_bytes/u_aes_sb_out_ack_buf_chk/gen_sec_buf.u_prim_buf_sel_i/u_secure_anchor_buf     0.6264     0.0    0.6264    0.0000 0.0000 prim_buf_Width3_4
+--------------------------------  ----------  -------  ---------  ---------  ------  -------------------------------------------------------------------------------------------------------------------------------
+Total                                                  8983.9681  1127.1720  0.0000
+
+1
+Loading db file '/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db'
+Information: Propagating switching activity (low effort zero delay simulation). (PWR-6)
+Warning: Design has unannotated primary inputs. (PWR-414)
+Warning: Design has unannotated sequential cell outputs. (PWR-415)
+ 
+****************************************
+Report : power
+        -hier
+        -analysis_effort low
+Design : aes_cipher_core_wrapper
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:46:25 2025
+****************************************
+
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+
+Global Operating Voltage = 0.8  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000ff
+    Time Units = 1ps
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1uW
+
+
+--------------------------------------------------------------------------------
+                                       Switch   Int      Leak     Total
+Hierarchy                              Power    Power    Power    Power    %
+--------------------------------------------------------------------------------
+aes_cipher_core_wrapper                   0.116    1.499    4.584    1.619 100.0
+  dut_core (aes_cipher_core_AES192Enable0_CiphOpFwdOnly0_SecMasking0_SecSBoxImpl0_SecAllowForcingMasks0_SecSkipPRNGReseeding0_EntropyWidth1)    0.115    1.498    4.568    1.618  99.9
+    gen_sel_buf_chk[2].u_aes_sp2v_sig_buf_chk_i (aes_sel_buf_chk_2_3_1_6) 1.83e-05 1.60e-05 1.46e-03 3.58e-05   0.0
+      gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width3_6) 1.31e-05 1.27e-05 4.12e-04 2.61e-05   0.0
+        u_secure_anchor_buf (prim_buf_Width3_6) 1.31e-05 1.27e-05 4.12e-04 2.61e-05   0.0
+    gen_sel_buf_chk[1].u_aes_sp2v_sig_buf_chk_i (aes_sel_buf_chk_2_3_1_7) 1.21e-04 1.05e-04 1.43e-03 2.28e-04   0.0
+      gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width3_7) 8.52e-05 8.62e-05 4.09e-04 1.72e-04   0.0
+        u_secure_anchor_buf (prim_buf_Width3_7) 8.52e-05 8.62e-05 4.09e-04 1.72e-04   0.0
+    gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i (aes_sel_buf_chk_2_3_1_8) 1.25e-04 1.09e-04 1.45e-03 2.36e-04   0.0
+      gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width3_8) 8.92e-05 8.64e-05 4.10e-04 1.76e-04   0.0
+        u_secure_anchor_buf (prim_buf_Width3_8) 8.92e-05 8.64e-05 4.10e-04 1.76e-04   0.0
+    u_aes_round_key_sel_buf_chk (aes_sel_buf_chk_2_3_1_9) 2.85e-06 3.79e-06 1.85e-03 8.48e-06   0.0
+      gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width3_9) 1.86e-06 2.27e-06 4.19e-04 4.55e-06   0.0
+        u_secure_anchor_buf (prim_buf_Width3_9) 1.86e-06 2.27e-06 4.19e-04 4.55e-06   0.0
+    u_aes_key_words_sel_buf_chk (aes_sel_buf_chk_4_5_1_0) 3.88e-06 6.07e-06 3.46e-03 1.34e-05   0.0
+      gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width5_0) 3.24e-06 5.38e-06 1.53e-03 1.02e-05   0.0
+        u_secure_anchor_buf (prim_buf_Width5_0) 3.24e-06 5.38e-06 1.53e-03 1.02e-05   0.0
+    u_aes_key_dec_sel_buf_chk (aes_sel_buf_chk_2_3_1_10) 1.90e-05 2.04e-05 1.84e-03 4.13e-05   0.0
+      gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width3_10) 1.10e-05 1.24e-05 3.87e-04 2.39e-05   0.0
+        u_secure_anchor_buf (prim_buf_Width3_10) 1.10e-05 1.24e-05 3.87e-04 2.39e-05   0.0
+    u_aes_key_full_sel_buf_chk (aes_sel_buf_chk_4_5_1_1) 3.87e-04 4.39e-04 4.24e-03 8.30e-04   0.1
+      gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width5_1) 2.51e-04 3.18e-04 2.31e-03 5.71e-04   0.0
+        u_secure_anchor_buf (prim_buf_Width5_1) 2.51e-04 3.18e-04 2.31e-03 5.71e-04   0.0
+    u_aes_add_rk_sel_buf_chk (aes_sel_buf_chk_3_5_1_0) 2.53e-05 3.62e-05 1.86e-03 6.34e-05   0.0
+      gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width5_2) 2.07e-05 2.25e-05 9.45e-04 4.42e-05   0.0
+        u_secure_anchor_buf (prim_buf_Width5_2) 2.07e-05 2.25e-05 9.45e-04 4.42e-05   0.0
+    u_aes_state_sel_buf_chk (aes_sel_buf_chk_3_5_1_1) 3.49e-04 5.50e-04 5.21e-03 9.04e-04   0.1
+      gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width5_3) 1.29e-04 2.03e-04 1.68e-03 3.33e-04   0.0
+        u_secure_anchor_buf (prim_buf_Width5_3) 1.29e-04 2.03e-04 1.68e-03 3.33e-04   0.0
+    u_aes_cipher_control (aes_cipher_control_0_0_0) 1.81e-02    0.120    0.233    0.138   8.6
+      gen_sel_buf_chk[7].u_aes_sp2v_sig_buf_chk_i (aes_sel_buf_chk_2_3_1_0) 1.01e-05 1.74e-05 2.26e-03 2.98e-05   0.0
+        gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width3_0) 6.96e-06 1.24e-05 1.10e-03 2.05e-05   0.0
+          u_secure_anchor_buf (prim_buf_Width3_0) 6.96e-06 1.24e-05 1.10e-03 2.05e-05   0.0
+      gen_sel_buf_chk[6].u_aes_sp2v_sig_buf_chk_i (aes_sel_buf_chk_2_3_1_1) 3.65e-06 5.84e-06 2.47e-03 1.20e-05   0.0
+        gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width3_1) 1.86e-06 3.95e-06 1.17e-03 6.98e-06   0.0
+          u_secure_anchor_buf (prim_buf_Width3_1) 1.86e-06 3.95e-06 1.17e-03 6.98e-06   0.0
+      gen_sel_buf_chk[5].u_aes_sp2v_sig_buf_chk_i (aes_sel_buf_chk_2_3_0_0) 3.38e-05 4.18e-05 2.26e-03 7.79e-05   0.0
+        gen_buf.u_prim_buf_sel_i (prim_buf_Width3_11) 2.75e-05 2.94e-05 1.12e-03 5.80e-05   0.0
+      gen_sel_buf_chk[4].u_aes_sp2v_sig_buf_chk_i (aes_sel_buf_chk_2_3_0_1) 1.51e-05 1.58e-05 1.55e-03 3.25e-05   0.0
+        gen_buf.u_prim_buf_sel_i (prim_buf_Width3_12) 1.13e-05 8.54e-06 4.12e-04 2.03e-05   0.0
+      gen_sel_buf_chk[3].u_aes_sp2v_sig_buf_chk_i (aes_sel_buf_chk_2_3_0_2) 1.69e-04 1.43e-04 1.43e-03 3.13e-04   0.0
+        gen_buf.u_prim_buf_sel_i (prim_buf_Width3_13) 1.22e-04 1.14e-04 3.99e-04 2.36e-04   0.0
+      gen_sel_buf_chk[2].u_aes_sp2v_sig_buf_chk_i (aes_sel_buf_chk_2_3_0_3) 1.67e-04 1.42e-04 1.43e-03 3.10e-04   0.0
+        gen_buf.u_prim_buf_sel_i (prim_buf_Width3_14) 1.22e-04 1.14e-04 3.99e-04 2.36e-04   0.0
+      gen_sel_buf_chk[1].u_aes_sp2v_sig_buf_chk_i (aes_sel_buf_chk_2_3_0_4) 2.07e-04 1.70e-04 1.43e-03 3.79e-04   0.0
+        gen_buf.u_prim_buf_sel_i (prim_buf_Width3_15) 1.51e-04 1.34e-04 3.96e-04 2.85e-04   0.0
+      gen_sel_buf_chk[0].u_aes_sp2v_sig_buf_chk_i (aes_sel_buf_chk_2_3_0_5) 2.81e-04 4.93e-04 2.55e-03 7.76e-04   0.0
+        gen_buf.u_prim_buf_sel_i (prim_buf_Width3_16) 2.07e-04 4.19e-04 1.57e-03 6.28e-04   0.0
+      u_dec_key_gen_regs (prim_flop_3_4_0) 8.10e-06 5.86e-03 1.84e-03 5.87e-03   0.4
+      u_crypt_regs (prim_flop_3_4_1)   3.24e-06 5.86e-03 1.83e-03 5.86e-03   0.4
+      gen_fsm[2].gen_fsm_n.u_aes_cipher_control_fsm_i (aes_cipher_control_fsm_n_0_0) 5.59e-03 3.35e-02 6.33e-02 3.92e-02   2.4
+        u_prim_buf_out (prim_buf_Width48_0) 4.37e-04 7.05e-04 9.61e-03 1.15e-03   0.1
+        u_aes_cipher_control_fsm (aes_cipher_control_fsm_0_0_0) 4.45e-03 3.20e-02 4.81e-02 3.65e-02   2.3
+          u_state_regs (prim_sparse_fsm_flop_6_09_1_0) 6.60e-04 1.25e-02 6.47e-03 1.32e-02   0.8
+            u_state_flop (prim_flop_6_09_0) 6.60e-04 1.25e-02 6.47e-03 1.32e-02   0.8
+        u_prim_buf_in (prim_buf_Width26_0) 3.77e-04 6.67e-04 4.09e-03 1.05e-03   0.1
+      gen_fsm[1].gen_fsm_p.u_aes_cipher_control_fsm_i (aes_cipher_control_fsm_p_0_0_0) 5.47e-03 3.33e-02 5.97e-02 3.88e-02   2.4
+        u_prim_buf_out (prim_buf_Width48_1) 4.12e-04 7.11e-04 9.33e-03 1.13e-03   0.1
+        u_aes_cipher_control_fsm (aes_cipher_control_fsm_0_0_1) 4.47e-03 3.16e-02 4.46e-02 3.61e-02   2.2
+          u_state_regs (prim_sparse_fsm_flop_6_09_1_1) 8.62e-04 1.22e-02 5.45e-03 1.31e-02   0.8
+            u_state_flop (prim_flop_6_09_1) 8.62e-04 1.22e-02 5.45e-03 1.31e-02   0.8
+        u_prim_buf_in (prim_buf_Width26_1) 5.85e-04 9.77e-04 5.81e-03 1.57e-03   0.1
+      gen_fsm[0].gen_fsm_p.u_aes_cipher_control_fsm_i (aes_cipher_control_fsm_p_0_0_1) 4.89e-03 3.30e-02 5.65e-02 3.79e-02   2.3
+        u_prim_buf_out (prim_buf_Width48_2) 3.97e-04 7.27e-04 9.60e-03 1.13e-03   0.1
+        u_aes_cipher_control_fsm (aes_cipher_control_fsm_0_0_2) 3.98e-03 3.15e-02 4.28e-02 3.56e-02   2.2
+          u_state_regs (prim_sparse_fsm_flop_6_09_1_2) 7.23e-04 1.24e-02 5.56e-03 1.31e-02   0.8
+            u_state_flop (prim_flop_6_09_2) 7.23e-04 1.24e-02 5.56e-03 1.31e-02   0.8
+        u_prim_buf_in (prim_buf_Width26_2) 5.18e-04 7.18e-04 4.08e-03 1.24e-03   0.1
+    gen_shares_round_key[0].u_aes_key_mix_columns (aes_mix_columns_0) 1.27e-04 4.55e-04    0.273 8.55e-04   0.1
+      gen_mix_column[3].u_aes_mix_column_i (aes_mix_single_column_0) 3.02e-05 1.05e-04 6.84e-02 2.03e-04   0.0
+      gen_mix_column[2].u_aes_mix_column_i (aes_mix_single_column_1) 3.01e-05 1.08e-04 6.83e-02 2.06e-04   0.0
+      gen_mix_column[1].u_aes_mix_column_i (aes_mix_single_column_2) 3.30e-05 1.16e-04 6.83e-02 2.17e-04   0.0
+      gen_mix_column[0].u_aes_mix_column_i (aes_mix_single_column_3) 3.42e-05 1.26e-04 6.78e-02 2.28e-04   0.0
+    u_aes_key_expand (aes_key_expand_0_0_0) 1.76e-02 3.46e-02    1.038 5.32e-02   3.3
+      u_aes_key_expand_out_ack_buf_chk (aes_sel_buf_chk_2_3_1_2) 9.22e-06 8.03e-06 1.46e-03 1.87e-05   0.0
+        gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width3_2) 6.57e-06 6.35e-06 4.12e-04 1.33e-05   0.0
+          u_secure_anchor_buf (prim_buf_Width3_2) 6.57e-06 6.35e-06 4.12e-04 1.33e-05   0.0
+      u_aes_key_expand_en_buf_chk (aes_sel_buf_chk_2_3_1_3) 1.62e-05 2.31e-05 2.96e-03 4.23e-05   0.0
+        gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width3_3) 1.35e-05 2.15e-05 1.92e-03 3.69e-05   0.0
+          u_secure_anchor_buf (prim_buf_Width3_3) 1.35e-05 2.15e-05 1.92e-03 3.69e-05   0.0
+      gen_sbox[3].u_aes_sbox_i (aes_sbox_SecSBoxImpl0_0) 1.32e-03 1.24e-03    0.183 2.74e-03   0.2
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_0) 1.32e-03 1.23e-03    0.180 2.73e-03   0.2
+      gen_sbox[2].u_aes_sbox_i (aes_sbox_SecSBoxImpl0_1) 1.34e-03 1.23e-03    0.183 2.75e-03   0.2
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_1) 1.34e-03 1.23e-03    0.180 2.75e-03   0.2
+      gen_sbox[1].u_aes_sbox_i (aes_sbox_SecSBoxImpl0_2) 1.35e-03 1.21e-03    0.168 2.72e-03   0.2
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_2) 1.35e-03 1.20e-03    0.165 2.72e-03   0.2
+      gen_sbox[0].u_aes_sbox_i (aes_sbox_SecSBoxImpl0_3) 1.13e-03 1.10e-03    0.186 2.42e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_3) 1.13e-03 1.10e-03    0.183 2.41e-03   0.1
+    gen_shares_shift_mix[0].u_aes_mix_columns (aes_mix_columns_1) 5.28e-03 2.24e-02    0.299 2.80e-02   1.7
+      gen_mix_column[3].u_aes_mix_column_i (aes_mix_single_column_4) 1.32e-03 5.60e-03 7.46e-02 6.99e-03   0.4
+      gen_mix_column[2].u_aes_mix_column_i (aes_mix_single_column_5) 1.31e-03 5.60e-03 7.46e-02 6.99e-03   0.4
+      gen_mix_column[1].u_aes_mix_column_i (aes_mix_single_column_6) 1.31e-03 5.57e-03 7.46e-02 6.95e-03   0.4
+      gen_mix_column[0].u_aes_mix_column_i (aes_mix_single_column_7) 1.30e-03 5.58e-03 7.47e-02 6.96e-03   0.4
+    gen_shares_shift_mix[0].u_aes_shift_rows (aes_shift_rows) 7.46e-03 2.95e-03 2.16e-02 1.04e-02   0.6
+    u_aes_sub_bytes (aes_sub_bytes_SecSBoxImpl0) 1.30e-02 9.87e-03    1.758 2.47e-02   1.5
+      gen_sbox_j[3].gen_sbox_i[3].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_4) 7.63e-04 6.04e-04    0.109 1.48e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_4) 7.63e-04 6.03e-04    0.106 1.47e-03   0.1
+      gen_sbox_j[3].gen_sbox_i[2].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_5) 7.65e-04 5.98e-04    0.109 1.47e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_5) 7.64e-04 5.97e-04    0.106 1.47e-03   0.1
+      gen_sbox_j[3].gen_sbox_i[1].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_6) 7.60e-04 6.00e-04    0.108 1.47e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_6) 7.60e-04 6.00e-04    0.106 1.46e-03   0.1
+      gen_sbox_j[3].gen_sbox_i[0].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_7) 7.72e-04 6.05e-04    0.109 1.49e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_7) 7.72e-04 6.04e-04    0.106 1.48e-03   0.1
+      gen_sbox_j[2].gen_sbox_i[3].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_8) 7.63e-04 6.03e-04    0.109 1.47e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_8) 7.63e-04 6.02e-04    0.106 1.47e-03   0.1
+      gen_sbox_j[2].gen_sbox_i[2].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_9) 7.68e-04 5.97e-04    0.109 1.47e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_9) 7.67e-04 5.96e-04    0.106 1.47e-03   0.1
+      gen_sbox_j[2].gen_sbox_i[1].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_10) 7.69e-04 6.08e-04    0.109 1.49e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_10) 7.69e-04 6.07e-04    0.106 1.48e-03   0.1
+      gen_sbox_j[2].gen_sbox_i[0].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_11) 7.71e-04 6.00e-04    0.109 1.48e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_11) 7.71e-04 5.99e-04    0.106 1.48e-03   0.1
+      gen_sbox_j[1].gen_sbox_i[3].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_12) 7.62e-04 6.03e-04    0.109 1.47e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_12) 7.61e-04 6.02e-04    0.106 1.47e-03   0.1
+      gen_sbox_j[1].gen_sbox_i[2].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_13) 7.69e-04 5.94e-04    0.109 1.47e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_13) 7.69e-04 5.93e-04    0.106 1.47e-03   0.1
+      gen_sbox_j[1].gen_sbox_i[1].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_14) 7.66e-04 6.00e-04    0.109 1.47e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_14) 7.65e-04 6.00e-04    0.106 1.47e-03   0.1
+      gen_sbox_j[1].gen_sbox_i[0].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_15) 7.69e-04 6.02e-04    0.109 1.48e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_15) 7.69e-04 6.00e-04    0.106 1.48e-03   0.1
+      gen_sbox_j[0].gen_sbox_i[3].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_16) 7.58e-04 6.01e-04    0.108 1.47e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_16) 7.58e-04 6.00e-04    0.106 1.46e-03   0.1
+      gen_sbox_j[0].gen_sbox_i[2].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_17) 7.74e-04 6.03e-04    0.108 1.49e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_17) 7.74e-04 6.02e-04    0.106 1.48e-03   0.1
+      gen_sbox_j[0].gen_sbox_i[1].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_18) 7.60e-04 6.02e-04    0.108 1.47e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_18) 7.60e-04 6.01e-04    0.106 1.47e-03   0.1
+      gen_sbox_j[0].gen_sbox_i[0].u_aes_sbox_ij (aes_sbox_SecSBoxImpl0_19) 7.71e-04 6.03e-04    0.108 1.48e-03   0.1
+        gen_sbox_unmasked.gen_sbox_lut.u_aes_sbox (aes_sbox_lut_19) 7.71e-04 6.02e-04    0.106 1.48e-03   0.1
+      u_aes_sb_out_ack_buf_chk (aes_sel_buf_chk_2_3_1_4) 2.98e-06 2.54e-06 1.46e-03 6.97e-06   0.0
+        gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width3_4) 2.14e-06 2.01e-06 4.12e-04 4.56e-06   0.0
+          u_secure_anchor_buf (prim_buf_Width3_4) 2.14e-06 2.01e-06 4.12e-04 4.56e-06   0.0
+      u_aes_sb_en_buf_chk (aes_sel_buf_chk_2_3_1_5) 5.08e-06 8.13e-06 3.22e-03 1.64e-05   0.0
+        gen_sec_buf.u_prim_buf_sel_i (prim_sec_anchor_buf_Width3_5) 4.24e-06 7.67e-06 2.19e-03 1.41e-05   0.0
+          u_secure_anchor_buf (prim_buf_Width3_5) 4.24e-06 7.67e-06 2.19e-03 1.41e-05   0.0
+1
+ 
+****************************************
+Report : saif
+Design : aes_cipher_core_wrapper
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 02:46:25 2025
+****************************************
+
+  
+
+--------------------------------------------------------------------------------
+              User              Default           Propagated
+Object type   Annotated (%)     Activity (%)      Activity (%)       Total
+--------------------------------------------------------------------------------
+  
+ Nets         0(0.00%)          919(85.33%)       158(14.67%)        1077
+ Ports        0(0.00%)          917(87.00%)       137(13.00%)        1054
+ Pins         0(0.00%)          273(87.50%)       39(12.50%)         312
+--------------------------------------------------------------------------------
+1

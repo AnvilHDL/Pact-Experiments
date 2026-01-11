@@ -1,0 +1,489 @@
+Information: Updating design information... (UID-85)
+ 
+****************************************
+Report : design
+Design : aes_cipher_core
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 16:12:12 2025
+****************************************
+
+Design allows ideal nets on clock nets.
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Local Link Library:
+
+    {/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db, /home/yaswanth/GF22_mem/InvecasViews_w00512/model/timing/lib/bob_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_w00256/model/timing/lib/macro_m8_w256_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/./InvecasViews_w00512_m8/model/timing/lib/macro_m8_w512_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00512_m8/model/timing/lib/macro_s1c_m8_w512_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w32768_m16_c65KB/model/timing/lib/macro_s1c_w32768_m16_c65KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m4_c1KB/model/timing/lib/macro_s1c_w00256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m8_c512B/model/timing/lib/macro_s1c_w00256_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m16_c256B/model/timing/lib/macro_s1c_w00256_m16_c256B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w19648_m16_c40KB/model/timing/lib/macro_s1c_w19648_m16_c40KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db}
+
+Flip-Flop Types:
+
+    No flip-flop types specified.
+
+Latch Types:
+
+    No latch types specified.
+
+Operating Conditions:
+
+
+    Operating Condition Name : TT_0P80V_0P00V_0P00V_0P00V_25C
+    Library : GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+    Process :   1.00
+    Temperature :  25.00
+    Voltage :   0.80
+
+Wire Loading Model:
+
+    No wire loading specified.
+
+
+Wire Loading Model Mode: top.
+
+Timing Ranges:
+
+    No timing ranges specified.
+
+Pin Input Delays:
+
+    None specified.
+
+Pin Output Delays:
+
+    None specified.
+
+Disabled Timing Arcs:
+
+    No arcs disabled.
+
+Required Licenses:
+
+    None Required
+
+Design Parameters:
+
+    None specified.
+1
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 1
+        -transition_time
+Design : aes_cipher_core
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 16:12:12 2025
+****************************************
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+  Startpoint: _thread_0_event_counter_30_1_q_reg
+              (rising edge-triggered flip-flop clocked by clk_i[0])
+  Endpoint: dec_key_q_reg[101]
+            (rising edge-triggered flip-flop clocked by clk_i[0])
+  Path Group: clk_i[0]
+  Path Type: max
+
+Attributes:
+    d - dont_touch
+    u - dont_use
+   mo - map_only
+   so - size_only
+    i - ideal_net or ideal_network
+  inf - infeasible path
+
+  Point                                       Fanout     Trans      Incr       Path      Attributes
+  ---------------------------------------------------------------------------------------------------------
+  clock clk_i[0] (rise edge)                                        0.00       0.00
+  clock network delay (ideal)                                       0.00       0.00
+  _thread_0_event_counter_30_1_q_reg/CLK (SC7P5T_DFFRQX2_CSC28L)     0.00     0.00     0.00 r
+  _thread_0_event_counter_30_1_q_reg/Q (SC7P5T_DFFRQX2_CSC28L)     7.55    69.30    69.30 r
+  EVENTS0[30].event_current (net)               1                   0.00      69.30 r
+  U5587/Z (SC7P5T_NR2X1_CSC28L)                          11.71     14.10      83.39 f
+  n2668 (net)                                   3                   0.00      83.39 f
+  U5586/Z (SC7P5T_NR3X1_CSC28L)                          31.28     35.93     119.32 r
+  n2691 (net)                                   3                   0.00     119.32 r
+  U5585/Z (SC7P5T_ND3X1_MR_CSC28L)                       31.86     39.40     158.72 f
+  n2676 (net)                                   3                   0.00     158.72 f
+  U4986/Z (SC7P5T_NR2X1_CSC28L)                          28.10     38.22     196.95 r
+  n1208 (net)                                   3                   0.00     196.95 r
+  U4658/Z (SC7P5T_BUFX1_A_CSC28L)                        15.07     33.73     230.68 r
+  n3788 (net)                                   3                   0.00     230.68 r
+  U4397/Z (SC7P5T_BUFX1_A_CSC28L)                        24.94     36.20     266.88 r
+  n3798 (net)                                   7                   0.00     266.88 r
+  U5572/Z (SC7P5T_AOI31X1_CSC28L)                        44.66     48.86     315.74 f
+  n2655 (net)                                   5                   0.00     315.74 f
+  U5573/Z (SC7P5T_ND3X1_MR_CSC28L)                       20.27     33.41     349.15 r
+  _key_le_req_valid_selector_n[1] (net)         2                   0.00     349.15 r
+  U4988/Z (SC7P5T_BUFX1_A_CSC28L)                        14.94     31.04     380.19 r
+  n3881 (net)                                   3                   0.00     380.19 r
+  U4659/Z (SC7P5T_BUFX1_A_CSC28L)                        13.02     26.89     407.08 r
+  n3880 (net)                                   3                   0.00     407.08 r
+  U4398/Z (SC7P5T_INVX1_CSC28L)                           8.98     14.31     421.39 f
+  n3980 (net)                                   2                   0.00     421.39 f
+  U4171/Z (SC7P5T_BUFX1_A_CSC28L)                         7.61     20.91     442.30 f
+  n3897 (net)                                   2                   0.00     442.30 f
+  U4086/Z (SC7P5T_INVX1_CSC28L)                          40.49     37.09     479.39 r
+  n3896 (net)                                  11                   0.00     479.39 r
+  U4987/Z (SC7P5T_ND2X1_MR_CSC28L)                       15.98     24.79     504.18 f
+  _key_le_req_0[3] (net)                        1                   0.00     504.18 f
+  _spawn_0/_ep_req_0[3] (aes_key_expand)                            0.00     504.18 f
+  _spawn_0/_ep_req_0[3] (net)                                       0.00     504.18 f
+  _spawn_0/U1572/Z (SC7P5T_INVX1_CSC28L)                 17.33     23.94     528.12 r
+  _spawn_0/n366 (net)                           3                   0.00     528.12 r
+  _spawn_0/U484/Z (SC7P5T_NR2X1_CSC28L)                  16.56     22.22     550.34 f
+  _spawn_0/n472 (net)                           4                   0.00     550.34 f
+  _spawn_0/U121/Z (SC7P5T_INVX1_CSC28L)                  19.53     26.03     576.37 r
+  _spawn_0/n362 (net)                           5                   0.00     576.37 r
+  _spawn_0/U1571/Z (SC7P5T_NR2X1_CSC28L)                 11.21     18.74     595.11 f
+  _spawn_0/n1183 (net)                          2                   0.00     595.11 f
+  _spawn_0/U477/Z (SC7P5T_INVX1_CSC28L)                  15.52     20.02     615.12 r
+  _spawn_0/n360 (net)                           3                   0.00     615.12 r
+  _spawn_0/U124/Z (SC7P5T_BUFX1_A_CSC28L)                11.00     25.51     640.63 r
+  _spawn_0/n1311 (net)                          2                   0.00     640.63 r
+  _spawn_0/U55/Z (SC7P5T_BUFX1_A_CSC28L)                 27.38     36.02     676.65 r
+  _spawn_0/n1319 (net)                          8                   0.00     676.65 r
+  _spawn_0/U479/Z (SC7P5T_OAI31X1_CSC28L)                15.07     25.10     701.75 f
+  _spawn_0/n372 (net)                           1                   0.00     701.75 f
+  _spawn_0/U478/Z (SC7P5T_BUFX1_A_CSC28L)                11.79     27.60     729.35 f
+  _spawn_0/n1301 (net)                          3                   0.00     729.35 f
+  _spawn_0/U122/Z (SC7P5T_BUFX1_A_CSC28L)                22.81     34.16     763.52 f
+  _spawn_0/n1300 (net)                          8                   0.00     763.52 f
+  _spawn_0/U485/Z (SC7P5T_AOI21X1_CSC28L)                14.85     24.35     787.87 r
+  _spawn_0/n470 (net)                           1                   0.00     787.87 r
+  _spawn_0/U483/Z (SC7P5T_OAI32X1_CSC28L)                14.05     19.04     806.91 f
+  _spawn_0/n469 (net)                           1                   0.00     806.91 f
+  _spawn_0/U481/Z (SC7P5T_AOI211X1_CSC28L)               19.92     27.94     834.86 r
+  _spawn_0/n467 (net)                           1                   0.00     834.86 r
+  _spawn_0/U480/Z (SC7P5T_OAI22X1_CSC28L)               100.99     31.43     866.29 f
+  _spawn_0/thread_0_wire$160[0] (net)           3                   0.00     866.29 f
+  _spawn_0/_spawn_0/_ep_req_0[2] (sbox_19)                          0.00     866.29 f
+  _spawn_0/_spawn_0/_ep_req_0[2] (net)                              0.00     866.29 f
+  _spawn_0/_spawn_0/_extern_mod/req[2] (aes_sbox_extern_19)         0.00     866.29 f
+  _spawn_0/_spawn_0/_extern_mod/req[2] (net)                        0.00     866.29 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/data_i[0] (aes_sbox_lut_19)     0.00   866.29 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/data_i[0] (net)           0.00     866.29 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U762/Z (SC7P5T_INVX1_CSC28L)    28.27    46.65   912.94 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n61 (net)     2           0.00     912.94 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U761/Z (SC7P5T_NR2X1_CSC28L)    32.90    28.05   940.99 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n778 (net)     4          0.00     940.99 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U727/Z (SC7P5T_ND2X1_MR_CSC28L)    30.56    41.46   982.45 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n377 (net)     8          0.00     982.45 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U558/Z (SC7P5T_INVX1_CSC28L)    26.59    36.35  1018.81 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n42 (net)     9           0.00    1018.81 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U83/Z (SC7P5T_ND2X1_MR_CSC28L)    18.41    29.37  1048.18 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n434 (net)     4          0.00    1048.18 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U92/Z (SC7P5T_AN4IAX1_CSC28L)    11.62    49.56  1097.74 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n756 (net)     1          0.00    1097.74 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U87/Z (SC7P5T_AN4IAX1_CSC28L)    12.11    47.49  1145.23 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n755 (net)     1          0.00    1145.23 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U84/Z (SC7P5T_ND3X1_MR_CSC28L)    22.77    27.29  1172.52 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n651 (net)     2          0.00    1172.52 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U91/Z (SC7P5T_NR4IABX1_CSC28L)    10.46    65.33  1237.85 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n648 (net)     1          0.00    1237.85 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U88/Z (SC7P5T_ND3X1_MR_CSC28L)    23.32    27.12  1264.97 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n175 (net)     2          0.00    1264.97 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U4/Z (SC7P5T_NR3X1_CSC28L)    17.04    28.76  1293.73 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n168 (net)     1          0.00    1293.73 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U5/Z (SC7P5T_AN4IAX1_CSC28L)    12.10    49.53  1343.26 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/n165 (net)     1          0.00    1343.26 r
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/U781/Z (SC7P5T_OAI22X1_CSC28L)    12.07    20.95  1364.20 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/data_o[5] (net)     1     0.00    1364.20 f
+  _spawn_0/_spawn_0/_extern_mod/sbox_inst/data_o[5] (aes_sbox_lut_19)     0.00  1364.20 f
+  _spawn_0/_spawn_0/_extern_mod/out[5] (net)                        0.00    1364.20 f
+  _spawn_0/_spawn_0/_extern_mod/out[5] (aes_sbox_extern_19)         0.00    1364.20 f
+  _spawn_0/_spawn_0/_ep_res_0[5] (net)                              0.00    1364.20 f
+  _spawn_0/_spawn_0/_ep_res_0[5] (sbox_19)                          0.00    1364.20 f
+  _spawn_0/_sch0_le_res_0[5] (net)                                  0.00    1364.20 f
+  _spawn_0/U1633/Z (SC7P5T_XOR2X2_CSC28L)                10.01     48.84    1413.04 r
+  _spawn_0/n701 (net)                           3                   0.00    1413.04 r
+  _spawn_0/U1573/Z (SC7P5T_XOR2X2_CSC28L)                 8.38     44.44    1457.48 f
+  _spawn_0/n1067 (net)                          2                   0.00    1457.48 f
+  _spawn_0/U490/Z (SC7P5T_INVX1_CSC28L)                  16.30     19.15    1476.63 r
+  _spawn_0/n6 (net)                             2                   0.00    1476.63 r
+  _spawn_0/U1095/Z (SC7P5T_XNR2X2_CSC28L)                12.93     41.08    1517.71 f
+  _spawn_0/n905 (net)                           3                   0.00    1517.71 f
+  _spawn_0/U1094/Z (SC7P5T_XNR2X2_CSC28L)                12.12     36.78    1554.49 f
+  _spawn_0/n697 (net)                           3                   0.00    1554.49 f
+  _spawn_0/U1093/Z (SC7P5T_XNR2X2_CSC28L)                 8.19     40.01    1594.49 r
+  _spawn_0/n1012 (net)                          2                   0.00    1594.49 r
+  _spawn_0/U489/Z (SC7P5T_OAI22X1_CSC28L)                13.96     17.72    1612.22 f
+  _spawn_0/n1195 (net)                          1                   0.00    1612.22 f
+  _spawn_0/U487/Z (SC7P5T_AOI211X1_CSC28L)               21.61     25.20    1637.42 r
+  _spawn_0/n1194 (net)                          1                   0.00    1637.42 r
+  _spawn_0/U486/Z (SC7P5T_OAI22X1_CSC28L)                91.53     29.04    1666.46 f
+  _spawn_0/_ep_res_0[102] (net)                 2                   0.00    1666.46 f
+  _spawn_0/_ep_res_0[102] (aes_key_expand)                          0.00    1666.46 f
+  _key_le_res_0[102] (net)                                          0.00    1666.46 f
+  U5580/Z (SC7P5T_AOI22X1_CSC28L)                        21.85     61.21    1727.67 r
+  n2531 (net)                                   1                   0.00    1727.67 r
+  U5578/Z (SC7P5T_OAI221X1_CSC28L)                       39.12     31.78    1759.45 f
+  n3237 (net)                                   1                   0.00    1759.45 f
+  dec_key_q_reg[101]/D (SC7P5T_DFFRQX2_CSC28L)           39.12      0.00    1759.45 f
+  data arrival time                                                         1759.45
+
+  clock clk_i[0] (rise edge)                                     2564.00    2564.00
+  clock network delay (ideal)                                       0.00    2564.00
+  dec_key_q_reg[101]/CLK (SC7P5T_DFFRQX2_CSC28L)                    0.00    2564.00 r
+  library setup time                                              -31.19    2532.81
+  data required time                                                        2532.81
+  ---------------------------------------------------------------------------------------------------------
+  data required time                                                        2532.81
+  data arrival time                                                        -1759.45
+  ---------------------------------------------------------------------------------------------------------
+  slack (MET)                                                                773.36
+
+
+1
+ 
+****************************************
+Report : area
+Design : aes_cipher_core
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 16:12:12 2025
+****************************************
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Number of ports:                         4230
+Number of nets:                         28276
+Number of cells:                        24397
+Number of combinational cells:          23650
+Number of sequential cells:               674
+Number of macros/black boxes:               0
+Number of buf/inv:                       3985
+Number of references:                      37
+
+Combinational area:               8011.168854
+Buf/Inv area:                      608.164809
+Noncombinational area:            1078.939225
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (No wire load specified)
+
+Total cell area:                  9090.108079
+Total area:                 undefined
+
+Hierarchical area distribution
+------------------------------
+
+                                  Global cell area          Local cell area
+                                  ------------------  ---------------------------- 
+Hierarchical cell                 Absolute   Percent  Combi-     Noncombi-  Black-
+                                  Total      Total    national   national   boxes   Design
+--------------------------------  ---------  -------  ---------  ---------  ------  --------------------
+aes_cipher_core                   9090.1081    100.0  1611.8664  1062.9312  0.0000  aes_cipher_core
+_spawn_0                          1585.4880     17.4   657.7200    16.0080  0.0000  aes_key_expand
+_spawn_0/_spawn_0                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_19
+_spawn_0/_spawn_0/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_19
+_spawn_0/_spawn_0/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_19
+_spawn_0/_spawn_1                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_18
+_spawn_0/_spawn_1/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_18
+_spawn_0/_spawn_1/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_18
+_spawn_0/_spawn_2                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_17
+_spawn_0/_spawn_2/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_17
+_spawn_0/_spawn_2/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_17
+_spawn_0/_spawn_3                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_16
+_spawn_0/_spawn_3/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_16
+_spawn_0/_spawn_3/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_16
+_spawn_1                            53.8008      0.6    53.8008     0.0000  0.0000  aes_shift_rows
+_spawn_2                           563.9688      6.2     0.2088     0.0000  0.0000  aes_mix_columns_1
+_spawn_2/_spawn_0                  140.9400      1.6   140.9400     0.0000  0.0000  mix_single_columns_7
+_spawn_2/_spawn_1                  140.9400      1.6   140.9400     0.0000  0.0000  mix_single_columns_6
+_spawn_2/_spawn_2                  140.9400      1.6   140.9400     0.0000  0.0000  mix_single_columns_5
+_spawn_2/_spawn_3                  140.9400      1.6   140.9400     0.0000  0.0000  mix_single_columns_4
+_spawn_3                          3648.2928     40.1     1.2528     0.0000  0.0000  aes_sub_bytes
+_spawn_3/_spawn_0                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_15
+_spawn_3/_spawn_0/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_15
+_spawn_3/_spawn_0/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_15
+_spawn_3/_spawn_1                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_14
+_spawn_3/_spawn_1/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_14
+_spawn_3/_spawn_1/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_14
+_spawn_3/_spawn_10                 227.9400      2.5     0.0000     0.0000  0.0000  sbox_5
+_spawn_3/_spawn_10/_extern_mod     227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_5
+_spawn_3/_spawn_10/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_5
+_spawn_3/_spawn_11                 227.9400      2.5     0.0000     0.0000  0.0000  sbox_4
+_spawn_3/_spawn_11/_extern_mod     227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_4
+_spawn_3/_spawn_11/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_4
+_spawn_3/_spawn_12                 227.9400      2.5     0.0000     0.0000  0.0000  sbox_3
+_spawn_3/_spawn_12/_extern_mod     227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_3
+_spawn_3/_spawn_12/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_3
+_spawn_3/_spawn_13                 227.9400      2.5     0.0000     0.0000  0.0000  sbox_2
+_spawn_3/_spawn_13/_extern_mod     227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_2
+_spawn_3/_spawn_13/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_2
+_spawn_3/_spawn_14                 227.9400      2.5     0.0000     0.0000  0.0000  sbox_1
+_spawn_3/_spawn_14/_extern_mod     227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_1
+_spawn_3/_spawn_14/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_1
+_spawn_3/_spawn_15                 227.9400      2.5     0.0000     0.0000  0.0000  sbox_0
+_spawn_3/_spawn_15/_extern_mod     227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_0
+_spawn_3/_spawn_15/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_0
+_spawn_3/_spawn_2                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_13
+_spawn_3/_spawn_2/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_13
+_spawn_3/_spawn_2/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_13
+_spawn_3/_spawn_3                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_12
+_spawn_3/_spawn_3/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_12
+_spawn_3/_spawn_3/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_12
+_spawn_3/_spawn_4                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_11
+_spawn_3/_spawn_4/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_11
+_spawn_3/_spawn_4/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_11
+_spawn_3/_spawn_5                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_10
+_spawn_3/_spawn_5/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_10
+_spawn_3/_spawn_5/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_10
+_spawn_3/_spawn_6                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_9
+_spawn_3/_spawn_6/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_9
+_spawn_3/_spawn_6/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_9
+_spawn_3/_spawn_7                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_8
+_spawn_3/_spawn_7/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_8
+_spawn_3/_spawn_7/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_8
+_spawn_3/_spawn_8                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_7
+_spawn_3/_spawn_8/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_7
+_spawn_3/_spawn_8/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_7
+_spawn_3/_spawn_9                  227.9400      2.5     0.0000     0.0000  0.0000  sbox_6
+_spawn_3/_spawn_9/_extern_mod      227.9400      2.5     0.0000     0.0000  0.0000  aes_sbox_extern_6
+_spawn_3/_spawn_9/_extern_mod/sbox_inst  227.9400     2.5  227.9400    0.0000 0.0000 aes_sbox_lut_6
+_spawn_4                           563.7600      6.2     0.0000     0.0000  0.0000  aes_mix_columns_0
+_spawn_4/_spawn_0                  140.9400      1.6   140.9400     0.0000  0.0000  mix_single_columns_3
+_spawn_4/_spawn_1                  140.9400      1.6   140.9400     0.0000  0.0000  mix_single_columns_2
+_spawn_4/_spawn_2                  140.9400      1.6   140.9400     0.0000  0.0000  mix_single_columns_1
+_spawn_4/_spawn_3                  140.9400      1.6   140.9400     0.0000  0.0000  mix_single_columns_0
+--------------------------------  ---------  -------  ---------  ---------  ------  --------------------
+Total                                                 8011.1689  1078.9392  0.0000
+
+1
+Loading db file '/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db'
+Information: Propagating switching activity (low effort zero delay simulation). (PWR-6)
+Warning: Design has unannotated primary inputs. (PWR-414)
+Warning: Design has unannotated sequential cell outputs. (PWR-415)
+ 
+****************************************
+Report : power
+        -hier
+        -analysis_effort low
+Design : aes_cipher_core
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 16:12:16 2025
+****************************************
+
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+
+Global Operating Voltage = 0.8  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000ff
+    Time Units = 1ps
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1uW
+
+
+--------------------------------------------------------------------------------
+                                       Switch   Int      Leak     Total
+Hierarchy                              Power    Power    Power    Power    %
+--------------------------------------------------------------------------------
+aes_cipher_core                           0.133    0.830    3.976    0.967 100.0
+  _spawn_4 (aes_mix_columns_0)         3.68e-03 1.35e-02    0.287 1.75e-02   1.8
+    _spawn_3 (mix_single_columns_0)    9.16e-04 3.37e-03 7.18e-02 4.36e-03   0.5
+    _spawn_2 (mix_single_columns_1)    9.17e-04 3.37e-03 7.18e-02 4.36e-03   0.5
+    _spawn_1 (mix_single_columns_2)    9.22e-04 3.39e-03 7.18e-02 4.38e-03   0.5
+    _spawn_0 (mix_single_columns_3)    9.21e-04 3.38e-03 7.18e-02 4.38e-03   0.5
+  _spawn_3 (aes_sub_bytes)             2.35e-02 2.06e-02    1.692 4.58e-02   4.7
+    _spawn_15 (sbox_0)                 1.44e-03 1.28e-03    0.106 2.83e-03   0.3
+      _extern_mod (aes_sbox_extern_0)  1.44e-03 1.28e-03    0.106 2.83e-03   0.3
+        sbox_inst (aes_sbox_lut_0)     1.44e-03 1.28e-03    0.106 2.83e-03   0.3
+    _spawn_14 (sbox_1)                 1.43e-03 1.28e-03    0.106 2.81e-03   0.3
+      _extern_mod (aes_sbox_extern_1)  1.43e-03 1.28e-03    0.106 2.81e-03   0.3
+        sbox_inst (aes_sbox_lut_1)     1.43e-03 1.28e-03    0.106 2.81e-03   0.3
+    _spawn_13 (sbox_2)                 1.44e-03 1.29e-03    0.106 2.83e-03   0.3
+      _extern_mod (aes_sbox_extern_2)  1.44e-03 1.29e-03    0.106 2.83e-03   0.3
+        sbox_inst (aes_sbox_lut_2)     1.44e-03 1.29e-03    0.106 2.83e-03   0.3
+    _spawn_12 (sbox_3)                 1.43e-03 1.29e-03    0.106 2.83e-03   0.3
+      _extern_mod (aes_sbox_extern_3)  1.43e-03 1.29e-03    0.106 2.83e-03   0.3
+        sbox_inst (aes_sbox_lut_3)     1.43e-03 1.29e-03    0.106 2.83e-03   0.3
+    _spawn_11 (sbox_4)                 1.46e-03 1.29e-03    0.106 2.85e-03   0.3
+      _extern_mod (aes_sbox_extern_4)  1.46e-03 1.29e-03    0.106 2.85e-03   0.3
+        sbox_inst (aes_sbox_lut_4)     1.46e-03 1.29e-03    0.106 2.85e-03   0.3
+    _spawn_10 (sbox_5)                 1.44e-03 1.28e-03    0.106 2.83e-03   0.3
+      _extern_mod (aes_sbox_extern_5)  1.44e-03 1.28e-03    0.106 2.83e-03   0.3
+        sbox_inst (aes_sbox_lut_5)     1.44e-03 1.28e-03    0.106 2.83e-03   0.3
+    _spawn_9 (sbox_6)                  1.45e-03 1.28e-03    0.106 2.83e-03   0.3
+      _extern_mod (aes_sbox_extern_6)  1.45e-03 1.28e-03    0.106 2.83e-03   0.3
+        sbox_inst (aes_sbox_lut_6)     1.45e-03 1.28e-03    0.106 2.83e-03   0.3
+    _spawn_8 (sbox_7)                  1.46e-03 1.29e-03    0.106 2.85e-03   0.3
+      _extern_mod (aes_sbox_extern_7)  1.46e-03 1.29e-03    0.106 2.85e-03   0.3
+        sbox_inst (aes_sbox_lut_7)     1.46e-03 1.29e-03    0.106 2.85e-03   0.3
+    _spawn_7 (sbox_8)                  1.44e-03 1.29e-03    0.106 2.83e-03   0.3
+      _extern_mod (aes_sbox_extern_8)  1.44e-03 1.29e-03    0.106 2.83e-03   0.3
+        sbox_inst (aes_sbox_lut_8)     1.44e-03 1.29e-03    0.106 2.83e-03   0.3
+    _spawn_6 (sbox_9)                  1.43e-03 1.28e-03    0.106 2.82e-03   0.3
+      _extern_mod (aes_sbox_extern_9)  1.43e-03 1.28e-03    0.106 2.82e-03   0.3
+        sbox_inst (aes_sbox_lut_9)     1.43e-03 1.28e-03    0.106 2.82e-03   0.3
+    _spawn_5 (sbox_10)                 1.44e-03 1.29e-03    0.106 2.83e-03   0.3
+      _extern_mod (aes_sbox_extern_10) 1.44e-03 1.29e-03    0.106 2.83e-03   0.3
+        sbox_inst (aes_sbox_lut_10)    1.44e-03 1.29e-03    0.106 2.83e-03   0.3
+    _spawn_4 (sbox_11)                 1.43e-03 1.28e-03    0.106 2.82e-03   0.3
+      _extern_mod (aes_sbox_extern_11) 1.43e-03 1.28e-03    0.106 2.82e-03   0.3
+        sbox_inst (aes_sbox_lut_11)    1.43e-03 1.28e-03    0.106 2.82e-03   0.3
+    _spawn_3 (sbox_12)                 1.45e-03 1.28e-03    0.106 2.83e-03   0.3
+      _extern_mod (aes_sbox_extern_12) 1.45e-03 1.28e-03    0.106 2.83e-03   0.3
+        sbox_inst (aes_sbox_lut_12)    1.45e-03 1.28e-03    0.106 2.83e-03   0.3
+    _spawn_2 (sbox_13)                 1.45e-03 1.28e-03    0.106 2.84e-03   0.3
+      _extern_mod (aes_sbox_extern_13) 1.45e-03 1.28e-03    0.106 2.84e-03   0.3
+        sbox_inst (aes_sbox_lut_13)    1.45e-03 1.28e-03    0.106 2.84e-03   0.3
+    _spawn_1 (sbox_14)                 1.46e-03 1.29e-03    0.106 2.86e-03   0.3
+      _extern_mod (aes_sbox_extern_14) 1.46e-03 1.29e-03    0.106 2.86e-03   0.3
+        sbox_inst (aes_sbox_lut_14)    1.46e-03 1.29e-03    0.106 2.86e-03   0.3
+    _spawn_0 (sbox_15)                 1.45e-03 1.29e-03    0.106 2.85e-03   0.3
+      _extern_mod (aes_sbox_extern_15) 1.45e-03 1.29e-03    0.106 2.85e-03   0.3
+        sbox_inst (aes_sbox_lut_15)    1.45e-03 1.29e-03    0.106 2.85e-03   0.3
+  _spawn_2 (aes_mix_columns_1)         1.17e-02 3.92e-02    0.305 5.12e-02   5.3
+    _spawn_3 (mix_single_columns_4)    2.91e-03 9.78e-03 7.61e-02 1.28e-02   1.3
+    _spawn_2 (mix_single_columns_5)    2.91e-03 9.81e-03 7.61e-02 1.28e-02   1.3
+    _spawn_1 (mix_single_columns_6)    2.91e-03 9.80e-03 7.61e-02 1.28e-02   1.3
+    _spawn_0 (mix_single_columns_7)    2.91e-03 9.79e-03 7.61e-02 1.28e-02   1.3
+  _spawn_1 (aes_shift_rows)            7.63e-03 3.07e-03 2.26e-02 1.07e-02   1.1
+  _spawn_0 (aes_key_expand)            2.63e-02 3.26e-02    0.664 5.96e-02   6.2
+    _spawn_3 (sbox_16)                 1.36e-03 1.11e-03    0.106 2.57e-03   0.3
+      _extern_mod (aes_sbox_extern_16) 1.36e-03 1.11e-03    0.106 2.57e-03   0.3
+        sbox_inst (aes_sbox_lut_16)    1.36e-03 1.11e-03    0.106 2.57e-03   0.3
+    _spawn_2 (sbox_17)                 1.35e-03 1.10e-03    0.106 2.56e-03   0.3
+      _extern_mod (aes_sbox_extern_17) 1.35e-03 1.10e-03    0.106 2.56e-03   0.3
+        sbox_inst (aes_sbox_lut_17)    1.35e-03 1.10e-03    0.106 2.56e-03   0.3
+    _spawn_1 (sbox_18)                 1.36e-03 1.11e-03    0.106 2.57e-03   0.3
+      _extern_mod (aes_sbox_extern_18) 1.36e-03 1.11e-03    0.106 2.57e-03   0.3
+        sbox_inst (aes_sbox_lut_18)    1.36e-03 1.11e-03    0.106 2.57e-03   0.3
+    _spawn_0 (sbox_19)                 1.24e-03 1.09e-03    0.106 2.44e-03   0.3
+      _extern_mod (aes_sbox_extern_19) 1.24e-03 1.09e-03    0.106 2.44e-03   0.3
+        sbox_inst (aes_sbox_lut_19)    1.24e-03 1.09e-03    0.106 2.44e-03   0.3
+1
+ 
+****************************************
+Report : saif
+Design : aes_cipher_core
+Version: Q-2019.12-SP5-1
+Date   : Wed Aug 20 16:12:16 2025
+****************************************
+
+  
+
+--------------------------------------------------------------------------------
+              User              Default           Propagated
+Object type   Annotated (%)     Activity (%)      Activity (%)       Total
+--------------------------------------------------------------------------------
+  
+ Nets         0(0.00%)          1178(17.68%)      5484(82.32%)       6662
+ Ports        0(0.00%)          919(87.11%)       136(12.89%)        1055
+ Pins         0(0.00%)          3438(17.12%)      16642(82.88%)      20080
+--------------------------------------------------------------------------------
+1

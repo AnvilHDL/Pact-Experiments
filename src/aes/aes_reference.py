@@ -3,24 +3,6 @@
 from Crypto.Cipher import AES
 
 def opentitan_to_aes_state(ot_state):
-    """
-    Convert OpenTitan state format to standard AES state matrix.
-    
-    OpenTitan uses:
-    logic [3:0][3:0][7:0] state_q 
-    
-    Where an input sequence b0 b1 b2 ... b15 is mapped as:
-    [ b0  b4  b8  b12 ]
-    [ b1  b5  b9  b13 ]
-    [ b2  b6  b10 b14 ]
-    [ b3  b7  b11 b15 ]
-    
-    Args:
-        ot_state: 4x4 matrix in OpenTitan format
-    Returns:
-        16-byte array suitable for PyCrypto
-    """
-    # Convert the 4x4 state matrix to 16 bytes in column-major order
     plaintext = bytearray(16)
     for col in range(4):
         for row in range(4):
@@ -28,14 +10,7 @@ def opentitan_to_aes_state(ot_state):
     return bytes(plaintext)
 
 def aes_state_to_opentitan(ciphertext_bytes):
-    """
-    Convert standard AES output back to OpenTitan state format.
-    
-    Args:
-        ciphertext_bytes: 16-byte output from AES
-    Returns:
-        4x4 matrix in OpenTitan format
-    """
+
     state = [[0 for _ in range(4)] for _ in range(4)]
     for col in range(4):
         for row in range(4):
@@ -43,19 +18,6 @@ def aes_state_to_opentitan(ciphertext_bytes):
     return state
 
 def opentitan_key_to_aes(ot_key):
-    """
-    Convert OpenTitan key format to standard AES key.
-    
-    OpenTitan uses logic [7:0][31:0] key where each 32-bit word is little-endian:
-    - KEY_0 32h'{ b3 , b2 , b1 , b0  }
-    - KEY_1 32h'{ b7 , b6 , b5 , b4  }
-    - etc.
-    
-    Args:
-        ot_key: 8x4 bytes representing 8 32-bit words in little-endian format
-    Returns:
-        16-byte key for AES-128
-    """
     key_bytes = bytearray(16)
     for word_idx in range(4):  # Only first 4 words for AES-128
         word = ot_key[word_idx]
@@ -67,7 +29,7 @@ def opentitan_key_to_aes(ot_key):
     return bytes(key_bytes)
 
 def print_state_hex(state, title):
-    """Print state in hex format matching the test output."""
+
     print(f"{title}:")
     for row in range(4):
         row_str = ", ".join([f"{state[row][col]:02x}" for col in range(4)])
@@ -75,19 +37,19 @@ def print_state_hex(state, title):
     print()
 
 def main():
-    # Test data from your testbench
+
     print("=== AES-128 Reference Implementation ===\n")
     
-    # Input plaintext as defined in your testbench
+
     plaintext_ot_fl = [
         [0x01, 0x02, 0x03, 0x04],  # Row 0
         [0x05, 0x06, 0x07, 0x08],  # Row 1
         [0x09, 0x0a, 0x0b, 0x0c],  # Row 2
         [0x0d, 0x0e, 0x0f, 0x10]   # Row 3
     ]
-    plaintext_ot = plaintext_ot_fl[::-1]  # Reverse the order for OpenTitan format
+    plaintext_ot = plaintext_ot_fl[::-1]
     
-    # Key as defined in your testbench (32-bit words in little-endian)
+
     key_ot_f = [
         0x04030201,  # word 0: {0x04, 0x03, 0x02, 0x01}
         0x0c0b0a09,  # word 1: {0x0c, 0x0b, 0x0a, 0x09}

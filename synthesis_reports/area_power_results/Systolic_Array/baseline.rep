@@ -1,0 +1,493 @@
+Information: Updating design information... (UID-85)
+ 
+****************************************
+Report : design
+Design : main
+Version: Q-2019.12-SP5-1
+Date   : Thu Aug 21 19:52:46 2025
+****************************************
+
+Design allows ideal nets on clock nets.
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Local Link Library:
+
+    {/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db, /home/yaswanth/GF22_mem/InvecasViews_w00512/model/timing/lib/bob_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_w00256/model/timing/lib/macro_m8_w256_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/./InvecasViews_w00512_m8/model/timing/lib/macro_m8_w512_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00512_m8/model/timing/lib/macro_s1c_m8_w512_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w32768_m16_c65KB/model/timing/lib/macro_s1c_w32768_m16_c65KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m4_c1KB/model/timing/lib/macro_s1c_w00256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m8_c512B/model/timing/lib/macro_s1c_w00256_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m16_c256B/model/timing/lib/macro_s1c_w00256_m16_c256B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w19648_m16_c40KB/model/timing/lib/macro_s1c_w19648_m16_c40KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db}
+
+Flip-Flop Types:
+
+    No flip-flop types specified.
+
+Latch Types:
+
+    No latch types specified.
+
+Operating Conditions:
+
+
+    Operating Condition Name : TT_0P80V_0P00V_0P00V_0P00V_25C
+    Library : GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+    Process :   1.00
+    Temperature :  25.00
+    Voltage :   0.80
+
+Wire Loading Model:
+
+    No wire loading specified.
+
+
+Wire Loading Model Mode: top.
+
+Timing Ranges:
+
+    No timing ranges specified.
+
+Pin Input Delays:
+
+    None specified.
+
+Pin Output Delays:
+
+    None specified.
+
+Disabled Timing Arcs:
+
+    No arcs disabled.
+
+Required Licenses:
+
+    None Required
+
+Design Parameters:
+
+    None specified.
+1
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 1
+        -transition_time
+Design : main
+Version: Q-2019.12-SP5-1
+Date   : Thu Aug 21 19:52:46 2025
+****************************************
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+  Startpoint: inst5/inst1/ev00/r1/out_reg[0]
+              (rising edge-triggered flip-flop clocked by clk)
+  Endpoint: out01[31] (output port clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+Attributes:
+    d - dont_touch
+    u - dont_use
+   mo - map_only
+   so - size_only
+    i - ideal_net or ideal_network
+  inf - infeasible path
+
+  Point                                       Fanout     Trans      Incr       Path      Attributes
+  ---------------------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                             0.00       0.00
+  clock network delay (ideal)                                       0.00       0.00
+  inst5/inst1/ev00/r1/out_reg[0]/CLK (SC7P5T_DFFQNX2_CSC28L)     0.00     0.00     0.00 r
+  inst5/inst1/ev00/r1/out_reg[0]/QN (SC7P5T_DFFQNX2_CSC28L)     9.53    58.14    58.14 r
+  inst5/inst1/ev00/r1/n1 (net)                  2                   0.00      58.14 r
+  inst5/inst1/ev00/r1/U3/Z (SC7P5T_INVX1_CSC28L)          9.21     13.36      71.50 f
+  inst5/inst1/ev00/r1/out[0] (net)              3                   0.00      71.50 f
+  inst5/inst1/ev00/r1/out[0] (std_reg_WIDTH1_9)                     0.00      71.50 f
+  inst5/inst1/ev00/_3 (net)                                         0.00      71.50 f
+  inst5/inst1/ev00/_3 (fsm_4_2)                                     0.00      71.50 f
+  inst5/inst1/ev00__3 (net)                                         0.00      71.50 f
+  inst5/inst1/U3/Z (SC7P5T_CKBUFX4_P_CSC28L)             11.52     29.76     101.25 f
+  inst5/inst1/n1 (net)                         13                   0.00     101.25 f
+  inst5/inst1/U25/Z (SC7P5T_AN2X2_A_CSC28L)               5.87     23.08     124.33 f
+  inst5/inst1/p16[10] (net)                     2                   0.00     124.33 f
+  inst5/inst1/p16[10] (comp3_2)                                     0.00     124.33 f
+  inst5/inst1_p16[10] (net)                                         0.00     124.33 f
+  inst5/inst2/right[10] (Add_IN_WIDTH32_OUT_WIDTH32_6)              0.00     124.33 f
+  inst5/inst2/right[10] (net)                                       0.00     124.33 f
+  inst5/inst2/add_20/B[10] (Add_IN_WIDTH32_OUT_WIDTH32_6_DW01_add_J4_0)     0.00   124.33 f
+  inst5/inst2/add_20/B[10] (net)                                    0.00     124.33 f
+  inst5/inst2/add_20/U40/Z (SC7P5T_OR2X2_A_CSC28L)       10.24     32.85     157.18 f
+  inst5/inst2/add_20/n174 (net)                 4                   0.00     157.18 f
+  inst5/inst2/add_20/U141/Z (SC7P5T_INVX1_CSC28L)         9.08     14.24     171.42 r
+  inst5/inst2/add_20/n180 (net)                 1                   0.00     171.42 r
+  inst5/inst2/add_20/U61/Z (SC7P5T_CKNR2X1_CSC28L)        9.79     12.91     184.34 f
+  inst5/inst2/add_20/n178 (net)                 1                   0.00     184.34 f
+  inst5/inst2/add_20/U26/Z (SC7P5T_ND2X2_CSC28L)          8.89     12.56     196.90 r
+  inst5/inst2/add_20/n142 (net)                 2                   0.00     196.90 r
+  inst5/inst2/add_20/U25/Z (SC7P5T_NR2X2_MR_CSC28L)       6.37     10.83     207.72 f
+  inst5/inst2/add_20/n9 (net)                   2                   0.00     207.72 f
+  inst5/inst2/add_20/U17/Z (SC7P5T_CKINVX2_CSC28L)        4.64      8.28     216.01 r
+  inst5/inst2/add_20/n10 (net)                  1                   0.00     216.01 r
+  inst5/inst2/add_20/U21/Z (SC7P5T_NR2X2_CSC28L)          6.24      8.82     224.82 f
+  inst5/inst2/add_20/n140 (net)                 1                   0.00     224.82 f
+  inst5/inst2/add_20/U116/Z (SC7P5T_OR3X4_A_CSC28L)       9.58     37.08     261.90 f
+  inst5/inst2/add_20/n24 (net)                  1                   0.00     261.90 f
+  inst5/inst2/add_20/U19/Z (SC7P5T_NR3X6_CSC28L)         12.74     21.17     283.07 r
+  inst5/inst2/add_20/n21 (net)                  2                   0.00     283.07 r
+  inst5/inst2/add_20/U23/Z (SC7P5T_OAI21X4_CSC28L)       11.38     16.19     299.26 f
+  inst5/inst2/add_20/n133 (net)                 2                   0.00     299.26 f
+  inst5/inst2/add_20/U22/Z (SC7P5T_AOI21IAX3_CSC28L)      9.65     18.72     317.98 r
+  inst5/inst2/add_20/n6 (net)                   2                   0.00     317.98 r
+  inst5/inst2/add_20/U51/Z (SC7P5T_OA21IAX2_CSC28L)       7.98     26.47     344.45 r
+  inst5/inst2/add_20/n11 (net)                  2                   0.00     344.45 r
+  inst5/inst2/add_20/U29/Z (SC7P5T_OA21X1_CSC28L)        11.07     34.67     379.12 r
+  inst5/inst2/add_20/n3 (net)                   2                   0.00     379.12 r
+  inst5/inst2/add_20/U45/Z (SC7P5T_OA21IAX2_CSC28L)       8.44     27.66     406.78 r
+  inst5/inst2/add_20/n13 (net)                  2                   0.00     406.78 r
+  inst5/inst2/add_20/U31/Z (SC7P5T_OAI21X1_CSC28L)       11.18     17.42     424.20 f
+  inst5/inst2/add_20/n110 (net)                 1                   0.00     424.20 f
+  inst5/inst2/add_20/U126/Z (SC7P5T_INVX1_CSC28L)        11.99     17.14     441.35 r
+  inst5/inst2/add_20/n106 (net)                 2                   0.00     441.35 r
+  inst5/inst2/add_20/U6/Z (SC7P5T_OA21IAX3_CSC28L)        9.06     28.88     470.23 r
+  inst5/inst2/add_20/n15 (net)                  2                   0.00     470.23 r
+  inst5/inst2/add_20/U5/Z (SC7P5T_OAI21X2_CSC28L)         8.30     14.86     485.09 f
+  inst5/inst2/add_20/n100 (net)                 1                   0.00     485.09 f
+  inst5/inst2/add_20/U129/Z (SC7P5T_INVX1_CSC28L)        12.57     16.24     501.33 r
+  inst5/inst2/add_20/n96 (net)                  2                   0.00     501.33 r
+  inst5/inst2/add_20/U8/Z (SC7P5T_OA21IAX4_CSC28L)        8.84     28.13     529.46 r
+  inst5/inst2/add_20/n17 (net)                  2                   0.00     529.46 r
+  inst5/inst2/add_20/U7/Z (SC7P5T_OAI21X3_CSC28L)         8.93     14.17     543.63 f
+  inst5/inst2/add_20/n90 (net)                  1                   0.00     543.63 f
+  inst5/inst2/add_20/U135/Z (SC7P5T_INVX1_CSC28L)        11.72     15.86     559.49 r
+  inst5/inst2/add_20/n86 (net)                  2                   0.00     559.49 r
+  inst5/inst2/add_20/U24/Z (SC7P5T_OA21IAX3_CSC28L)       8.50     28.25     587.73 r
+  inst5/inst2/add_20/n19 (net)                  2                   0.00     587.73 r
+  inst5/inst2/add_20/U27/Z (SC7P5T_OA21IAX3_CSC28L)      13.44     30.54     618.27 r
+  inst5/inst2/add_20/n4 (net)                   3                   0.00     618.27 r
+  inst5/inst2/add_20/U68/Z (SC7P5T_OAI21X2_CSC28L)       10.13     16.67     634.95 f
+  inst5/inst2/add_20/n25 (net)                  1                   0.00     634.95 f
+  inst5/inst2/add_20/U4/Z (SC7P5T_OAI21X2_CSC28L)        11.92     11.28     646.23 r
+  inst5/inst2/add_20/n71 (net)                  1                   0.00     646.23 r
+  inst5/inst2/add_20/U3/Z (SC7P5T_AO21IAX2_CSC28L)        8.80     13.15     659.38 f
+  inst5/inst2/add_20/n69 (net)                  2                   0.00     659.38 f
+  inst5/inst2/add_20/U46/Z (SC7P5T_ND2IAX1_CSC28L)        9.64     14.12     673.50 r
+  inst5/inst2/add_20/n67 (net)                  1                   0.00     673.50 r
+  inst5/inst2/add_20/U10/Z (SC7P5T_ND2X2_CSC28L)          7.94     11.93     685.43 f
+  inst5/inst2/add_20/n65 (net)                  1                   0.00     685.43 f
+  inst5/inst2/add_20/U9/Z (SC7P5T_XOR2X1_CSC28L)         11.68     37.66     723.08 r
+  inst5/inst2/add_20/SUM[31] (net)              2                   0.00     723.08 r
+  inst5/inst2/add_20/SUM[31] (Add_IN_WIDTH32_OUT_WIDTH32_6_DW01_add_J4_0)     0.00   723.08 r
+  inst5/inst2/out[31] (net)                                         0.00     723.08 r
+  inst5/inst2/out[31] (Add_IN_WIDTH32_OUT_WIDTH32_6)                0.00     723.08 r
+  inst5/inst2_out[31] (net)                                         0.00     723.08 r
+  inst5/U5/Z (SC7P5T_AN2X2_CSC28L)                        6.96     26.29     749.37 r
+  inst5/p13[31] (net)                           1                   0.00     749.37 r
+  inst5/p13[31] (comp4_2)                                           0.00     749.37 r
+  inst5_p13[31] (net)                                               0.00     749.37 r
+  U133/Z (SC7P5T_AN2X2_A_CSC28L)                          5.91     21.63     771.00 r
+  out01[31] (net)                               1                   0.00     771.00 r
+  out01[31] (out)                                         5.91      0.00     771.00 r
+  data arrival time                                                          771.00
+
+  clock clk (rise edge)                                           821.00     821.00
+  clock network delay (ideal)                                       0.00     821.00
+  output external delay                                           -50.00     771.00
+  data required time                                                         771.00
+  ---------------------------------------------------------------------------------------------------------
+  data required time                                                         771.00
+  data arrival time                                                         -771.00
+  ---------------------------------------------------------------------------------------------------------
+  slack (MET)                                                                  0.00
+
+
+1
+ 
+****************************************
+Report : area
+Design : main
+Version: Q-2019.12-SP5-1
+Date   : Thu Aug 21 19:52:46 2025
+****************************************
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Number of ports:                         4499
+Number of nets:                          8850
+Number of cells:                         4643
+Number of combinational cells:           3710
+Number of sequential cells:               840
+Number of macros/black boxes:               0
+Number of buf/inv:                        962
+Number of references:                      14
+
+Combinational area:               1351.632010
+Buf/Inv area:                      149.431202
+Noncombinational area:            1170.254367
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (No wire load specified)
+
+Total cell area:                  2521.886377
+Total area:                 undefined
+
+Hierarchical area distribution
+------------------------------
+
+                                  Global cell area          Local cell area
+                                  ------------------  ---------------------------- 
+Hierarchical cell                 Absolute   Percent  Combi-     Noncombi-  Black-
+                                  Total      Total    national   national   boxes   Design
+--------------------------------  ---------  -------  ---------  ---------  ------  ------------------------------------------
+main                              2521.8864    100.0    47.6064     0.0000  0.0000  main
+go0                                 16.1472      0.6     0.5568     0.0000  0.0000  fsm_4_8
+go0/r                                3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_35
+go0/r0                               3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_34
+go0/r1                               3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_33
+go0/r2                               3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_32
+inst0                               63.8232      2.5    19.2792    44.5440  0.0000  Prev_WIDTH32_SAFE1_7
+inst1                               63.8232      2.5    19.2792    44.5440  0.0000  Prev_WIDTH32_SAFE1_6
+inst2                               63.8232      2.5    19.2792    44.5440  0.0000  Prev_WIDTH32_SAFE1_5
+inst3                               63.8232      2.5    19.2792    44.5440  0.0000  Prev_WIDTH32_SAFE1_4
+inst4                              548.7960     21.8    12.1800     0.0000  0.0000  comp4_3
+inst4/ev00                          16.1472      0.6     0.5568     0.0000  0.0000  fsm_4_7
+inst4/ev00/r                         3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_31
+inst4/ev00/r0                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_30
+inst4/ev00/r1                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_29
+inst4/ev00/r2                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_28
+inst4/inst0                         69.1128      2.7    24.5688    44.5440  0.0000  Prev_WIDTH32_SAFE1_3
+inst4/inst1                        368.5320     14.6    11.6232     0.0000  0.0000  comp3_3
+inst4/inst1/ev00                    16.7040      0.7     0.5568     0.0000  0.0000  fsm_4_3
+inst4/inst1/ev00/r                   3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_15
+inst4/inst1/ev00/r0                  3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_14
+inst4/inst1/ev00/r1                  4.4544      0.2     1.4616     2.9928  0.0000  std_reg_WIDTH1_13
+inst4/inst1/ev00/r2                  3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_12
+inst4/inst1/inst0                   65.9808      2.6    21.4368    44.5440  0.0000  Register_WIDTH32_15
+inst4/inst1/inst1                   65.9808      2.6    21.4368    44.5440  0.0000  Register_WIDTH32_14
+inst4/inst1/inst2                   76.3512      3.0     0.1392     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_3
+inst4/inst1/inst2/add_20            76.2120      3.0    76.2120     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_3_DW01_add_J7_0
+inst4/inst1/inst3                   65.6328      2.6    21.0888    44.5440  0.0000  Register_WIDTH32_13
+inst4/inst1/inst4                   66.2592      2.6    21.7152    44.5440  0.0000  Register_WIDTH32_12
+inst4/inst2                         82.8240      3.3     0.1392     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_7
+inst4/inst2/add_20                  82.6848      3.3    82.6848     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_7_DW01_add_J3_0
+inst5                              553.4592     21.9    12.2496     0.0000  0.0000  comp4_2
+inst5/ev00                          16.1472      0.6     0.5568     0.0000  0.0000  fsm_4_6
+inst5/ev00/r                         3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_27
+inst5/ev00/r0                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_26
+inst5/ev00/r1                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_25
+inst5/ev00/r2                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_24
+inst5/inst0                         69.1128      2.7    24.5688    44.5440  0.0000  Prev_WIDTH32_SAFE1_2
+inst5/inst1                        369.5760     14.7    12.8760     0.0000  0.0000  comp3_2
+inst5/inst1/ev00                    16.4952      0.7     0.5568     0.0000  0.0000  fsm_4_2
+inst5/inst1/ev00/r                   3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_11
+inst5/inst1/ev00/r0                  3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_10
+inst5/inst1/ev00/r1                  4.2456      0.2     1.2528     2.9928  0.0000  std_reg_WIDTH1_9
+inst5/inst1/ev00/r2                  3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_8
+inst5/inst1/inst0                   65.9808      2.6    21.4368    44.5440  0.0000  Register_WIDTH32_11
+inst5/inst1/inst1                   65.9808      2.6    21.4368    44.5440  0.0000  Register_WIDTH32_10
+inst5/inst1/inst2                   76.3512      3.0     0.1392     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_2
+inst5/inst1/inst2/add_20            76.2120      3.0    76.2120     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_2_DW01_add_J8_0
+inst5/inst1/inst3                   65.6328      2.6    21.0888    44.5440  0.0000  Register_WIDTH32_9
+inst5/inst1/inst4                   66.2592      2.6    21.7152    44.5440  0.0000  Register_WIDTH32_8
+inst5/inst2                         86.3736      3.4     0.1392     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_6
+inst5/inst2/add_20                  86.2344      3.4    86.2344     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_6_DW01_add_J4_0
+inst6                              549.0744     21.8    12.1800     0.0000  0.0000  comp4_1
+inst6/ev00                          16.1472      0.6     0.5568     0.0000  0.0000  fsm_4_5
+inst6/ev00/r                         3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_23
+inst6/ev00/r0                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_22
+inst6/ev00/r1                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_21
+inst6/ev00/r2                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_20
+inst6/inst0                         69.1128      2.7    24.5688    44.5440  0.0000  Prev_WIDTH32_SAFE1_1
+inst6/inst1                        369.7848     14.7    13.0152     0.0000  0.0000  comp3_1
+inst6/inst1/ev00                    16.5648      0.7     0.5568     0.0000  0.0000  fsm_4_1
+inst6/inst1/ev00/r                   3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_7
+inst6/inst1/ev00/r0                  3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_6
+inst6/inst1/ev00/r1                  4.3152      0.2     1.2528     3.0624  0.0000  std_reg_WIDTH1_5
+inst6/inst1/ev00/r2                  3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_4
+inst6/inst1/inst0                   65.9808      2.6    21.4368    44.5440  0.0000  Register_WIDTH32_7
+inst6/inst1/inst1                   65.9808      2.6    21.4368    44.5440  0.0000  Register_WIDTH32_6
+inst6/inst1/inst2                   76.3512      3.0     0.1392     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_1
+inst6/inst1/inst2/add_20            76.2120      3.0    76.2120     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_1_DW01_add_1
+inst6/inst1/inst3                   65.6328      2.6    21.0888    44.5440  0.0000  Register_WIDTH32_5
+inst6/inst1/inst4                   66.2592      2.6    21.7152    44.5440  0.0000  Register_WIDTH32_4
+inst6/inst2                         81.8496      3.2     0.1392     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_5
+inst6/inst2/add_20                  81.7104      3.2    81.7104     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_5_DW01_add_J5_0
+inst7                              551.5104     21.9    12.3888     0.0000  0.0000  comp4_0
+inst7/ev00                          16.1472      0.6     0.5568     0.0000  0.0000  fsm_4_4
+inst7/ev00/r                         3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_19
+inst7/ev00/r0                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_18
+inst7/ev00/r1                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_17
+inst7/ev00/r2                        3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_16
+inst7/inst0                         69.1128      2.7    24.5688    44.5440  0.0000  Prev_WIDTH32_SAFE1_0
+inst7/inst1                        368.8104     14.6    12.0408     0.0000  0.0000  comp3_0
+inst7/inst1/ev00                    16.5648      0.7     0.5568     0.0000  0.0000  fsm_4_0
+inst7/inst1/ev00/r                   3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_3
+inst7/inst1/ev00/r0                  3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_2
+inst7/inst1/ev00/r1                  4.3152      0.2     1.2528     3.0624  0.0000  std_reg_WIDTH1_1
+inst7/inst1/ev00/r2                  3.8976      0.2     1.1136     2.7840  0.0000  std_reg_WIDTH1_0
+inst7/inst1/inst0                   65.9808      2.6    21.4368    44.5440  0.0000  Register_WIDTH32_3
+inst7/inst1/inst1                   65.9808      2.6    21.4368    44.5440  0.0000  Register_WIDTH32_2
+inst7/inst1/inst2                   76.3512      3.0     0.1392     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_0
+inst7/inst1/inst2/add_20            76.2120      3.0    76.2120     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_0_DW01_add_J9_0
+inst7/inst1/inst3                   65.6328      2.6    21.0888    44.5440  0.0000  Register_WIDTH32_1
+inst7/inst1/inst4                   66.2592      2.6    21.7152    44.5440  0.0000  Register_WIDTH32_0
+inst7/inst2                         85.0512      3.4     0.1392     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_4
+inst7/inst2/add_20                  84.9120      3.4    84.9120     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_4_DW01_add_J6_0
+--------------------------------  ---------  -------  ---------  ---------  ------  ------------------------------------------
+Total                                                 1351.6320  1170.2544  0.0000
+
+1
+Loading db file '/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db'
+Information: Propagating switching activity (low effort zero delay simulation). (PWR-6)
+Warning: Design has unannotated primary inputs. (PWR-414)
+Warning: Design has unannotated sequential cell outputs. (PWR-415)
+ 
+****************************************
+Report : power
+        -hier
+        -analysis_effort low
+Design : main
+Version: Q-2019.12-SP5-1
+Date   : Thu Aug 21 19:52:49 2025
+****************************************
+
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+
+Global Operating Voltage = 0.8  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000ff
+    Time Units = 1ps
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1uW
+
+
+--------------------------------------------------------------------------------
+                                       Switch   Int      Leak     Total
+Hierarchy                              Power    Power    Power    Power    %
+--------------------------------------------------------------------------------
+main                                      0.138    2.394    1.012    2.533 100.0
+  inst7 (comp4_0)                      2.89e-02    0.498    0.220    0.527  20.8
+    inst2 (Add_IN_WIDTH32_OUT_WIDTH32_4) 6.89e-03 1.03e-02 3.75e-02 1.73e-02   0.7
+      add_20 (Add_IN_WIDTH32_OUT_WIDTH32_4_DW01_add_J6_0) 6.89e-03 1.03e-02 3.75e-02 1.73e-02   0.7
+    inst1 (comp3_0)                    1.62e-02    0.374    0.143    0.391  15.4
+      inst4 (Register_WIDTH32_0)       2.59e-03 8.67e-02 2.45e-02 8.93e-02   3.5
+      inst3 (Register_WIDTH32_1)       2.76e-03 8.72e-02 2.43e-02 8.99e-02   3.6
+      inst2 (Add_IN_WIDTH32_OUT_WIDTH32_0) 3.74e-03 7.24e-03 3.35e-02 1.10e-02   0.4
+        add_20 (Add_IN_WIDTH32_OUT_WIDTH32_0_DW01_add_J9_0) 3.74e-03 7.24e-03 3.35e-02 1.10e-02   0.4
+      inst1 (Register_WIDTH32_2)       2.55e-03 8.49e-02 2.44e-02 8.75e-02   3.5
+      inst0 (Register_WIDTH32_3)       2.49e-03 8.49e-02 2.44e-02 8.74e-02   3.5
+      ev00 (fsm_4_0)                   7.61e-04 2.21e-02 6.62e-03 2.29e-02   0.9
+        r2 (std_reg_WIDTH1_0)          7.09e-05 5.34e-03 1.49e-03 5.41e-03   0.2
+        r1 (std_reg_WIDTH1_1)          2.77e-04 5.84e-03 1.69e-03 6.12e-03   0.2
+        r0 (std_reg_WIDTH1_2)          1.18e-04 5.39e-03 1.58e-03 5.51e-03   0.2
+        r (std_reg_WIDTH1_3)           1.25e-04 5.41e-03 1.58e-03 5.54e-03   0.2
+    inst0 (Prev_WIDTH32_SAFE1_0)       3.89e-03 8.91e-02 2.55e-02 9.31e-02   3.7
+    ev00 (fsm_4_4)                     5.95e-04 2.17e-02 6.61e-03 2.23e-02   0.9
+      r2 (std_reg_WIDTH1_16)           8.29e-05 5.36e-03 1.59e-03 5.45e-03   0.2
+      r1 (std_reg_WIDTH1_17)           1.17e-04 5.38e-03 1.58e-03 5.50e-03   0.2
+      r0 (std_reg_WIDTH1_18)           1.05e-04 5.39e-03 1.58e-03 5.50e-03   0.2
+      r (std_reg_WIDTH1_19)            1.09e-04 5.41e-03 1.58e-03 5.52e-03   0.2
+  inst6 (comp4_1)                      3.24e-02    0.507    0.220    0.540  21.3
+    inst2 (Add_IN_WIDTH32_OUT_WIDTH32_5) 7.89e-03 1.19e-02 3.54e-02 1.98e-02   0.8
+      add_20 (Add_IN_WIDTH32_OUT_WIDTH32_5_DW01_add_J5_0) 7.89e-03 1.19e-02 3.54e-02 1.98e-02   0.8
+    inst1 (comp3_1)                    1.81e-02    0.380    0.145    0.398  15.7
+      inst4 (Register_WIDTH32_4)       3.01e-03 8.80e-02 2.45e-02 9.11e-02   3.6
+      inst3 (Register_WIDTH32_5)       3.15e-03 8.87e-02 2.43e-02 9.18e-02   3.6
+      inst2 (Add_IN_WIDTH32_OUT_WIDTH32_1) 4.21e-03 8.63e-03 3.35e-02 1.29e-02   0.5
+        add_20 (Add_IN_WIDTH32_OUT_WIDTH32_1_DW01_add_1) 4.21e-03 8.63e-03 3.35e-02 1.29e-02   0.5
+      inst1 (Register_WIDTH32_6)       2.56e-03 8.49e-02 2.44e-02 8.75e-02   3.5
+      inst0 (Register_WIDTH32_7)       2.80e-03 8.54e-02 2.48e-02 8.82e-02   3.5
+      ev00 (fsm_4_1)                   6.66e-04 2.21e-02 6.62e-03 2.28e-02   0.9
+        r2 (std_reg_WIDTH1_4)          7.09e-05 5.34e-03 1.49e-03 5.41e-03   0.2
+        r1 (std_reg_WIDTH1_5)          1.82e-04 5.84e-03 1.69e-03 6.02e-03   0.2
+        r0 (std_reg_WIDTH1_6)          1.18e-04 5.39e-03 1.58e-03 5.51e-03   0.2
+        r (std_reg_WIDTH1_7)           1.25e-04 5.41e-03 1.58e-03 5.54e-03   0.2
+    inst0 (Prev_WIDTH32_SAFE1_1)       4.39e-03 9.03e-02 2.55e-02 9.47e-02   3.7
+    ev00 (fsm_4_5)                     5.95e-04 2.17e-02 6.61e-03 2.23e-02   0.9
+      r2 (std_reg_WIDTH1_20)           8.29e-05 5.36e-03 1.59e-03 5.45e-03   0.2
+      r1 (std_reg_WIDTH1_21)           1.17e-04 5.38e-03 1.58e-03 5.50e-03   0.2
+      r0 (std_reg_WIDTH1_22)           1.05e-04 5.39e-03 1.58e-03 5.50e-03   0.2
+      r (std_reg_WIDTH1_23)            1.09e-04 5.41e-03 1.58e-03 5.52e-03   0.2
+  inst5 (comp4_2)                      3.29e-02    0.507    0.222    0.540  21.3
+    inst2 (Add_IN_WIDTH32_OUT_WIDTH32_6) 8.49e-03 1.21e-02 3.78e-02 2.07e-02   0.8
+      add_20 (Add_IN_WIDTH32_OUT_WIDTH32_6_DW01_add_J4_0) 8.49e-03 1.21e-02 3.78e-02 2.07e-02   0.8
+    inst1 (comp3_2)                    1.81e-02    0.380    0.144    0.398  15.7
+      inst4 (Register_WIDTH32_8)       3.00e-03 8.80e-02 2.45e-02 9.10e-02   3.6
+      inst3 (Register_WIDTH32_9)       3.14e-03 8.86e-02 2.43e-02 9.18e-02   3.6
+      inst2 (Add_IN_WIDTH32_OUT_WIDTH32_2) 4.19e-03 8.60e-03 3.35e-02 1.28e-02   0.5
+        add_20 (Add_IN_WIDTH32_OUT_WIDTH32_2_DW01_add_J8_0) 4.19e-03 8.60e-03 3.35e-02 1.28e-02   0.5
+      inst1 (Register_WIDTH32_10)      2.87e-03 8.54e-02 2.48e-02 8.83e-02   3.5
+      inst0 (Register_WIDTH32_11)      2.49e-03 8.49e-02 2.44e-02 8.74e-02   3.5
+      ev00 (fsm_4_2)                   6.30e-04 2.22e-02 6.36e-03 2.28e-02   0.9
+        r2 (std_reg_WIDTH1_8)          7.12e-05 5.34e-03 1.49e-03 5.41e-03   0.2
+        r1 (std_reg_WIDTH1_9)          1.46e-04 5.90e-03 1.43e-03 6.04e-03   0.2
+        r0 (std_reg_WIDTH1_10)         1.18e-04 5.39e-03 1.58e-03 5.51e-03   0.2
+        r (std_reg_WIDTH1_11)          1.25e-04 5.41e-03 1.58e-03 5.54e-03   0.2
+    inst0 (Prev_WIDTH32_SAFE1_2)       4.37e-03 9.03e-02 2.55e-02 9.46e-02   3.7
+    ev00 (fsm_4_6)                     5.95e-04 2.17e-02 6.61e-03 2.23e-02   0.9
+      r2 (std_reg_WIDTH1_24)           8.29e-05 5.36e-03 1.59e-03 5.45e-03   0.2
+      r1 (std_reg_WIDTH1_25)           1.17e-04 5.38e-03 1.58e-03 5.50e-03   0.2
+      r0 (std_reg_WIDTH1_26)           1.05e-04 5.39e-03 1.58e-03 5.50e-03   0.2
+      r (std_reg_WIDTH1_27)            1.09e-04 5.41e-03 1.58e-03 5.52e-03   0.2
+  inst4 (comp4_3)                      3.25e-02    0.506    0.220    0.539  21.3
+    inst2 (Add_IN_WIDTH32_OUT_WIDTH32_7) 7.96e-03 1.19e-02 3.62e-02 1.99e-02   0.8
+      add_20 (Add_IN_WIDTH32_OUT_WIDTH32_7_DW01_add_J3_0) 7.96e-03 1.19e-02 3.62e-02 1.99e-02   0.8
+    inst1 (comp3_3)                    1.82e-02    0.379    0.144    0.397  15.7
+      inst4 (Register_WIDTH32_12)      2.86e-03 8.74e-02 2.45e-02 9.03e-02   3.6
+      inst3 (Register_WIDTH32_13)      3.01e-03 8.80e-02 2.43e-02 9.10e-02   3.6
+      inst2 (Add_IN_WIDTH32_OUT_WIDTH32_3) 4.38e-03 8.47e-03 3.35e-02 1.29e-02   0.5
+        add_20 (Add_IN_WIDTH32_OUT_WIDTH32_3_DW01_add_J7_0) 4.38e-03 8.47e-03 3.35e-02 1.29e-02   0.5
+      inst1 (Register_WIDTH32_14)      2.88e-03 8.54e-02 2.48e-02 8.83e-02   3.5
+      inst0 (Register_WIDTH32_15)      2.80e-03 8.54e-02 2.48e-02 8.82e-02   3.5
+      ev00 (fsm_4_3)                   8.63e-04 2.22e-02 6.58e-03 2.30e-02   0.9
+        r2 (std_reg_WIDTH1_12)         7.12e-05 5.34e-03 1.49e-03 5.41e-03   0.2
+        r1 (std_reg_WIDTH1_13)         3.79e-04 5.92e-03 1.65e-03 6.30e-03   0.2
+        r0 (std_reg_WIDTH1_14)         1.18e-04 5.39e-03 1.58e-03 5.51e-03   0.2
+        r (std_reg_WIDTH1_15)          1.25e-04 5.41e-03 1.58e-03 5.54e-03   0.2
+    inst0 (Prev_WIDTH32_SAFE1_3)       4.35e-03 9.02e-02 2.55e-02 9.46e-02   3.7
+    ev00 (fsm_4_7)                     5.95e-04 2.17e-02 6.61e-03 2.23e-02   0.9
+      r2 (std_reg_WIDTH1_28)           8.29e-05 5.36e-03 1.59e-03 5.45e-03   0.2
+      r1 (std_reg_WIDTH1_29)           1.17e-04 5.38e-03 1.58e-03 5.50e-03   0.2
+      r0 (std_reg_WIDTH1_30)           1.05e-04 5.39e-03 1.58e-03 5.50e-03   0.2
+      r (std_reg_WIDTH1_31)            1.09e-04 5.41e-03 1.58e-03 5.52e-03   0.2
+  inst3 (Prev_WIDTH32_SAFE1_4)         2.11e-03 8.55e-02 2.38e-02 8.76e-02   3.5
+  inst2 (Prev_WIDTH32_SAFE1_5)         2.11e-03 8.55e-02 2.38e-02 8.76e-02   3.5
+  inst1 (Prev_WIDTH32_SAFE1_6)         2.12e-03 8.55e-02 2.38e-02 8.76e-02   3.5
+  inst0 (Prev_WIDTH32_SAFE1_7)         2.11e-03 8.55e-02 2.38e-02 8.76e-02   3.5
+  go0 (fsm_4_8)                        7.86e-04 2.17e-02 6.61e-03 2.25e-02   0.9
+    r2 (std_reg_WIDTH1_32)             8.29e-05 5.36e-03 1.59e-03 5.45e-03   0.2
+    r1 (std_reg_WIDTH1_33)             1.17e-04 5.38e-03 1.58e-03 5.50e-03   0.2
+    r0 (std_reg_WIDTH1_34)             1.05e-04 5.39e-03 1.58e-03 5.50e-03   0.2
+    r (std_reg_WIDTH1_35)              1.09e-04 5.41e-03 1.58e-03 5.52e-03   0.2
+1
+ 
+****************************************
+Report : saif
+Design : main
+Version: Q-2019.12-SP5-1
+Date   : Thu Aug 21 19:52:49 2025
+****************************************
+
+  
+
+--------------------------------------------------------------------------------
+              User              Default           Propagated
+Object type   Annotated (%)     Activity (%)      Activity (%)       Total
+--------------------------------------------------------------------------------
+  
+ Nets         0(0.00%)          131(32.59%)       271(67.41%)        402
+ Ports        0(0.00%)          131(50.58%)       128(49.42%)        259
+ Pins         0(0.00%)          0(0.00%)          412(100.00%)       412
+--------------------------------------------------------------------------------
+1

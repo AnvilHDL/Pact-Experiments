@@ -1,4 +1,4 @@
-module cva6_anvil_ptw
+module cva6_ptw
   import ariane_pkg::*;
 #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg = config_pkg::cva6_cfg_empty,
@@ -84,8 +84,8 @@ module cva6_anvil_ptw
     logic[98:0] _mmu_ch_res_0;
     logic[0:0] _mmu_ch_status_0;
     logic[0:0] _mmu_ch_walking_instr_o_0;
-    logic[63:0] _mmu_ch_pmp_cfg_0;
-    logic[447:0] _mmu_ch_pmp_addr_0;
+    // logic[63:0] _mmu_ch_pmp_cfg_0;
+    // logic[447:0] _mmu_ch_pmp_addr_0;
     logic[0:0] _dcache_ch_req_valid;
     logic[0:0] _dcache_ch_req_0;
     logic[0:0] _dcache_ch_gnt_0;
@@ -96,6 +96,8 @@ module cva6_anvil_ptw
     logic[67:0] _dcache_ch_data_res_0;
     logic[0:0] _flush_ch_req_valid;
     logic[0:0] _flush_ch_req_0;
+    logic [55:0] pmp_addr;
+    logic allow_access;
 
 
 
@@ -107,8 +109,8 @@ module cva6_anvil_ptw
     assign _mmu_ch_lsu_req_0 = lsu_is_store_i;
 
 
-    assign _mmu_ch_pmp_cfg_0 = pmpcfg_i;
-    assign _mmu_ch_pmp_addr_0 = pmpaddr_i;
+    // assign _mmu_ch_pmp_cfg_0 = pmpcfg_i;
+    // assign _mmu_ch_pmp_addr_0 = pmpaddr_i;
     assign _dcache_ch_data_res_valid = req_port_i.data_rvalid;
     assign _dcache_ch_gnt_0 = req_port_i.data_gnt;
     assign _dcache_ch_data_res_0 = {req_port_i.data_rid, req_port_i.data_rdata, req_port_i.data_ruser[0]};
@@ -150,8 +152,21 @@ module cva6_anvil_ptw
         kill_req : '0,
         tag_valid : _dcache_ch_data_req_valid
     };
+      pmp #(
+      .CVA6Cfg(CVA6Cfg)
+  ) i_pmp_ptw (
+      .addr_i       (pmp_addr),
+      // PTW access are always checked as if in S-Mode...
+      .priv_lvl_i   (riscv::PRIV_LVL_S),
+      // ...and they are always loads
+      .access_type_i(riscv::ACCESS_READ),
+      // Configuration
+      .conf_addr_i  (pmpaddr_i),
+      .conf_i       (pmpcfg_i),
+      .allow_o      (allow_access)
+  );
 
-    anvil_ptw #(.CVA6Cfg(CVA6Cfg)) anvil_spawn(
+    anvil_ptw anvil_spawn(
         .clk_i(clk_i),
         .rst_ni(rst_ni),
         ._mmu_ch_req_ack(_mmu_ch_req_ack),
@@ -168,8 +183,8 @@ module cva6_anvil_ptw
         ._mmu_ch_res_0(_mmu_ch_res_0),
         ._mmu_ch_status_0(_mmu_ch_status_0),
         ._mmu_ch_walking_instr_o_0(_mmu_ch_walking_instr_o_0),
-        ._mmu_ch_pmp_cfg_0(_mmu_ch_pmp_cfg_0),
-        ._mmu_ch_pmp_addr_0(_mmu_ch_pmp_addr_0),
+        // ._mmu_ch_pmp_cfg_0(_mmu_ch_pmp_cfg_0),
+        // ._mmu_ch_pmp_addr_0(_mmu_ch_pmp_addr_0),
         ._dcache_ch_gnt_0(_dcache_ch_gnt_0),
         ._dcache_ch_req_valid(_dcache_ch_req_valid),
         ._dcache_ch_req_0(_dcache_ch_req_0),
@@ -179,7 +194,9 @@ module cva6_anvil_ptw
         ._dcache_ch_data_res_valid(_dcache_ch_data_res_valid),
         ._dcache_ch_data_res_0(_dcache_ch_data_res_0),
         ._flush_ch_req_valid(_flush_ch_req_valid),
-        ._flush_ch_req_0(_flush_ch_req_0)
+        ._flush_ch_req_0(_flush_ch_req_0),
+        ._pmp_ep_ri_addr_i_0(pmp_addr),
+        ._pmp_ep_ri_res_0(allow_access)
     );
 
 endmodule

@@ -136,7 +136,7 @@ chan dcache_ptw_ch {
 }
 
 chan pmp_ch {
-    // left addr_i : (logic[56]@#1) @#1 - @#1,
+    left addr_i : (logic[56]@#1) @#1 - @#1,
     // left priv_lvl_i : (prv_lvl_e@#1) @#1 - @#1,
     // left access_type : (pmp_access_t@#1) @#1 - @#1,
     // left pmp_addr : (logic[8][56]@#1) @#1 - @#1,
@@ -360,6 +360,7 @@ proc anvil_ptw (mmu_ch : left ptw_mmu_ch, dcache_ch : right dcache_ptw_ch, flush
     reg vaddr : logic[64];
     reg tlb_update_asid : logic[16];
     reg ptw_lvl : logic[2];
+    reg cyc : logic[20];
 
     loop {
            
@@ -380,7 +381,7 @@ proc anvil_ptw (mmu_ch : left ptw_mmu_ch, dcache_ch : right dcache_ptw_ch, flush
         send mmu_ch.status((*stage!=stageEnum::IDLE)) >>
         send mmu_ch.walking_instr_o(*is_instr_ptw) >>
         send mmu_ch.update_vaddr_o(*vaddr) >>
-        // send pmp_ep_ri.addr_i(*ptw_pptr) >>
+        send pmp_ep_ri.addr_i(*ptw_pptr) >>
         // send pmp_ep_ri.priv_lvl_i(prv_lvl_e::PRV_S) >>
         // send pmp_ep_ri.access_type(pmp_access_t::ACCESS_READ) >>
         // let pmp_addr_i = recv mmu_ch.pmp_addr >>
@@ -388,6 +389,12 @@ proc anvil_ptw (mmu_ch : left ptw_mmu_ch, dcache_ch : right dcache_ptw_ch, flush
         // let pmp_cfg_i = recv mmu_ch.pmp_cfg >>
         // send pmp_ep_ri.pmp_cfg(pmp_cfg_i) >>
         cycle 1
+    }
+    loop{
+        if (*cyc == 20'd0){
+            dprint "Anvil PTW\n" ()
+        } >>
+        set cyc := *cyc + 20'd1
     }
 
 }

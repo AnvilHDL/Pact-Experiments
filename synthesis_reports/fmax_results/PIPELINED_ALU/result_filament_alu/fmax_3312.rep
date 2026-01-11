@@ -1,0 +1,296 @@
+Information: Updating design information... (UID-85)
+ 
+****************************************
+Report : design
+Design : main
+Version: Q-2019.12-SP5-1
+Date   : Thu Aug 21 19:44:30 2025
+****************************************
+
+Design allows ideal nets on clock nets.
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Local Link Library:
+
+    {/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db, /home/yaswanth/GF22_mem/InvecasViews_w00512/model/timing/lib/bob_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_w00256/model/timing/lib/macro_m8_w256_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/./InvecasViews_w00512_m8/model/timing/lib/macro_m8_w512_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00512_m8/model/timing/lib/macro_s1c_m8_w512_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w32768_m16_c65KB/model/timing/lib/macro_s1c_w32768_m16_c65KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m4_c1KB/model/timing/lib/macro_s1c_w00256_m4_c1KB_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m8_c512B/model/timing/lib/macro_s1c_w00256_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w00256_m16_c256B/model/timing/lib/macro_s1c_w00256_m16_c256B_116cpp_TT_0P800V_0P800V_025C.db, /home/yaswanth/GF22_mem/InvecasViews_s1c_w19648_m16_c40KB/model/timing/lib/macro_s1c_w19648_m16_c40KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w9024_m8_c18KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w4512_m8_c9KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5184_m8_c10KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1728_m8_c3KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w2560_m8_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w8192_m4_c144KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m32_c49KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_c5KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w12544_m16_c16KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m8_32b_b2_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w14112_m8_72b_b4_c124KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w196_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_32b_b1_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1040_m4_32b_b1_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m4_32b_b1_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w32768_m16_32b_b4_c128KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w512_m8_c2KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w5600_m4_c22KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m4_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w1024_m8_c4KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m16_c320B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w128_m8_c1KB_116cpp_TT_0P800V_0P800V_025C.db, ./macro_r1ph_w256_m4_c512B_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1ph_w256_m4_c512B_weight_104cpp_TT_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m2_c512B_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_r1pv_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_0P000V_0P000V_025C.db, ./macro_s1c_w256_m4_c512B_116cpp_TT_0P800V_0P800V_025C.db, ./macro_s1c_w256_m4_c512B_weight_116cpp_TT_0P800V_0P800V_025C.db}
+
+Flip-Flop Types:
+
+    No flip-flop types specified.
+
+Latch Types:
+
+    No latch types specified.
+
+Operating Conditions:
+
+
+    Operating Condition Name : TT_0P80V_0P00V_0P00V_0P00V_25C
+    Library : GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+    Process :   1.00
+    Temperature :  25.00
+    Voltage :   0.80
+
+Wire Loading Model:
+
+    No wire loading specified.
+
+
+Wire Loading Model Mode: top.
+
+Timing Ranges:
+
+    No timing ranges specified.
+
+Pin Input Delays:
+
+    None specified.
+
+Pin Output Delays:
+
+    None specified.
+
+Disabled Timing Arcs:
+
+    No arcs disabled.
+
+Required Licenses:
+
+    None Required
+
+Design Parameters:
+
+    None specified.
+1
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -nets
+        -max_paths 1
+        -transition_time
+Design : main
+Version: Q-2019.12-SP5-1
+Date   : Thu Aug 21 19:44:30 2025
+****************************************
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+  Startpoint: inB[26] (input port clocked by clk)
+  Endpoint: inst1/out_reg[31]
+            (rising edge-triggered flip-flop clocked by clk)
+  Path Group: clk
+  Path Type: max
+
+Attributes:
+    d - dont_touch
+    u - dont_use
+   mo - map_only
+   so - size_only
+    i - ideal_net or ideal_network
+  inf - infeasible path
+
+  Point                                       Fanout     Trans      Incr       Path      Attributes
+  ---------------------------------------------------------------------------------------------------------
+  clock clk (rise edge)                                             0.00       0.00
+  clock network delay (ideal)                                       0.00       0.00
+  input external delay                                             50.00      50.00 f
+  inB[26] (in)                                            0.00      0.00      50.00 f
+  inB[26] (net)                                 6                   0.00      50.00 f
+  inst0/right[26] (Add_IN_WIDTH32_OUT_WIDTH32)                      0.00      50.00 f
+  inst0/right[26] (net)                                             0.00      50.00 f
+  inst0/add_130/B[26] (Add_IN_WIDTH32_OUT_WIDTH32_DW01_add_J2_0)     0.00     50.00 f
+  inst0/add_130/B[26] (net)                                         0.00      50.00 f
+  inst0/add_130/U334/Z (SC7P5T_CKOR2X6_CSC28L)            6.03     20.94      70.94 f
+  inst0/add_130/n165 (net)                      2                   0.00      70.94 f
+  inst0/add_130/U188/Z (SC7P5T_ND3X2_CSC28L)              8.98     12.54      83.49 r
+  inst0/add_130/n160 (net)                      2                   0.00      83.49 r
+  inst0/add_130/U151/Z (SC7P5T_NR2X1_CSC28L)             11.00     14.90      98.39 f
+  inst0/add_130/n158 (net)                      2                   0.00      98.39 f
+  inst0/add_130/U212/Z (SC7P5T_AOI211X2_CSC28L)          16.48     20.62     119.01 r
+  inst0/add_130/n153 (net)                      1                   0.00     119.01 r
+  inst0/add_130/U211/Z (SC7P5T_OA22IA1A2X3_CSC28L)       12.55     33.81     152.82 r
+  inst0/add_130/n68 (net)                       2                   0.00     152.82 r
+  inst0/add_130/U149/Z (SC7P5T_AO22IA1A2X2_CSC28L)       14.97     17.94     170.76 f
+  inst0/add_130/n141 (net)                      2                   0.00     170.76 f
+  inst0/add_130/U224/Z (SC7P5T_ND2X1_CSC28L)              7.96     14.70     185.46 r
+  inst0/add_130/n139 (net)                      1                   0.00     185.46 r
+  inst0/add_130/U247/Z (SC7P5T_ND2X1_MR_CSC28L)          14.35     16.98     202.44 f
+  inst0/add_130/n116 (net)                      1                   0.00     202.44 f
+  inst0/add_130/U150/Z (SC7P5T_NR3X2_CSC28L)             14.35     22.00     224.44 r
+  inst0/add_130/n115 (net)                      2                   0.00     224.44 r
+  inst0/add_130/U51/Z (SC7P5T_CKINVX1_CSC28L)             9.40     15.48     239.91 f
+  inst0/add_130/n48 (net)                       1                   0.00     239.91 f
+  inst0/add_130/U204/Z (SC7P5T_ND2X2_CSC28L)              7.34     11.11     251.02 r
+  inst0/add_130/n51 (net)                       1                   0.00     251.02 r
+  inst0/add_130/U205/Z (SC7P5T_ND2X2_CSC28L)              8.17     12.18     263.20 f
+  inst0/add_130/SUM[31] (net)                   1                   0.00     263.20 f
+  inst0/add_130/SUM[31] (Add_IN_WIDTH32_OUT_WIDTH32_DW01_add_J2_0)     0.00   263.20 f
+  inst0/out[31] (net)                                               0.00     263.20 f
+  inst0/out[31] (Add_IN_WIDTH32_OUT_WIDTH32)                        0.00     263.20 f
+  inst0_out[31] (net)                                               0.00     263.20 f
+  inst1/in[31] (Register_WIDTH32_3)                                 0.00     263.20 f
+  inst1/in[31] (net)                                                0.00     263.20 f
+  inst1/U36/Z (SC7P5T_INVX2_CSC28L)                       5.23      9.85     273.05 r
+  inst1/n78 (net)                               1                   0.00     273.05 r
+  inst1/U68/Z (SC7P5T_AO22IA1A2X2_CSC28L)                16.01     10.03     283.08 f
+  inst1/n34 (net)                               1                   0.00     283.08 f
+  inst1/out_reg[31]/D (SC7P5T_DFFX1_CSC28L)              16.01      0.00     283.08 f
+  data arrival time                                                          283.08
+
+  clock clk (rise edge)                                           301.00     301.00
+  clock network delay (ideal)                                       0.00     301.00
+  inst1/out_reg[31]/CLK (SC7P5T_DFFX1_CSC28L)                       0.00     301.00 r
+  library setup time                                              -17.86     283.14
+  data required time                                                         283.14
+  ---------------------------------------------------------------------------------------------------------
+  data required time                                                         283.14
+  data arrival time                                                         -283.08
+  ---------------------------------------------------------------------------------------------------------
+  slack (MET)                                                                  0.06
+
+
+1
+ 
+****************************************
+Report : area
+Design : main
+Version: Q-2019.12-SP5-1
+Date   : Thu Aug 21 19:44:30 2025
+****************************************
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+Number of ports:                         1002
+Number of nets:                          2213
+Number of cells:                         1272
+Number of combinational cells:           1114
+Number of sequential cells:               140
+Number of macros/black boxes:               0
+Number of buf/inv:                        261
+Number of references:                       8
+
+Combinational area:                502.512000
+Buf/Inv area:                       66.607200
+Noncombinational area:             199.403996
+Macro/Black Box area:                0.000000
+Net Interconnect area:      undefined  (No wire load specified)
+
+Total cell area:                   701.915996
+Total area:                 undefined
+
+Hierarchical area distribution
+------------------------------
+
+                                  Global cell area          Local cell area
+                                  ------------------  --------------------------- 
+Hierarchical cell                 Absolute   Percent  Combi-    Noncombi-  Black-
+                                  Total      Total    national  national   boxes   Design
+--------------------------------  ---------  -------  --------  ---------  ------  ----------------------------------------
+main                               701.9160    100.0   11.9712     0.0000  0.0000  main
+go0                                 12.0408      1.7    0.3480     0.0000  0.0000  fsm_3_1
+go0/r                                3.8976      0.6    1.1136     2.7840  0.0000  std_reg_WIDTH1_5
+go0/r0                               3.8976      0.6    1.1136     2.7840  0.0000  std_reg_WIDTH1_4
+go0/r1                               3.8976      0.6    1.1136     2.7840  0.0000  std_reg_WIDTH1_3
+inst0                              167.8752     23.9    0.1392     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32
+inst0/add_130                      167.7360     23.9  167.7360     0.0000  0.0000  Add_IN_WIDTH32_OUT_WIDTH32_DW01_add_J2_0
+inst1                               71.5488     10.2   24.8472    46.7016  0.0000  Register_WIDTH32_3
+inst2                              355.7256     50.7   11.9712     0.0000  0.0000  comp3
+inst2/ev00                          12.1104      1.7    0.4176     0.0000  0.0000  fsm_3_0
+inst2/ev00/r                         3.8976      0.6    1.1136     2.7840  0.0000  std_reg_WIDTH1_2
+inst2/ev00/r0                        3.8976      0.6    1.1136     2.7840  0.0000  std_reg_WIDTH1_1
+inst2/ev00/r1                        3.8976      0.6    1.1136     2.7840  0.0000  std_reg_WIDTH1_0
+inst2/inst0                        193.6272     27.6    0.1392     0.0000  0.0000  Sub_IN_WIDTH32_OUT_WIDTH32
+inst2/inst0/sub_141                193.4880     27.6  193.4880     0.0000  0.0000  Sub_IN_WIDTH32_OUT_WIDTH32_DW01_sub_J1_0
+inst2/inst1                         74.1936     10.6   27.2832    46.9104  0.0000  Register_WIDTH32_1
+inst2/inst2                         63.8232      9.1   19.2792    44.5440  0.0000  Register_WIDTH32_0
+inst3                               63.8232      9.1   19.2792    44.5440  0.0000  Register_WIDTH32_2
+inst4                               18.9312      2.7   18.9312     0.0000  0.0000  Mux_WIDTH32
+--------------------------------  ---------  -------  --------  ---------  ------  ----------------------------------------
+Total                                                 502.5120   199.4040  0.0000
+
+1
+Loading db file '/opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db'
+Information: Propagating switching activity (low effort zero delay simulation). (PWR-6)
+Warning: Design has unannotated primary inputs. (PWR-414)
+Warning: Design has unannotated sequential cell outputs. (PWR-415)
+ 
+****************************************
+Report : power
+        -hier
+        -analysis_effort low
+Design : main
+Version: Q-2019.12-SP5-1
+Date   : Thu Aug 21 19:44:33 2025
+****************************************
+
+
+Library(s) Used:
+
+    GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C (File: /opt/pdks/FOUNDATION_IP/STDLIB/7P5T/BASE/LVT/FE/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FE_RELV02R00/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_FDK_RELV02R00/model/timing/db/GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C.db)
+
+
+Operating Conditions: TT_0P80V_0P00V_0P00V_0P00V_25C   Library: GF22FDX_SC7P5T_116CPP_BASE_CSC28L_TT_0P80V_0P00V_0P00V_0P00V_25C
+Wire Load Model Mode: top
+
+
+Global Operating Voltage = 0.8  
+Power-specific unit information :
+    Voltage Units = 1V
+    Capacitance Units = 1.000000ff
+    Time Units = 1ps
+    Dynamic Power Units = 1mW    (derived from V,C,T units)
+    Leakage Power Units = 1uW
+
+
+--------------------------------------------------------------------------------
+                                       Switch   Int      Leak     Total
+Hierarchy                              Power    Power    Power    Power    %
+--------------------------------------------------------------------------------
+main                                      0.194    1.309    0.310    1.503 100.0
+  inst4 (Mux_WIDTH32)                  4.76e-03 6.47e-03 6.03e-03 1.12e-02   0.7
+  inst3 (Register_WIDTH32_2)           7.25e-03    0.240 2.37e-02    0.247  16.4
+  inst2 (comp3)                           0.101    0.657    0.163    0.757  50.4
+    inst2 (Register_WIDTH32_0)         7.54e-03    0.240 2.37e-02    0.247  16.4
+    inst1 (Register_WIDTH32_1)         1.36e-02    0.254 2.84e-02    0.268  17.8
+    inst0 (Sub_IN_WIDTH32_OUT_WIDTH32) 7.56e-02    0.112 9.91e-02    0.187  12.5
+      sub_141 (Sub_IN_WIDTH32_OUT_WIDTH32_DW01_sub_J1_0) 7.56e-02    0.112 9.91e-02    0.187  12.5
+    ev00 (fsm_3_0)                     9.74e-04 4.41e-02 4.76e-03 4.51e-02   3.0
+      r1 (std_reg_WIDTH1_0)            2.25e-04 1.46e-02 1.58e-03 1.49e-02   1.0
+      r0 (std_reg_WIDTH1_1)            2.87e-04 1.46e-02 1.49e-03 1.49e-02   1.0
+      r (std_reg_WIDTH1_2)             2.80e-04 1.46e-02 1.49e-03 1.49e-02   1.0
+  inst1 (Register_WIDTH32_3)           1.19e-02    0.253 2.72e-02    0.265  17.7
+  inst0 (Add_IN_WIDTH32_OUT_WIDTH32)   6.69e-02    0.102 7.81e-02    0.169  11.2
+    add_130 (Add_IN_WIDTH32_OUT_WIDTH32_DW01_add_J2_0) 6.69e-02    0.102 7.81e-02    0.169  11.2
+  go0 (fsm_3_1)                        9.35e-04 4.40e-02 4.71e-03 4.50e-02   3.0
+    r1 (std_reg_WIDTH1_3)              2.25e-04 1.46e-02 1.58e-03 1.49e-02   1.0
+    r0 (std_reg_WIDTH1_4)              2.87e-04 1.46e-02 1.49e-03 1.49e-02   1.0
+    r (std_reg_WIDTH1_5)               2.80e-04 1.46e-02 1.49e-03 1.49e-02   1.0
+1
+ 
+****************************************
+Report : saif
+Design : main
+Version: Q-2019.12-SP5-1
+Date   : Thu Aug 21 19:44:33 2025
+****************************************
+
+  
+
+--------------------------------------------------------------------------------
+              User              Default           Propagated
+Object type   Annotated (%)     Activity (%)      Activity (%)       Total
+--------------------------------------------------------------------------------
+  
+ Nets         0(0.00%)          68(49.64%)        69(50.36%)         137
+ Ports        0(0.00%)          68(68.00%)        32(32.00%)         100
+ Pins         0(0.00%)          0(0.00%)          104(100.00%)       104
+--------------------------------------------------------------------------------
+1

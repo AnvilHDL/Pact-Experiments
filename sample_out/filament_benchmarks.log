@@ -1,0 +1,66 @@
+sed "s/Vtop/VAluAnvil/g" sim_main.cpp > AluAnvil_driver.cpp
+=== Building AluAnvil ===
+verilator --cc --exe --build -j 1 --top AluAnvil AluAnvil.sv AluAnvil_driver.cpp > /dev/null 2>/dev/null
+=== Running AluAnvil ===
+[Cycle          2] ALU Result for add (5+5):         10
+
+[Cycle          3] ALU Result for sub (10-5):          5
+
+[Cycle          4] ALU Result for add (15+5):         20
+
+[Cycle          5] ALU Result for sub (20-5):         15
+
+- AluAnvil.sv:263: Verilog $finish
+[Cycle          6] ALU Result for add (25+5):         30
+
+- S i m u l a t i o n   R e p o r t: Verilator 5.036 2025-04-27
+- Verilator: $finish at 23ps; walltime 0.005 s; speed 3.842 ns/s
+- Verilator: cpu 0.006 s on 1 threads; alloced 505 MB
+sed "s/Vtop/VAluFil/g" sim_main.cpp > AluFil_driver.cpp
+=== Building AluFil ===
+verilator --cc --exe --build -j 1 --top AluFil AluFil.sv AluFil_driver.cpp > /dev/null 2>/dev/null
+=== Running AluFil ===
+[Cycle          2] ALU Result for add (5+5):         10
+
+[Cycle          3] ALU Result for sub (10-5):          5
+
+[Cycle          4] ALU Result for add (15+5):         20
+
+[Cycle          5] ALU Result for sub (20-5):         15
+
+- AluFil.sv:264: Verilog $finish
+[Cycle          6] ALU Result for add (25+5):         30
+
+- S i m u l a t i o n   R e p o r t: Verilator 5.036 2025-04-27
+- Verilator: $finish at 23ps; walltime 0.005 s; speed 3.632 ns/s
+- Verilator: cpu 0.006 s on 1 threads; alloced 505 MB
+sed "s/Vtop/VSAanvil/g" sim_main.cpp > SAanvil_driver.cpp
+=== Building SAanvil ===
+verilator --cc --exe --build -j 1 --top SAanvil SAanvil.sv SAanvil_driver.cpp > /dev/null 2>/dev/null
+=== Running SAanvil ===
+[Cycle          3] Result 00:         12, Result 01:         12, Result 10:          6, Result 11:          0
+
+[Cycle          4] Result 00:         32, Result 01:         35, Result 10:         25, Result 11:         18
+
+[Cycle          5] Result 00:         60, Result 01:         68, Result 10:         54, Result 11:         48
+
+- SAanvil.sv:728: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.036 2025-04-27
+- Verilator: $finish at 23ps; walltime 0.005 s; speed 3.569 ns/s
+- Verilator: cpu 0.006 s on 1 threads; alloced 505 MB
+sed "s/Vtop/VSAfil/g" sim_main.cpp > SAfil_driver.cpp
+=== Building SAfil ===
+verilator --cc --exe --build -j 1 --top SAfil SAfil.sv SAfil_driver.cpp > /dev/null 2>/dev/null
+=== Running SAfil ===
+[Cycle          3] Result 00:         12, Result 01:         12, Result 10:          6, Result 11:          0
+
+[Cycle          4] Result 00:         32, Result 01:         35, Result 10:         25, Result 11:         18
+
+[Cycle          5] Result 00:         60, Result 01:         68, Result 10:         54, Result 11:         48
+
+- SAfil.sv:1204: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.036 2025-04-27
+- Verilator: $finish at 23ps; walltime 0.005 s; speed 3.665 ns/s
+- Verilator: cpu 0.006 s on 1 threads; alloced 505 MB
+make: Nothing to be done for 'all'.
+rm SAfil_driver.cpp AluFil_driver.cpp AluAnvil_driver.cpp SAanvil_driver.cpp

@@ -5,8 +5,8 @@ struct mix_column_in_pack{
     op : ciph_op_e
 }
 chan mix_single_column_ch {
-    left req : (mix_column_in_pack@eternal) @#1 - @#1,
-    right res : (logic[4][8]@eternal) @#1 - @#1
+    left req : (mix_column_in_pack@#1) @#1 - @#1,
+    right res : (logic[4][8]@#1) @#1 - @#1
 }
 
 proc mix_single_columns(ep : left mix_single_column_ch){

@@ -1,0 +1,37 @@
+sed "s/Vtop/Vstream_fifo_top/g" sim_main.cpp > stream_fifo_top_driver.cpp
+anvil -O 3 stream_fifo_top.anvil > stream_fifo_top.anvil.sv 2>/dev/null
+verilator --cc --exe --build --top stream_fifo_top -j 1 stream_fifo_top_driver.cpp stream_fifo_top.anvil.sv > /dev/null 2>/dev/null
+============================[Cycle          0] Baseline stream Buffer Operations Start========================
+[Cycle          1] Sending data to buffer till full (Till cycle 10)
+[Cycle          9] The fifo is full now, we should be able to make read and write work in same cycle
+[Cycle         10] Same cycle read write worked
+[Cycle         10] Received data from FIFO:         51
+[Cycle         11] Should empty the fifo now from next cycle
+[Cycle         12] Received data from FIFO:         52
+[Cycle         13] Received data from FIFO:         53
+[Cycle         14] Received data from FIFO:         54
+[Cycle         15] Received data from FIFO:         55
+[Cycle         16] Received data from FIFO:         56
+[Cycle         17] Received data from FIFO:         57
+[Cycle         18] Received data from FIFO:         58
+[Cycle         19] Received data from FIFO:         59
+=====================[Cycle         20] Baseline stream Buffer Operations End========================
+============================[Cycle          0] Anvil stream Buffer Operations Start========================
+[Cycle          1] Sending data to buffer till full (Till cycle 8)
+[Cycle          9] The fifo is full now, we should be able to make read and write work in same cycle
+[Cycle         10] Same cycle read write worked
+[Cycle         10] Received data from FIFO:         51
+[Cycle         11] Should empty the fifo now from next cycle
+[Cycle         12] Received data from FIFO:         52
+[Cycle         13] Received data from FIFO:         53
+[Cycle         14] Received data from FIFO:         54
+[Cycle         15] Received data from FIFO:         55
+[Cycle         16] Received data from FIFO:         56
+[Cycle         17] Received data from FIFO:         57
+[Cycle         18] Received data from FIFO:         58
+[Cycle         19] Received data from FIFO:         59
+- stream_fifo_top.anvil.sv:816: Verilog $finish
+=====================[Cycle         20] Anvil stream Buffer Operations End========================
+- S i m u l a t i o n   R e p o r t: Verilator 5.036 2025-04-27
+- Verilator: $finish at 93ps; walltime 0.005 s; speed 15.469 ns/s
+- Verilator: cpu 0.006 s on 1 threads; alloced 505 MB

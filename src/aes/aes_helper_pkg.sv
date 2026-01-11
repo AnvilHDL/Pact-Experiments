@@ -140,7 +140,7 @@ module aes_cipher_core_wrapper (
   input logic[0:0] _ep_crypt_valid,
   input logic[127:0] _ep_crypt_0,
   input logic[5:0] _ep_ctrl_0,
-  input logic[0:0] _ep_crypt_res_ack,
+  // input logic[0:0] _ep_crypt_res_ack,
   output logic[0:0] _ep_crypt_res_valid,
   output logic[257:0] _ep_crypt_res_0,
   output logic [0:0] _ep_dec_key_gen_res_ack,
@@ -198,7 +198,7 @@ module aes_cipher_core_wrapper (
   logic        [3:0][3:0][7:0] state_o [NumShares];
   
   assign in_valid_i = (_ep_crypt_valid | _ep_dec_key_gen_req_valid)&(in_ready_o == aes_pkg::SP2V_HIGH) ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
-  assign out_ready_i = ((_ep_crypt_res_ack == 1'd1)||(_ep_dec_key_gen_res_ack == 1'd1)) ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
+  assign out_ready_i = ((_ep_crypt_res_valid == 1'd1)||(_ep_dec_key_gen_res_ack == 1'd1)) ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;
   assign op_i = aes_pkg::ciph_op_e'(_ep_ctrl_0[0+:2]);
   assign cfg_valid_i = _ep_ctrl_0[2];
   assign crypt_i = (_ep_crypt_valid) ? aes_pkg::SP2V_HIGH : aes_pkg::SP2V_LOW;

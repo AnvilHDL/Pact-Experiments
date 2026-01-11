@@ -12,10 +12,12 @@ proc stream_fifo_extern (ep : left stream_fifo_ch<logic[32]>) extern("passthroug
 
 proc stream_fifo_top(){
     chan ep_le -- ep_ri : stream_fifo_ch<logic[32]>;
+    chan ep_le_an -- ep_ri_an : stream_fifo_ch<logic[32]>;
     spawn stream_fifo_extern(ep_le);
-    // spawn stream_fifo<8,1,logic[32],3>(ep_le);
+    spawn stream_fifo<8,1,logic[32],3>(ep_le_an);
     reg cyc : logic[32];
     reg flush : logic;
+    reg test_end : logic[32];
     loop{
         cycle 100 >>
         set flush := 1'd1 >>
@@ -25,7 +27,10 @@ proc stream_fifo_top(){
         set cyc := *cyc + 32'd1
     }
     loop{
-        dprint "[Cycle %d] Sending data to FIFO" (*cyc) >>
+        dprint "============================[Cycle %d] Baseline stream Buffer Operations Start========================" (*cyc) >>
+        cycle 1 >>
+        dprint "[Cycle %d] Sending data to buffer till full (Till cycle 10)" (*cyc) >>
+        cycle 1 >>
         send ep_ri.push(32'd51) >>
         cycle 1 >>
         send ep_ri.push(32'd52) >>
@@ -41,28 +46,96 @@ proc stream_fifo_top(){
         send ep_ri.push(32'd57) >>
         cycle 1 >>
         send ep_ri.push(32'd58) >>
-        cycle 1 >>
-        send ep_ri.push(32'd59) >>
-        cycle 1 >>
-        send ep_ri.push(32'd60) >>
         dprint "[Cycle %d] The fifo is full now, we should be able to make read and write work in same cycle" (*cyc) >>
+        cycle 1 >>
         let p = recv ep_ri.pop >>
         dprint "[Cycle %d] Received data from FIFO: %d" (*cyc, p) >>
-
+        send ep_ri.push(32'd59) >>
+        dprint "[Cycle %d] Same cycle read write worked" (*cyc) >>
         cycle 1 >>
+        dprint "[Cycle %d] Should empty the fifo now from next cycle" (*cyc) >>
+        cycle 1 >>
+        let x1 = recv ep_ri.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" (*cyc, x1) >>
+        cycle 1 >>
+        let x2 = recv ep_ri.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" (*cyc, x2) >>
+        cycle 1 >>
+        let x3 = recv ep_ri.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" (*cyc   , x3) >>
+        cycle 1 >>
+        let x4 = recv ep_ri.pop >>  
+        dprint "[Cycle %d] Received data from FIFO: %d" (*cyc, x4) >>
+        cycle 1 >>
+        let x5 = recv ep_ri.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" (*cyc, x5) >>
+        cycle 1 >>
+        let x6 = recv ep_ri.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" (*cyc, x6) >>
+        cycle 1 >>
+        let x7 = recv ep_ri.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" (*cyc, x7) >>
+        cycle 1 >>
+        let x8 = recv ep_ri.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" (*cyc, x8) >>
+        cycle 1 >>
+        dprint "=====================[Cycle %d] Baseline stream Buffer Operations End========================" (*cyc) >>
+        set test_end := *cyc + 32'd1 >>
+        dprint "============================[Cycle %d] Anvil stream Buffer Operations Start========================" ((*cyc - *test_end)) >>
+        cycle 1 >>
+        dprint "[Cycle %d] Sending data to buffer till full (Till cycle 8)" ((*cyc - *test_end)) >>
+        cycle 1 >>
+        send ep_ri_an.push(32'd51) >>
+        cycle 1 >>
+        send ep_ri_an.push(32'd52) >>
+        cycle 1 >>
+        send ep_ri_an.push(32'd53) >>
+        cycle 1 >>
+        send ep_ri_an.push(32'd54) >>
+        cycle 1 >>
+        send ep_ri_an.push(32'd55) >>
+        cycle 1 >>
+        send ep_ri_an.push(32'd56) >>
+        cycle 1 >>
+        send ep_ri_an.push(32'd57) >>
+        cycle 1 >>
+        send ep_ri_an.push(32'd58) >>
+        dprint "[Cycle %d] The fifo is full now, we should be able to make read and write work in same cycle" ((*cyc - *test_end)) >>
+        cycle 1 >>
+        let p = recv ep_ri_an.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" ((*cyc - *test_end), p) >>
+        send ep_ri_an.push(32'd59) >>
+        dprint "[Cycle %d] Same cycle read write worked" ((*cyc - *test_end)) >>
+        cycle 1 >>
+        dprint "[Cycle %d] Should empty the fifo now from next cycle" ((*cyc - *test_end)) >>
+        cycle 1 >>
+        let x1 = recv ep_ri_an.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" ((*cyc - *test_end), x1) >>
+        cycle 1 >>
+        let x2 = recv ep_ri_an.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" ((*cyc - *test_end), x2) >>
+        cycle 1 >>
+        let x3 = recv ep_ri_an.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" ((*cyc - *test_end), x3) >>
+        cycle 1 >>
+        let x4 = recv ep_ri_an.pop >>  
+        dprint "[Cycle %d] Received data from FIFO: %d" ((*cyc - *test_end), x4) >>
+        cycle 1 >>
+        let x5 = recv ep_ri_an.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" ((*cyc - *test_end), x5) >>
+        cycle 1 >>
+        let x6 = recv ep_ri_an.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" ((*cyc - *test_end), x6) >>
+        cycle 1 >>
+        let x7 = recv ep_ri_an.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" ((*cyc - *test_end), x7) >>
+        cycle 1 >>
+        let x8 = recv ep_ri_an.pop >>
+        dprint "[Cycle %d] Received data from FIFO: %d" ((*cyc - *test_end), x8) >>
+        cycle 1 >>
+        dprint "=====================[Cycle %d] Anvil stream Buffer Operations End========================" ((*cyc - *test_end)) >>
         dfinish >>
         cycle 1
-        // let x = recv ep_ri.pop >>
-        // dprint "[Cycle %d] Received data from FIFO: %d" (*cyc, x) >>
-        // send ep_ri.push(32'd59) >>
-        // dprint "[Cycle %d] Same cycle read write worked" (*cyc) >>
-        // cycle 1 >>
-
-        // send ep_ri.push(32'd60) >>
-        // dprint "[Cycle %d] Same cycle read write wont work untill flushed" (*cyc) >>
-        // cycle 1 >>
-        // dfinish >>
-        // cycle 1
 
     }
     loop{

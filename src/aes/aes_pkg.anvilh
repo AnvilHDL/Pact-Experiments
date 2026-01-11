@@ -86,12 +86,12 @@ chan aes_key_expand_ch{
 
 chan shift_rows_ch{
     left req : (data_in_pack@#1) @#1 - @#1,
-    right res : (logic[4][4][8]@eternal) @#1 - @#1
+    right res : (logic[4][4][8]@#1) @#1 - @#1
 }
 
 chan mix_column_ch{
     left req : (data_in_pack@#1) @#1 - @#1,
-    right res : (logic[4][4][8]@eternal) @#1 - @#1
+    right res : (logic[4][4][8]@#1) @#1 - @#1
 }
 
 
@@ -106,7 +106,7 @@ chan aes_core_ch {
     left key_len_i : (key_len_e@eternal) @#1 - @#1, //whenever basically ""
     left crypt: (logic[4][4][8]@#1),
     left ctrl : (aes_control_pack@eternal) @#1 - @#1,
-    right crypt_res : (aes_core_out_pack@#1),
+    right crypt_res : (aes_core_out_pack@#1) @dyn - @#crypt,
     right dec_key_gen_res : (logic@#1),
     left data_out_clear_i : (logic[4][4][8]@#1) @#1 - @dyn,
     left key_clear_i : (logic[8][32]@#1) @#1 - @dyn,

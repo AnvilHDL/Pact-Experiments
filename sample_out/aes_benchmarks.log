@@ -1,0 +1,128 @@
+====Running AES Testbench for Anvil======== 
+
+
+ 
+sed "s/Vtop/Vaes_cipher_core_tb/g" sim_main.cpp > aes_cipher_core_tb_driver.cpp
+anvil -O 3 aes_cipher_core_tb.anvil > aes_cipher_core_tb.anvil.sv 2>/dev/null
+verilator --cc --exe --build --top aes_cipher_core_tb -j 1 aes_cipher_core_tb_driver.cpp aes_cipher_core_tb.anvil.sv > /dev/null 2>/dev/null
+[Row 0] 01, 02, 03, 04
+[Row 1] 05, 06, 07, 08
+[Row 2] 09, 0a, 0b, 0c
+[Row 3] 0d, 0e, 0f, 10
+==============[cycle          0] Sending AES_128 request to aeS core===============
+[Row 0] 92, 3d, fb, 58
+[Row 1] df, 55, 2e, 0d
+[Row 2] 89, 32, 14, ca
+[Row 3] 8a, 2c, b3, b9
+======================[cycle         11] Received response from AES core encryption test for AES 128==============
+[cycle         22] Decryption Key is generated
+================[cycle         23] Sending request to AES core for decryption=======
+[Row 0] 01, 02, 03, 04
+[Row 1] 05, 06, 07, 08
+[Row 2] 09, 0a, 0b, 0c
+[Row 3] 0d, 0e, 0f, 10
+================[cycle         34] Received response from AES core decryption test for AES 128=======
+[Row 0] 01, 02, 03, 04
+[Row 1] 05, 06, 07, 08
+[Row 2] 09, 0a, 0b, 0c
+[Row 3] 0d, 0e, 0f, 10
+==============[cycle         39] Sending AES_256 request to aeS core===============
+[Row 0] bb, 73, d9, 38
+[Row 1] 50, 7a, 88, c9
+[Row 2] a2, a2, 89, 90
+[Row 3] 32, 78, 7a, 5d
+======================[cycle         54] Received response from AES core encryption test for AES 256==============
+[cycle         69] Decryption Key is generated
+================[cycle         70] Sending request to AES core for decryption=======
+- aes_cipher_core_tb.anvil.sv:5723: Verilog $finish
+[Row 0] 01, 02, 03, 04
+[Row 1] 05, 06, 07, 08
+[Row 2] 09, 0a, 0b, 0c
+[Row 3] 0d, 0e, 0f, 10
+================[cycle         85] Received response from AES core decryption test for AES 256=======
+- S i m u l a t i o n   R e p o r t: Verilator 5.036 2025-04-27
+- Verilator: $finish at 181ps; walltime 0.005 s; speed 27.082 ns/s
+- Verilator: cpu 0.007 s on 1 threads; alloced 505 MB
+====Running AES Testbench for SV(Baseline)========
+
+
+ 
+[INFO] OpenTitan Testbench Runner
+[INFO] Testbench: aes_cipher_core_tb
+[INFO] Timeout: 10000 cycles
+[SUCCESS] Found testbench: aes_cipher_core_tb.sv
+[INFO] Added primitive include directories:
+[INFO]   /home/aditya/Workspace/Anvil-Experiments/opentitan/hw/ip/aes/rtl/../../../ip/prim/rtl
+[INFO]   /home/aditya/Workspace/Anvil-Experiments/opentitan/hw/ip/aes/rtl/../../../ip/prim_generic/rtl
+[INFO]   /home/aditya/Workspace/Anvil-Experiments/opentitan/hw/ip/aes/rtl/../../../ip/edn/rtl
+[INFO]   /home/aditya/Workspace/Anvil-Experiments/opentitan/hw/ip/aes/rtl/../../../ip/entropy_src/rtl
+[INFO]   /home/aditya/Workspace/Anvil-Experiments/opentitan/hw/ip/aes/rtl/../../../ip/csrng/rtl
+[INFO] Using existing primitive IPs from OpenTitan repository...
+[INFO] Added waiver: aes.vlt
+[SUCCESS] Parsed 22 files and 1 waivers from aes.core
+[INFO] Adding essential primitive files...
+[INFO] Added: aes_cipher_core_tb.sv
+[SUCCESS] Found 37 files to compile
+[INFO] Creating Verilator file list...
+[INFO] Creating C++ simulation driver...
+[INFO] Compiling with Verilator...
+make: Entering directory '/home/aditya/Workspace/Anvil-Experiments/opentitan/hw/ip/aes/rtl/build_aes_cipher_core_tb/obj_dir'
+ccache g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable      -Os  -c -o sim_main.o ../sim_main.cpp
+ccache g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable      -c -o verilated.o /usr/local/share/verilator/include/verilated.cpp
+ccache g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable      -c -o verilated_threads.o /usr/local/share/verilator/include/verilated_threads.cpp
+python3 /usr/local/share/verilator/bin/verilator_includer -DVL_INCLUDE_OPT=include Vaes_cipher_core_tb.cpp Vaes_cipher_core_tb___024root__DepSet_h265c6c36__0.cpp Vaes_cipher_core_tb___024root__DepSet_h4c1f86b3__0.cpp Vaes_cipher_core_tb__ConstPool_0.cpp Vaes_cipher_core_tb___024root__Slow.cpp Vaes_cipher_core_tb___024root__DepSet_h265c6c36__0__Slow.cpp Vaes_cipher_core_tb___024root__DepSet_h4c1f86b3__0__Slow.cpp Vaes_cipher_core_tb___024unit__Slow.cpp Vaes_cipher_core_tb___024unit__DepSet_h132003f4__0__Slow.cpp Vaes_cipher_core_tb_aes_sbox__S0__Slow.cpp Vaes_cipher_core_tb_aes_sbox__S0__DepSet_ha028350e__0__Slow.cpp Vaes_cipher_core_tb__Syms.cpp > Vaes_cipher_core_tb__ALL.cpp
+ccache g++ -Os  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVM_COVERAGE=0 -DVM_SC=0 -DVM_TIMING=0 -DVM_TRACE=0 -DVM_TRACE_FST=0 -DVM_TRACE_VCD=0 -DVM_TRACE_SAIF=0 -faligned-new -fcf-protection=none -Wno-bool-operation -Wno-shadow -Wno-sign-compare -Wno-subobject-linkage -Wno-tautological-compare -Wno-uninitialized -Wno-unused-but-set-parameter -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable      -c -o Vaes_cipher_core_tb__ALL.o Vaes_cipher_core_tb__ALL.cpp
+echo "" > Vaes_cipher_core_tb__ALL.verilator_deplist.tmp
+g++    sim_main.o verilated.o verilated_threads.o Vaes_cipher_core_tb__ALL.a    -pthread -lpthread -latomic   -o Vaes_cipher_core_tb
+rm Vaes_cipher_core_tb__ALL.verilator_deplist.tmp
+make: Leaving directory '/home/aditya/Workspace/Anvil-Experiments/opentitan/hw/ip/aes/rtl/build_aes_cipher_core_tb/obj_dir'
+- V e r i l a t i o n   R e p o r t: Verilator 5.036 2025-04-27 rev v5.036-48-g0dc93c1d5
+- Verilator: Built from 6.406 MB sources in 51 modules, into 1.697 MB in 12 C++ files needing 0.003 MB
+- Verilator: Walltime 2.782 s (elab=0.032, cvt=0.141, bld=2.525); cpu 0.305 s on 4 threads; alloced 51.805 MB
+[SUCCESS] Compilation successful!
+[INFO] Running simulation...
+==================================
+Starting aes_cipher_core_tb simulation (timeout: 10000 cycles)
+[Row 0] 01, 02, 03, 04
+[Row 1] 05, 06, 07, 08
+[Row 2] 09, 0a, 0b, 0c
+[Row 3] 0d, 0e, 0f, 10
+==============[cycle          0] Sending AES_128 request to aeS core===============
+[Row 0] 92, 3d, fb, 58
+[Row 1] df, 55, 2e, 0d
+[Row 2] 89, 32, 14, ca
+[Row 3] 8a, 2c, b3, b9
+======================[cycle         11] Received response from AES core encryption test for AES 128==============
+[cycle         22] Decryption Key is generated
+================[cycle         23] Sending request to AES core for decryption=======
+[Row 0] 01, 02, 03, 04
+[Row 1] 05, 06, 07, 08
+[Row 2] 09, 0a, 0b, 0c
+[Row 3] 0d, 0e, 0f, 10
+================[cycle         34] Received response from AES core decryption test for AES 128=======
+[Row 0] 01, 02, 03, 04
+[Row 1] 05, 06, 07, 08
+[Row 2] 09, 0a, 0b, 0c
+[Row 3] 0d, 0e, 0f, 10
+==============[cycle         39] Sending AES_256 request to aeS core===============
+[Row 0] bb, 73, d9, 38
+[Row 1] 50, 7a, 88, c9
+[Row 2] a2, a2, 89, 90
+[Row 3] 32, 78, 7a, 5d
+======================[cycle         54] Received response from AES core encryption test for AES 256==============
+[cycle         69] Decryption Key is generated
+================[cycle         70] Sending request to AES core for decryption=======
+- /home/aditya/Workspace/Anvil-Experiments/opentitan/hw/ip/aes/rtl/aes_cipher_core_tb.sv:953: Verilog $finish
+[Row 0] 01, 02, 03, 04
+[Row 1] 05, 06, 07, 08
+[Row 2] 09, 0a, 0b, 0c
+[Row 3] 0d, 0e, 0f, 10
+================[cycle         85] Received response from AES core decryption test for AES 256=======
+Simulation completed with $finish at cycle 181
+- S i m u l a t i o n   R e p o r t: Verilator 5.036 2025-04-27
+- Verilator: $finish at 181ps; walltime 0.005 s; speed 28.826 ns/s
+- Verilator: cpu 0.006 s on 1 threads; alloced 505 MB
+==================================
+[SUCCESS] Simulation completed!
+[INFO] Build directory: /home/aditya/Workspace/Anvil-Experiments/opentitan/hw/ip/aes/rtl/build_aes_cipher_core_tb
+[INFO] To re-run: /home/aditya/Workspace/Anvil-Experiments/opentitan/hw/ip/aes/rtl/build_aes_cipher_core_tb/obj_dir/Vaes_cipher_core_tb [10000]

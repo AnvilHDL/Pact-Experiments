@@ -25,6 +25,8 @@ ifdef SESSIONOFF
 	ANVIL_FLAGS += -disable-session-checks
 endif
 
+
+
 $(MODULE_NAME).anvil.sv: $(MODULE_NAME).anvil
 ifdef LOG
 	anvil $(ANVIL_FLAGS) $< > $@ 2> compile.log
@@ -39,6 +41,15 @@ endif
 obj_dir/V$(MODULE_NAME): $(MODULE_NAME)_driver.cpp $(MODULE_NAME).anvil.sv
 ifdef LOG
 	verilator --cc --exe --build $(VERILATOR_FLAGS) $^ > /dev/null 2>&1
+ifdef SILENT
+	anvil $(ANVIL_FLAGS) $< > $@ 2>/dev/null
+else
+	anvil $(ANVIL_FLAGS) $< > $@
+endif
+
+obj_dir/V$(MODULE_NAME): $(MODULE_NAME)_driver.cpp $(MODULE_NAME).anvil.sv
+ifdef SILENT
+	verilator --cc --exe --build $(VERILATOR_FLAGS) $^ > /dev/null 2>/dev/null
 else
 	verilator --cc --exe --build $(VERILATOR_FLAGS) $^
 endif

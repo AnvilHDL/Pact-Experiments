@@ -11,3 +11,7 @@ src/build/
 **/*.dot
 **/*.png
 **/*.pdf
+*.log
+*.dot
+tools/
+scripts/env-cva6.sh

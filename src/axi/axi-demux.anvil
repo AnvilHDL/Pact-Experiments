@@ -51,6 +51,7 @@ proc axi_demux<
     // }
 loop{
 //--------------------------------------------Write Transaction------------------------------------------------------------
+{
     {//AW slv req bypass
         let rdy = recv aw_sr_le.rdy >>
         if (rdy == 1'd1){
@@ -573,7 +574,8 @@ loop{
                 send r_sr_le.spill(1'd1)
             }
         } 
-    } >>
+    } 
+    }>>
     cycle 1
 }
 

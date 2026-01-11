@@ -1,0 +1,57 @@
+sed "s/Vtop/Vfifo_top/g" sim_main.cpp > fifo_top_driver.cpp
+anvil -O 3 fifo_top.anvil > fifo_top.anvil.sv 2>/dev/null
+verilator --cc --exe --build --top fifo_top -j 1 fifo_top_driver.cpp fifo_top.anvil.sv > /dev/null 2>/dev/null
+================[Cycle          0]Baseline FIFO Operations Start Next Cycle===================
+[Cycle          1] Data sent         51
+[Cycle          2] Data sent         52
+[Cycle          3] Data sent         53
+[Cycle          4] Data sent         54
+[Cycle          5] Data sent         55
+[Cycle          6] Data sent         56
+[Cycle          7] Data sent         57
+[Cycle          8] Data sent         58
+==============[Cycle          9] Attempting to send more data to full FIFO next cycle==============
+[Cycle         10] FIFO is full, cannot send         59
+[Cycle         11] FIFO is full, cannot send         60
+==================[Cycle         12] Starting to receive data from FIFO next cycle =================
+[Cycle         13] Data received         51
+[Cycle         14] Data received         52
+[Cycle         15] Data received         53
+[Cycle         16] Data received         54
+[Cycle         17] Data received         55
+[Cycle         18] Data received         56
+[Cycle         19] Data received         57
+[Cycle         20] Data received         58
+==================[Cycle         21] Attempting to receive from empty FIFO next cycle =================
+[Cycle         22] FIFO is empty, cannot receive data
+[Cycle         23] FIFO is empty, cannot receive data
+============================[Cycle         24] Baseline FIFO Operations End========================
+================[Cycle          0]Anvil FIFO Operations Start Next Cycle===================
+[Cycle          1] Data sent         51
+[Cycle          2] Data sent         52
+[Cycle          3] Data sent         53
+[Cycle          4] Data sent         54
+[Cycle          5] Data sent         55
+[Cycle          6] Data sent         56
+[Cycle          7] Data sent         57
+[Cycle          8] Data sent         58
+==============[Cycle          9] Attempting to send more data to full FIFO next cycle==============
+[Cycle         10] FIFO is full, cannot send         59
+[Cycle         11] FIFO is full, cannot send         60
+==================[Cycle         12] Starting to receive data from FIFO next cycle =================
+[Cycle         13] Data received         51
+[Cycle         14] Data received         52
+[Cycle         15] Data received         53
+[Cycle         16] Data received         54
+[Cycle         17] Data received         55
+[Cycle         18] Data received         56
+[Cycle         19] Data received         57
+[Cycle         20] Data received         58
+==================[Cycle         21] Attempting to receive from empty FIFO next cycle =================
+[Cycle         22] FIFO is empty, cannot receive data
+[Cycle         23] FIFO is empty, cannot receive data
+- fifo_top.anvil.sv:1631: Verilog $finish
+============================[Cycle         24] Anvil FIFO Operations End========================
+- S i m u l a t i o n   R e p o r t: Verilator 5.036 2025-04-27
+- Verilator: $finish at 109ps; walltime 0.005 s; speed 17.360 ns/s
+- Verilator: cpu 0.006 s on 1 threads; alloced 505 MB
