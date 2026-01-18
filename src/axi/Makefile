@@ -26,6 +26,7 @@ endif
 ifdef SESSIONOFF
 	ANVIL_FLAGS += -disable-session-checks
 endif
+
 ifdef COMPATOFF
 	ANVIL_FLAGS += -disable-compat-checks
 endif
@@ -34,12 +35,8 @@ ifdef WTC
 	ANVIL_FLAGS += -weak-typecasts
 endif
 
-$(MODULE_NAME).anvil.sv: $(MODULE_NAME).anvil
-ifdef LOG
-	anvil $(ANVIL_FLAGS) $< > $@ 2> compile.log
-else
-	anvil $(ANVIL_FLAGS) $< > $@
-endif
+
+
 
 ifdef DEBUG
 	python3 debug.py
@@ -48,11 +45,14 @@ endif
 obj_dir/V$(MODULE_NAME): $(MODULE_NAME)_driver.cpp $(MODULE_NAME).anvil.sv
 ifdef LOG
 	verilator --cc --exe --build $(VERILATOR_FLAGS) $^ > /dev/null 2>&1
+endif
 
 
 $(MODULE_NAME).anvil.sv: $(MODULE_NAME).anvil
 ifdef SILENT
 	anvil $(ANVIL_FLAGS) $< > $@ 2>/dev/null
+else ifdef LOG
+	anvil $(ANVIL_FLAGS) $< > $@ 2> compile.log
 else
 	anvil $(ANVIL_FLAGS) $< > $@
 endif
