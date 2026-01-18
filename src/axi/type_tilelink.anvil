@@ -1,66 +1,30 @@
 interface arbiter_ifc(  ep1 : right arbiter_client_ch<T>, 
                         ep2 : right arbiter_client_ch<T>,
-                        ep3 : right arbiter_client_ch<T>,
-                        ep4 : right arbiter_client_ch<T>,
-
                      server_ep : left arbiter_server_ch<T>) = (
     server_ep.rdy ;
     ^(
         ep1.req : server_ep.req ; ep1.grant ; #ep1.data ; #server_ep.data,
         ep2.req : server_ep.req ; ep2.grant ; #ep2.data ; #server_ep.data,
-        ep3.req : server_ep.req ; ep3.grant ; #ep3.data ; #server_ep.data,
-        ep4.req : server_ep.req ; ep4.grant ; #ep4.data ; #server_ep.data,
         *
     ) ; #1
 )
 
-interface crossbar_itfc(client_ep1 : right client_ch<T>, client_ep2 : right client_ch<T>,client_ep3 : right client_ch<T>, client_ep4 : right client_ch<T>,
-                        arb_cl_ep_le11 : left arbiter_client_ch, arb_cl_ep_le12 : left arbiter_client_ch,arb_cl_ep_le13 : left arbiter_client_ch,arb_cl_ep_le14 : left arbiter_client_ch,
-                        arb_cl_ep_le21 : left arbiter_client_ch, arb_cl_ep_le22 : left arbiter_client_ch,arb_cl_ep_le23 : left arbiter_client_ch,arb_cl_ep_le24 : left arbiter_client_ch,
-                        arb_cl_ep_le31 : left arbiter_client_ch, arb_cl_ep_le32 : left arbiter_client_ch,arb_cl_ep_le33 : left arbiter_client_ch,arb_cl_ep_le34 : left arbiter_client_ch,
-                        arb_cl_ep_le41 : left arbiter_client_ch, arb_cl_ep_le42 : left arbiter_client_ch,arb_cl_ep_le43 : left arbiter_client_ch,arb_cl_ep_le44 : left arbiter_client_ch
+interface crossbar_itfc(client_ep1 : right client_ch<T>, client_ep2 : right client_ch<T>,
+                        arb_cl_ep_le11 : left arbiter_client_ch, arb_cl_ep_le12 : left arbiter_client_ch,
+                        arb_cl_ep_le21 : left arbiter_client_ch, arb_cl_ep_le22 : left arbiter_client_ch
                         ) = (
     (
     &(
         client_ep1.req : (
                             (^(arb_cl_ep_le11.req : ^(arb_cl_ep_le11.grant : client_ep1.grant ; #client_ep1.data ; arb_cl_ep_le11.data , *), *)) 
-                                                                    + 
+                                                                    +
                             (^(arb_cl_ep_le21.req : ^(arb_cl_ep_le21.grant : client_ep1.grant ; #client_ep1.data ; arb_cl_ep_le21.data , *), *)) 
-                                                                    + 
-                            (^(arb_cl_ep_le31.req : ^(arb_cl_ep_le31.grant : client_ep1.grant ; #client_ep1.data ; arb_cl_ep_le31.data , *), *)) 
-                                                                    + 
-                            (^(arb_cl_ep_le41.req : ^(arb_cl_ep_le41.grant : client_ep1.grant ; #client_ep1.data ; arb_cl_ep_le41.data , *), *)) 
                          ),
 
         client_ep2.req : (
                             (^(arb_cl_ep_le12.req : ^(arb_cl_ep_le12.grant : client_ep2.grant ; #client_ep2.data ; arb_cl_ep_le12.data , *), *)) 
                                                                     + 
                             (^(arb_cl_ep_le22.req : ^(arb_cl_ep_le22.grant : client_ep2.grant ; #client_ep2.data ; arb_cl_ep_le22.data , *), *)) 
-                                                                    +
-                            (^(arb_cl_ep_le32.req : ^(arb_cl_ep_le32.grant : client_ep2.grant ; #client_ep2.data ; arb_cl_ep_le32.data , *), *)) 
-                                                                    +
-                            (^(arb_cl_ep_le42.req : ^(arb_cl_ep_le42.grant : client_ep2.grant ; #client_ep2.data ; arb_cl_ep_le42.data , *), *))
-                        ),
-
-        client_ep3.req : (
-                            (^(arb_cl_ep_le13.req : ^(arb_cl_ep_le13.grant : client_ep3.grant ; #client_ep3.data ; arb_cl_ep_le13.data , *), *)) 
-                                                                    + 
-                            (^(arb_cl_ep_le23.req : ^(arb_cl_ep_le23.grant : client_ep3.grant ; #client_ep3.data ; arb_cl_ep_le23.data , *), *)) 
-                                                                    + 
-                            (^(arb_cl_ep_le33.req : ^(arb_cl_ep_le33.grant : client_ep3.grant ; #client_ep3.data ; arb_cl_ep_le33.data , *), *)) 
-                                                                    + 
-                            (^(arb_cl_ep_le43.req : ^(arb_cl_ep_le43.grant : client_ep3.grant ; #client_ep3.data ; arb_cl_ep_le43.data , *), *))
-                        ),
-
-        client_ep4.req :( 
-
-                            (^(arb_cl_ep_le14.req : ^(arb_cl_ep_le14.grant : client_ep4.grant ; #client_ep4.data ; arb_cl_ep_le14.data , *), *)) 
-                                                                                + 
-                            (^(arb_cl_ep_le24.req : ^(arb_cl_ep_le24.grant : client_ep4.grant ; #client_ep4.data ; arb_cl_ep_le24.data , *), *)) 
-                                                                                + 
-                            (^(arb_cl_ep_le34.req : ^(arb_cl_ep_le34.grant : client_ep4.grant ; #client_ep4.data ; arb_cl_ep_le34.data , *), *)) 
-                                                                                + 
-                            (^(arb_cl_ep_le44.req : ^(arb_cl_ep_le44.grant : client_ep4.grant ; #client_ep4.data ; arb_cl_ep_le44.data , *), *)) 
                         )
      ) 
     )
@@ -69,67 +33,41 @@ interface crossbar_itfc(client_ep1 : right client_ch<T>, client_ep2 : right clie
 )
 
 interface client_itfc(client_ep : left client_ch<T>) =
-    client_ep.req ; ^(client_ep.grant : #client_ep.data, *) ; #1 
+    client_ep.req ; ^(client_ep.grant : #client_ep.data, *) ; #1
 
 interface manager_itfc(manager_ep : right arbiter_server_ch<T>) =
-    F manager_ep.rdy ; manager_ep.req ; manager_ep.data;#1
+    manager_ep.rdy ; ^(manager_ep.req : #manager_ep.data, *);#1
 
 pool tilelink{
     client_ep_le1 -- client_ep_ri1 : client_ch<T>,
     client_ep_le2 -- client_ep_ri2 : client_ch<T>,
-    client_ep_le3 -- client_ep_ri3 : client_ch<T>,
-    client_ep_le4 -- client_ep_ri4 : client_ch<T>,
+
 
     manager_ep_le1 -- manager_ep_ri1 : arbiter_server_ch<T>,
     manager_ep_le2 -- manager_ep_ri2 : arbiter_server_ch<T>,
-    manager_ep_le3 -- manager_ep_ri3 : arbiter_server_ch<T>,
-    manager_ep_le4 -- manager_ep_ri4 : arbiter_server_ch<T>,
 
 
     arb_cl_ep_le11 -- arb_cl_ep_ri11 : arbiter_client_ch<T>,
     arb_cl_ep_le12 -- arb_cl_ep_ri12 : arbiter_client_ch<T>,
-    arb_cl_ep_le13 -- arb_cl_ep_ri13 : arbiter_client_ch<T>,
-    arb_cl_ep_le14 -- arb_cl_ep_ri14 : arbiter_client_ch<T>,
+
 
 
     arb_cl_ep_le21 -- arb_cl_ep_ri22 : arbiter_client_ch<T>,
-    arb_cl_ep_le22 -- arb_cl_ep_ri22 : arbiter_client_ch<T>,
-    arb_cl_ep_le23 -- arb_cl_ep_ri23 : arbiter_client_ch<T>,
-    arb_cl_ep_le24 -- arb_cl_ep_ri24 : arbiter_client_ch<T>,
-
-    arb_cl_ep_le31 -- arb_cl_ep_ri31 : arbiter_client_ch<T>,
-    arb_cl_ep_le32 -- arb_cl_ep_ri32 : arbiter_client_ch<T>,
-    arb_cl_ep_le33 -- arb_cl_ep_ri33 : arbiter_client_ch<T>,
-    arb_cl_ep_le34 -- arb_cl_ep_ri34 : arbiter_client_ch<T>,
-    
-    arb_cl_ep_le41 -- arb_cl_ep_ri41 : arbiter_client_ch<T>,
-    arb_cl_ep_le42 -- arb_cl_ep_ri42 : arbiter_client_ch<T>,
-    arb_cl_ep_le43 -- arb_cl_ep_ri43 : arbiter_client_ch<T>,
-    arb_cl_ep_le44 -- arb_cl_ep_ri44 : arbiter_client_ch<T>;
+    arb_cl_ep_le22 -- arb_cl_ep_ri22 : arbiter_client_ch<T>;
 
     ic1 : client_itfc(client_ep_le1),
     ic2 : client_itfc(client_ep_le2),
-    ic3 : client_itfc(client_ep_le3),
-    ic4 : client_itfc(client_ep_le4),
 
     im1 : manager_itfc(manager_ep_ri1),
     im2 : manager_itfc(manager_ep_ri2),
-    im3 : manager_itfc(manager_ep_ri3),
-    im4 : manager_itfc(manager_ep_ri4),
 
 
-    i3 : arbiter_ifc(arb_cl_ep_ri11,arb_cl_ep_ri12,arb_cl_ep_ri13,arb_cl_ep_ri14, manager_ep_le1),
-    i4 : arbiter_ifc(arb_cl_ep_ri21,arb_cl_ep_ri22,arb_cl_ep_ri23,arb_cl_ep_ri24, manager_ep_le2),
-    i5 : arbiter_ifc(arb_cl_ep_ri31,arb_cl_ep_ri32,arb_cl_ep_ri33,arb_cl_ep_ri34, manager_ep_le3),
-    i6 : arbiter_ifc(arb_cl_ep_ri41,arb_cl_ep_ri42,arb_cl_ep_ri43,arb_cl_ep_ri44, manager_ep_le4),
+    ia1 : arbiter_ifc(arb_cl_ep_ri11,arb_cl_ep_ri12, manager_ep_le1),
+    ia2 : arbiter_ifc(arb_cl_ep_ri21,arb_cl_ep_ri22, manager_ep_le2),
     
-    i7 : crossbar_itfc( 
-                        client_ep_ri1,client_ep_ri2,client_ep_ri3,client_ep_ri4, 
-                        arb_cl_ep_le11,arb_cl_ep_le12,arb_cl_ep_le13,arb_cl_ep_le14,
-                        arb_cl_ep_le21,arb_cl_ep_le22,arb_cl_ep_le23,arb_cl_ep_le24,
-                        arb_cl_ep_le31,arb_cl_ep_le32,arb_cl_ep_le33,arb_cl_ep_le34,
-                        arb_cl_ep_le41,arb_cl_ep_le42,arb_cl_ep_le43,arb_cl_ep_le44
+    icr : crossbar_itfc( 
+                        client_ep_ri1,client_ep_ri2,
+                        arb_cl_ep_le11,arb_cl_ep_le12,
+                        arb_cl_ep_le21,arb_cl_ep_le22
                     )
-
-
 }
