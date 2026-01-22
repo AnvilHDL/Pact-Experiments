@@ -1,6 +1,6 @@
 
 interface slave_itfc(r_req_ep :left arbiter_slave_ch<T1> , slv_r_ep : left slv_r_ch<r_pack_t> ) =
-         r_req_ep.req ; r_req_ep.gnt ; slv_r_ep.res; ^(slv_r_ep.data, slv_r_ep.err) ; #1 
+         r_req_ep.req ; r_req_ep.gnt ; slv_r_ep.res; rec X . ^(slv_r_ep.data, slv_r_ep.err : X) ; #1 
 
 interface rr_arbiter_itfc(slv_ep1 : right arbiter_slave_ch<T>, slv_ep2 : right arbiter_slave_ch<T>, mst_ep : left req_inp_ch<ar_sel_pack_t>) =
 

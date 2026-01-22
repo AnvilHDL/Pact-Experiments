@@ -1,19 +1,21 @@
 interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fifo_dequeue_ch<select_t>) =  
                                                 (
-                                                  (&(
-                                                    push_ep.full,
-                                                    pop_ep.pop:(#1;&(push_ep.push, pop_ep.pop,*)),
-                                                    *
-                                                    )
+                                                    rec X . ^( pop_ep.pop : ^(push_ep.full, *);#1,
+                                                       * :  ^(push_ep.full, *);#1;X
+                                                     )
                                                   )
                                                                     + 
-                                                  &(
-                                                    pop_ep.empty, 
-                                                    push_ep.push : #1;&(push_ep.push, pop_ep.pop,*),
-                                                    *
+                                                  (
+                                                    rec Y . ^(
+                                                        push_ep.push : ^(pop_ep.empty, *);#1,
+                                                        * : ^(pop_ep.empty, *);#1;Y
                                                     )
+                                                  )
+                                                     
                                                                     + 
-                                                        &(push_ep.push, pop_ep.pop)) ; #1
+                                                    (
+                                                        &(push_ep.push , pop_ep.pop) ; #1
+                                                    )
 
 
 interface mux_ar_main (
@@ -30,18 +32,17 @@ interface mux_r_main (
     fifo_ep : left fifo_dequeue_ch<select_t>,
     slv_ep : right slv_r_ch<r_pack_t>,
     mst_ep1 : left mast_ch<r_pack_t>,
-    mst_ep2 : left mast_ch<r_pack_t>
+    mst_ep2 : left mast_ch<r_pack_t>,
+    slv_ep_er : right slv_r_err_ch
 ) =^(
         fifo_ep.empty,
-        * :  ^(slv_ep.r_rdy : #fifo_ep.pop;^(mst_ep1.res : #slv_ep.r_res,mst_ep2.res :#slv_ep.r_res), 
-               fifo_ep.empty)
+        * :  ^(slv_ep.r_rdy : #fifo_ep.pop; (rec X . ^(mst_ep1.res : (#slv_ep.r_res + (#slv_ep_er.err;#1;X)),mst_ep2.res: (#slv_ep.r_res + (#slv_ep_er.err;#1;X)))), *)
 ); #1
 
-interface master_itfc(mux_ep_ar : right mux_ch, mux_ep_r : left mux_ch) =
-    ^(mux_ep_ar.req : mux_ep_r.res, *) ; #1
+interface master_itfc(mux_ep_ar : right mux_ch, mux_ep_r : left mux_ch) = mux_ep_ar.req ; mux_ep_r.res; #1
 
-interface slave_itfc(slv_ep_ar : left slv_ar_ch<ar_pack_t> , slv_ep_r : left slv_r_ch<r_pack_t>) =
-         &(slv_ep_ar.ar_req , slv_ep_r.r_rdy : slv_ep_r.r_res); #1
+interface slave_itfc(slv_ep_ar : left slv_ar_ch<ar_pack_t> , slv_ep_r : left slv_r_ch<r_pack_t>, slv_ep_err : left slv_r_err_ch) =
+         &(slv_ep_ar.ar_req , slv_ep_r.r_rdy : rec X . ^(slv_ep_r.r_res, slv_ep_err.err: #1; X)); #1
 
 
 pool demux_read_pool {
@@ -55,12 +56,13 @@ pool demux_read_pool {
     mst_ep2_r -- mst_ep2_r_ri : mast_ch<r_pack_t>,
 
     fifo_insert_ep -- fifo_insert_ep_ri : fifo_insert_ch<select_t>,
-    fifo_dequeue_ep -- fifo_dequeue_ep_ri : fifo_dequeue_ch<select_t>;
+    fifo_dequeue_ep -- fifo_dequeue_ep_ri : fifo_dequeue_ch<select_t>,
+    slv_ep_err -- mux_ep_r_err : slv_r_err_ch;
 
-    slave : slave_itfc(slv_ep_ar , slv_ep_r),
+    slave : slave_itfc(slv_ep_ar , slv_ep_r, slv_ep_err),
     master1 : master_itfc(mst_ep1_ar_ri, mst_ep1_r_ri),
     master2 : master_itfc(mst_ep2_ar_ri, mst_ep2_r_ri),
     mux_ar : mux_ar_main(fifo_insert_ep, slv_ep_ar, mst_ep1_ar, mst_ep2_ar),
-    mux_r : mux_r_main(fifo_dequeue_ep, slv_ep_r, mst_ep1_r, mst_ep2_r),
+    mux_r : mux_r_main(fifo_dequeue_ep, slv_ep_r, mst_ep1_r, mst_ep2_r, mux_ep_r_err),
     fifo : fifo_itfc(fifo_insert_ep_ri, fifo_dequeue_ep_ri)
 }
