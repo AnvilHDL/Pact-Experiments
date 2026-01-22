@@ -26,17 +26,12 @@ done
 
 yosys -m slang -p "
     read_slang --single-unit --top $TOP_MODULE $ARGS
-    hierarchy -check
+    hierarchy -check -top $TOP_MODULE
+    stat
     proc
-    opt -noff
-    memory
-    opt -noff
+    stat
     techmap
-    opt -noff
-    abc
-    opt -noff
     async2sync
-    flatten
     stat
     write_blif $TOP_MODULE.blif
 " | tee  logs/$TOP_MODULE"_bit_level.log"
