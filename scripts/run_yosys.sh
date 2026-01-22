@@ -1,43 +1,31 @@
 #!/bin/bash
 
-# --- Setup ---
-BENDER_CMD="bender"
-TOP_MODULE=$1
+# collect as args:
+set -e
 
-if [ -z "$TOP_MODULE" ]; then
-    echo "Usage: ./script_name.sh <top_module>"
-    exit 1
-fi
 
-$BENDER_CMD update
-COMMON_CELLS_INC=$(find .bender -type d -path "*/common_cells*/include" | head -n 1)
-LOCAL_INC="include"
+ARGS=""
+TOP_MODULE=""
 
-if [ -z "$COMMON_CELLS_INC" ]; then
-    echo "Error: Could not find common_cells include directory."
-    exit 1
-fi
+mkdir -p logs
 
-# --- File Collection ---
-FILES=$($BENDER_CMD script flist --target synthesis | tr '\n' ' ')
-CLEAN_FILES=""
-# (Your existing file filtering logic)
-for f in $FILES; do
-    if [[ "$f" == *"common_cells"* ]] || \
-       [[ "$f" == *"tech_cells_generic"* ]] || \
-       [[ "$f" == *"axi_pkg.sv"* ]] || \
-       [[ "$f" == *"axi_lite_mux.sv"* ]] || \
-       [[ "$f" == *"axi_lite_demux.sv"* ]] || \
-       [[ "$f" == *"axi_intf.sv"* ]] || \
-       [[ "$f" == *"$TOP_MODULE.sv"* ]]; then
-        CLEAN_FILES="$CLEAN_FILES $f"
-    fi
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -a|--all_args)
+            ARGS+="$2 "
+            shift 2
+            ;;
+        *)
+            TOP_MODULE="$1"
+            shift
+            ;;
+    esac
 done
 
-echo "Filtered file list prepared."
 
 yosys -m slang -p "
-    read_slang --single-unit --top $TOP_MODULE -I$LOCAL_INC -I$COMMON_CELLS_INC $CLEAN_FILES src/axi_lite_mux_top.sv src/axi_router_top.sv
+    read_slang --single-unit --top $TOP_MODULE $ARGS
     hierarchy -check
     proc
     opt -noff
@@ -50,24 +38,19 @@ yosys -m slang -p "
     async2sync
     flatten
     stat
-"| tee $TOP_MODULE"_yosys.log"
-
-
-# --- ABC REACHABILITY FLOW ---
-# We use yosys-abc to compute exact reachability
-echo "----------------------------------------"
-echo "Running ABC for Reachable State Space Analysis..."
-echo "WARNING: This uses BDDs and may explode memory for large designs (>200-300 FFs)."
-echo "----------------------------------------"
+    write_blif $TOP_MODULE.blif
+" | tee  logs/$TOP_MODULE"_bit_level.log"
 
 yosys-abc -c "
     read_blif $TOP_MODULE.blif;
     strash;
     print_stats;
-    reach;
-" | tee $TOP_MODULE"_reach.log"
+    zero;
+    reach -B 1000000;
+" | tee logs/$TOP_MODULE"_reach.log"
 
 echo "----------------------------------------"
 echo "Analysis Done."
-echo "Yosys Log: $TOP_MODULE""_yosys.log"
+echo "Yosys Log: logs/$TOP_MODULE""_word_level.log"
+echo "Yosys Bit level Log: logs/$TOP_MODULE""_bit_level.log"
 echo "Reachability Log: $TOP_MODULE""_reach.log"
