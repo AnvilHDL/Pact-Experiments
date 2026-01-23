@@ -1,0 +1,98 @@
+interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fifo_dequeue_ch<select_t>) =  
+                                                (
+                                                    rec X . ^( pop_ep.pop : ^(push_ep.full, *);#1,
+                                                       * :  ^(push_ep.full, *);#1;X
+                                                     )
+                                                  )
+                                                                    + 
+                                                  (
+                                                    rec Y . ^(
+                                                        push_ep.push : ^(pop_ep.empty, *);#1,
+                                                        * : ^(pop_ep.empty, *);#1;Y
+                                                    )
+                                                  )
+                                                     
+                                                                    + 
+                                                    (
+                                                        &(push_ep.push , pop_ep.pop) ; #1
+                                                    )
+
+
+
+
+interface master_itfc(mux_ep_aw : right mast_ch<aw_pack_t>, mux_ep_w : right mast_ch<w_pack_t>, mux_ep_b : right mast_rdy_ch<b_pack_t>) =
+        mux_ep_aw.req ;  rec X . mux_ep_w.rdy;^(mux_ep_w.res, * : #1;X) ; rec Y . mux_ep_b.rdy;^(mux_ep_b.res, * : #1;X);#1
+
+interface slave_itfc(slv_ep_aw : left slv_ch<aw_ch> , slv_ep_w : left slv_ch<w_pack_t> , slv_ep_b : left slv_res_ch<b_pack_t>) =
+         (slv_ep_aw.req || slv_ep_w.req) ; slv_ep_b.res;#1
+
+interface mux_aw_main (
+    w_fifo_ep : left fifo_insert_ch<select_t>,
+    slv_ep : right slv_ch<aw_pack_t>,
+    mst_ep1 : left mast_ch<aw_pack_t>,
+    mst_ep2 : left mast_ch<aw_pack_t>
+) = ^(
+        w_fifo_ep.full,
+        * : ^(slv_ep.req : w_fifo_ep.push; (mst_ep1.req + mst_ep2.req) , *)
+    ) ; #1
+
+interface mux_w_main (
+    w_fifo_ep : left fifo_dequeue_ch<select_t>,
+    b_fifo_ep : left fifo_insert_ch<select_t>,
+    slv_ep : right slv_ch<w_pack_t>,
+    mst_ep1 : left mast_ch<w_pack_t>,
+    mst_ep2 : left mast_ch<w_pack_t>
+) = ^(
+        w_fifo_ep.empty,
+        * : ^(b_fifo_ep.full, 
+              * :                ^(slv_ep.req : (#w_fifo_ep.pop || #b_fifo_ep.push);rec X . ^(mst_ep1.rdy: (#mst_ep1.res)+(#1;X),
+                                                                                             mst_ep2.rdy : (#mst_ep2.res) + (#1;X)), *)
+             ) 
+    ) ; #1
+
+interface mux_b_main (
+    b_fifo_ep : left fifo_dequeue_ch<select_t>,
+    slv_ep : right slv_res_ch<b_pack_t>,
+    mst_ep1 : left mast_rdy_ch<b_pack_t>,
+    mst_ep2 : left mast_rdy_ch<b_pack_t>
+) = ^(
+        b_fifo_ep.empty,
+        * : #b_fifo_ep.pop ; rec X . ^(
+                       mst_ep1.rdy : ((#mst_ep1.res;slv_ep.res) + (#1;X)), 
+                       mst_ep2.rdy : ((#mst_ep2.res;slv_ep.res) + (#1;X))
+                   )
+
+); #1
+
+
+
+        
+pool axi_type_demux_write_pool {
+    slv_ep_aw -- slv_ep_aw_ri : slv_ch<aw_ch>,
+    slv_ep_w -- slv_ep_w_ri : slv_ch<w_pack_t>,
+    slv_ep_b -- slv_ep_b_ri : slv_res_ch<b_pack_t>,
+
+    mst_ep1_aw -- mst_ep1_aw_ri : mast_ch<aw_pack_t>,
+    mst_ep2_aw -- mst_ep2_aw_ri : mast_ch<aw_pack_t>,
+
+    mst_ep1_w --  mst_ep1_w_ri : mast_ch<w_pack_t>,
+    mst_ep2_w --  mst_ep2_w_ri : mast_ch<w_pack_t>,
+
+    mst_ep1_b -- mst_ep1_b_ri : mast_rdy_ch<b_pack_t>,
+    mst_ep2_b -- mst_ep2_b_ri : mast_rdy_ch<b_pack_t>,
+
+    w_fifo_push -- w_fifo_push_ri : fifo_insert_ch<select_t>,
+    w_fifo_pop -- w_fifo_pop_ri : fifo_dequeue_ch<select_t>,
+    b_fifo_push -- b_fifo_push_ri : fifo_insert_ch<select_t>,
+    b_fifo_pop -- b_fifo_pop_ri : fifo_dequeue_ch<select_t>;
+
+
+    i1 : slave_itfc(slv_ep_aw, slv_ep_w, slv_ep_b),
+    i2 : master_itfc(mst_ep1_aw_ri, mst_ep1_w_ri, mst_ep1_b_ri),
+    i3 : master_itfc(mst_ep2_aw_ri, mst_ep2_w_ri, mst_ep2_b_ri),
+    i4 : mux_aw_main(w_fifo_push, slv_ep_aw_ri, mst_ep1_aw, mst_ep2_aw),
+    i5 : mux_w_main(w_fifo_pop, b_fifo_push, slv_ep_w_ri, mst_ep1_w, mst_ep2_w),
+    i6 : mux_b_main(b_fifo_pop, slv_ep_b_ri, mst_ep1_b, mst_ep2_b),
+    i7 : fifo_itfc(w_fifo_push_ri, w_fifo_pop_ri),
+    i8 : fifo_itfc(b_fifo_push_ri, b_fifo_pop_ri)
+}
