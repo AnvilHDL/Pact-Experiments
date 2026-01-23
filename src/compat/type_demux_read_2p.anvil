@@ -18,7 +18,7 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fif
                                                     )
 
 
-interface mux_ar_main (
+interface demux_ar_main (
     fifo_ep : left fifo_insert_ch<select_t>,
     slv_ep : right slv_ar_ch<ar_pack_t>,
     mst_ep1 : left mast_ch<ar_pack_t>,
@@ -28,7 +28,7 @@ interface mux_ar_main (
         * : ^(slv_ep.ar_req : fifo_ep.push;(mst_ep1.req + mst_ep2.req),*)
     ) ; #1
 
-interface mux_r_main (
+interface demux_r_main (
     fifo_ep : left fifo_dequeue_ch<select_t>,
     slv_ep : right slv_r_ch<r_pack_t>,
     mst_ep1 : left mast_ch<r_pack_t>,
@@ -43,15 +43,15 @@ interface mux_r_main (
                             )
 ); #1
 
-interface master_itfc(mux_ep_ar : right mux_ch, mux_ep_r : left mux_ch) = mux_ep_ar.req ; rec X . mux_ep_r.rdy; ^(mux_ep_r.res,*:#1;X) ; #1
+interface master_itfc(mux_ep_ar : right demux_ch, demux_ep_r : left demux_ch) = demux_ep_ar.req ; rec X . demux_ep_r.rdy; ^(mux_ep_r.res,*:#1;X) ; #1
 
 interface slave_itfc(slv_ep_ar : left slv_ar_ch<ar_pack_t> , slv_ep_r : left slv_r_ch<r_pack_t>) =
          slv_ep_ar.ar_req ; slv_ep_r.r_res; #1
 
 
 pool demux_read_pool {
-    slv_ep_ar -- mux_ep_ar : slv_ar_ch<ar_pack_t>,
-    slv_ep_r -- mux_ep_r : slv_r_ch<r_pack_t>,
+    slv_ep_ar -- demux_ep_ar : slv_ar_ch<ar_pack_t>,
+    slv_ep_r -- demux_ep_r : slv_r_ch<r_pack_t>,
 
     mst_ep1_ar -- mst_ep1_ar_ri : mast_ch<ar_pack_t>,
     mst_ep1_r -- mst_ep1_r_ri : mast_ch<r_pack_t>,
@@ -66,7 +66,7 @@ pool demux_read_pool {
     slave : slave_itfc(slv_ep_ar , slv_ep_r),
     master1 : master_itfc(mst_ep1_ar_ri, mst_ep1_r_ri),
     master2 : master_itfc(mst_ep2_ar_ri, mst_ep2_r_ri),
-    mux_ar : mux_ar_main(fifo_insert_ep, slv_ep_ar, mst_ep1_ar, mst_ep2_ar),
-    mux_r : mux_r_main(fifo_dequeue_ep, slv_ep_r, mst_ep1_r, mst_ep2_r),
+    demux_ar : demux_ar_main(fifo_insert_ep, slv_ep_ar, mst_ep1_ar, mst_ep2_ar),
+    demux_r : demux_r_main(fifo_dequeue_ep, slv_ep_r, mst_ep1_r, mst_ep2_r),
     fifo : fifo_itfc(fifo_insert_ep_ri, fifo_dequeue_ep_ri)
 }
