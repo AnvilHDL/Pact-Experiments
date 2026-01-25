@@ -24,8 +24,9 @@ interface demux_ar_main (
     mst_ep1 : left mast_ch<ar_pack_t>,
     mst_ep2 : left mast_ch<ar_pack_t>
 ) = ^(
-        fifo_ep.full,
-        * : ^(slv_ep.ar_req : fifo_ep.push;(mst_ep1.req + mst_ep2.req),*)
+    slv_ep.ar_req : (mst_ep1.rdy; rec X . ^(fifo_ep.full : #1;X, * : fifo_ep.push;#mst_ep1.req;#slv_ep.gnt))+ 
+                    (mst_ep2.rdy; rec Y . ^(fifo_ep.full : #1;Y, * : fifo_ep.push;#mst_ep2.req;#slv_ep.gnt)),
+    *
     ) ; #1
 
 interface demux_r_main (
@@ -43,10 +44,10 @@ interface demux_r_main (
                             )
 ); #1
 
-interface master_itfc(mux_ep_ar : right demux_ch, demux_ep_r : left demux_ch) = demux_ep_ar.req ; rec X . demux_ep_r.rdy; ^(mux_ep_r.res,*:#1;X) ; #1
+interface master_itfc(mux_ep_ar : right demux_ch, demux_ep_r : left demux_ch) = mux_ep_ar.rdy; mux_ep_ar.req; rec X . demux_ep_r.rdy; ^(demux_ep_r.res,*:#1;X) ; #1
 
 interface slave_itfc(slv_ep_ar : left slv_ar_ch<ar_pack_t> , slv_ep_r : left slv_r_ch<r_pack_t>) =
-         slv_ep_ar.ar_req ; slv_ep_r.r_res; #1
+         slv_ep_ar.ar_req;slv_ep_ar.gnt ; slv_ep_r.r_res; #1
 
 
 pool demux_read_pool {

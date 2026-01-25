@@ -21,10 +21,10 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fif
 
 
 interface master_itfc(mux_ep_aw : right mast_ch<aw_pack_t>, demux_ep_w : right mast_ch<w_pack_t>, demux_ep_b : right mast_rdy_ch<b_pack_t>) =
-        demux_ep_aw.req ;  rec X . demux_ep_w.rdy;^(mux_ep_w.res, * : #1;X) ; rec Y . demux_ep_b.rdy;^(mux_ep_b.res, * : #1;X);#1
+        mux_ep_aw.rdy; mux_ep_aw.req ;  rec X . demux_ep_w.rdy;^(mux_ep_w.res, * : #1;X) ; rec Y . demux_ep_b.rdy;^(mux_ep_b.res, * : #1;X);#1
 
 interface slave_itfc(slv_ep_aw : left slv_ch<aw_ch> , slv_ep_w : left slv_ch<w_pack_t> , slv_ep_b : left slv_res_ch<b_pack_t>) =
-         (slv_ep_aw.req || slv_ep_w.req) ; slv_ep_b.res;#1
+         ((slv_ep_aw.req;slv_ep_aw.gnt)|| (slv_ep_w.req;slv_ep_w.gnt)) ; slv_ep_b.res;#1
 
 interface demux_aw_main (
     w_fifo_ep : left fifo_insert_ch<select_t>,
@@ -32,8 +32,9 @@ interface demux_aw_main (
     mst_ep1 : left mast_ch<aw_pack_t>,
     mst_ep2 : left mast_ch<aw_pack_t>
 ) = ^(
-        w_fifo_ep.full,
-        * : ^(slv_ep.req : w_fifo_ep.push; (mst_ep1.req + mst_ep2.req) , *)
+    slv_ep.req : (mst_ep1.rdy; rec X . ^(w_fifo_ep.full : #1;X, * : w_fifo_ep.push;#mst_ep1.req;#slv_ep.gnt))+ 
+                 (mst_ep2.rdy; rec Y . ^(w_fifo_ep.full : #1;Y, * : w_fifo_ep.push;#mst_ep2.req;#slv_ep.gnt)),
+    *
     ) ; #1
 
 interface demux_w_main (
@@ -45,8 +46,9 @@ interface demux_w_main (
 ) = ^(
         w_fifo_ep.empty,
         * : ^(b_fifo_ep.full, 
-              * :                ^(slv_ep.req : (#w_fifo_ep.pop || #b_fifo_ep.push);rec X . ^(mst_ep1.rdy: (#mst_ep1.res)+(#1;X),
-                                                                                             mst_ep2.rdy : (#mst_ep2.res) + (#1;X)), *)
+              * :        ^(slv_ep.req : #w_fifo_ep.pop ; #b_fifo_ep.push;rec X . ^(mst_ep1.rdy: (#mst_ep1.res;#slv_ep.gnt)+(#1;X),
+                                                                                   mst_ep2.rdy : (#mst_ep2.res;#slv_ep.gnt) + (#1;X)), 
+                          *)
              ) 
     ) ; #1
 
