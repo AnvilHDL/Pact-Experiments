@@ -1,13 +1,24 @@
 interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fifo_dequeue_ch<select_t>) =  
                                                 (
-                                                    rec X . ^( pop_ep.pop : ^(push_ep.full, *);#1;&(push_ep.push , pop_ep.pop) ; #1,
+                                                    rec X . ^( pop_ep.pop : ^(push_ep.full, *);#1;(&(push_ep.push , pop_ep.pop) + (
+                                                    rec Z . ^(
+                                                        push_ep.push : ^(pop_ep.empty, *),
+                                                        * : ^(pop_ep.empty, *);#1;Z
+                                                    )
+
+                                                    )  ); #1,
                                                        * :  ^(push_ep.full, *);#1;X
                                                      )
                                                   )
                                                                     + 
                                                   (
                                                     rec Y . ^(
-                                                        push_ep.push : ^(pop_ep.empty, *);#1;&(push_ep.push , pop_ep.pop) ; #1,
+                                                        push_ep.push : ^(pop_ep.empty, *);#1;(&(push_ep.push , pop_ep.pop)+(
+                                                                rec K . ^(
+                                                        pop_ep.pop : ^(push_ep.full, *),
+                                                        * : ^(push_ep.full, *);#1;K
+                                                    )
+                                                        ) ); #1,
                                                         * : ^(pop_ep.empty, *);#1;Y
                                                     )
                                                   )

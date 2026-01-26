@@ -1,13 +1,13 @@
 interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fifo_dequeue_ch<select_t>) =  
                                                 (
-                                                    rec X . ^( pop_ep.pop : ^(push_ep.full, *);#1,
+                                                    rec X . ^( pop_ep.pop : ^(push_ep.full, *);#1;&(push_ep.push , pop_ep.pop) ; #1,
                                                        * :  ^(push_ep.full, *);#1;X
                                                      )
                                                   )
                                                                     + 
                                                   (
                                                     rec Y . ^(
-                                                        push_ep.push : ^(pop_ep.empty, *);#1,
+                                                        push_ep.push : ^(pop_ep.empty, *);#1;&(push_ep.push , pop_ep.pop) ; #1,
                                                         * : ^(pop_ep.empty, *);#1;Y
                                                     )
                                                   )
@@ -20,15 +20,15 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fif
 
 
 
-interface master_itfc(mst_ep_aw : right mst_ch<aw_pack_t>, mst_ep_w : right mst_ch<w_pack_t>, mst_ep_b : left mst_res_ch<b_pack_t>) = rec X . mst_ep_aw.rdy ; ^(mst_ep_aw.req, * : #1;X) ; mst_ep_w.rdy;mst_ep_w.req;#1;mst_ep_b.rdy;mst_ep_b.res;#1
+interface master_itfc(mst_ep_aw : right mst_ch<aw_pack_t>, mst_ep_w : right mst_ch<w_pack_t>, mst_ep_b : left mst_res_ch<b_pack_t>) = mst_ep_aw.rdy ; mst_ep_aw.req ; mst_ep_w.req;#1;mst_ep_b.rdy;mst_ep_b.res;#1
 
 interface slave_itfc(write_req_ep : left slv_ch<aw_pack_t>, write_data_ep : left slv_r_ch<w_pack_t>, write_res_ep  : left slv_res_ch<b_pack_t>) =
-            write_req_ep.req ; write_req_ep.gnt; rec X . write_data_ep.rdy; ^(write_data_ep.data, * : #1; X) ; rec Y . write_res_ep.rdy; ^(write_res_ep.res, * : #1; Y); #1
+            write_req_ep.req ; write_req_ep.gnt; rec X . write_data_ep.rdy; ^(write_data_ep.data : write_data_ep.gnt, * : #1; X) ; rec Y . write_res_ep.rdy; ^(write_res_ep.gnt : write_res_ep.res, * : #1; Y); #1
 
 interface rr_arbiter_itfc(slv_ep1 : right slv_ch<aw_pack_t>, slv_ep2 : right slv_ch<aw_pack_t>, aw_req_ep : left mux_ch<aw_sel_pack_t>) =
 ^( 
-   slv_ep1.req : aw_req_ep.req; #slv_ep1.grant,
-   slv_ep2.req : aw_req_ep.req; #slv_ep2.grant,
+   slv_ep1.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep1.gnt,
+   slv_ep2.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep2.gnt,
    *
 ) ; #1
 
@@ -37,8 +37,8 @@ interface mux_aw_main (
     aw_mst_ep : left mst_ch <aw_pack_t>,
     fifo_ep : left fifo_insert_ch<select_t>
 ) =^(
-        fifo_ep.full,
-        * : ^(aw_mst_ep.rdy : aw_req_ep.rdy; ^(aw_req_ep.req : #fifo_ep.push;#aw_mst_ep.req;#aw_req_ep.gnt, *), *)
+    aw_req_ep.req : aw_mst_ep.rdy ; rec X . ^(fifo_ep.full: #1;X, * : #fifo_ep.push;#aw_mst_ep.req;#aw_req_ep.gnt),
+    *
     ) ; #1
 
 interface mux_w_main (
@@ -50,12 +50,10 @@ interface mux_w_main (
 ) =^(
         w_fifo_ep.empty,
         * : ^(b_fifo_ep.full, 
-              * : ^(w_mst_ep.rdy : #w_fifo_ep.pop;#b_fifo_ep.push; rec X . ^(
-                                                        slv_ep1.rdy : ((#slv_ep1.data;#w_mst_ep.req) + (#1;X)),
-                                                        slv_ep2.rdy : ((#slv_ep2.data;#w_mst_ep.req) + (#1;X))
-                                                      ),
-                    *)
-                                            
+              * : #w_fifo_ep.pop;#b_fifo_ep.push; rec X . ^(
+                                                        slv_ep1.rdy : ((#slv_ep1.data;w_mst_ep.req;#slv_ep1.gnt) + (#1;X)),
+                                                        slv_ep2.rdy : ((#slv_ep2.data;w_mst_ep.req;#slv_ep2.gnt) + (#1;X))
+                                                      )                                            
             )            
 ); #1
 
@@ -66,13 +64,10 @@ interface mux_b_main (
     slv_ep2 : right slv_res_ch<b_pack_t>
 ) = ^(
         b_fifo_ep.empty,
-        * : ^(b_mst_ep.rdy : #b_fifo_ep.pop ; rec X.  ^(
-                                         slv_ep1.rdy : (#b_mst_ep.res;#slv_ep1.res) + (#1;X),
-                                          slv_ep2.rdy : (#b_mst_ep.res;#slv_ep2.res) + (#1;X)
-                                    ),
-                    *
-              )
-                                            
+        * : #b_fifo_ep.pop ; rec X.  ^(
+                                         slv_ep1.rdy : (#slv_ep1.gnt;b_mst_ep.res;#slv_ep1.res) + (#1;X),
+                                          slv_ep2.rdy : (#slv_ep2.gnt;b_mst_ep.res;#slv_ep2.res) + (#1;X)
+                                    )      
     ) ; #1
                             
                                             
