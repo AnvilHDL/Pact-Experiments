@@ -107,19 +107,6 @@ pool mux_write_transaction_pool {
     ib : mux_b_main(b_fifo_pop, b_reg_res_ep, mux_res_ep1, mux_res_ep2),
     iwf : fifo_itfc(w_fifo_push_ri, w_fifo_pop_ri),
     ibf : fifo_itfc(b_fifo_push_ri, b_fifo_pop_ri)
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 

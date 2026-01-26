@@ -1,0 +1,131 @@
+interface arbiter_ifc(  ep1 : right arbiter_client_ch<T>, 
+                        ep2 : right arbiter_client_ch<T>,
+                     server_ep : left arbiter_server_ch<T>) = (
+    server_ep.rdy ;
+    ^(
+        ep1.req,
+        ep2.req,
+        *
+    ) ; #1
+)
+
+interface d_arbiter_ifc(  ep1 : right darbiter_client_ch<T>, 
+                        ep2 : right darbiter_client_ch<T>,
+                     client_ep : left darbiter_server_ch<T>) = (
+    client_ep.rdy;(#ep1.rdy||#ep2.rdy);
+    ^(
+        ep1.req,
+        ep2.req,
+        *
+    ) ; #1
+)
+
+interface crossbar_itfc_A(client_ep1 : right client_ch<T>, client_ep2 : right client_ch<T>,
+                        arb_cl_ep_le11 : left arbiter_client_ch, arb_cl_ep_le12 : left arbiter_client_ch,
+                        arb_cl_ep_le21 : left arbiter_client_ch, arb_cl_ep_le22 : left arbiter_client_ch,
+                        server1_ep : right server_ch<T>, server2_ep : right server_ch<T>
+                        ) = (
+    (
+    &(
+        client_ep1.req : (
+                            (^(arb_cl_ep_le11.req : #client_ep1.data;#server1_ep.req , *)) 
+                                                                    +
+                            (^(arb_cl_ep_le21.req : #client_ep1.data;#server2_ep.req , *)) 
+                         ),
+
+        client_ep2.req : (
+                            (^(arb_cl_ep_le12.req : #client_ep2.data;#server1_ep.req , *)) 
+                                                                    + 
+                            (^(arb_cl_ep_le22.req : #client_ep2.data;#server2_ep.req , *)) 
+                        )
+     ) 
+    )
+     ;
+    #1
+)
+
+interface crossbar_itfc_D(server1_ep : right server_r_ch<T>, server2_ep : right server_r_ch<T>,
+                        arb_cl_ep_le11 : left darbiter_client_ch, arb_cl_ep_le12 : left darbiter_client_ch,
+                        arb_cl_ep_le21 : left darbiter_client_ch, arb_cl_ep_le22 : left darbiter_client_ch,
+                        client_ep1 : left client_r_ch<T>, client_ep2 : left client_r_ch<T>
+                        ) = 
+(
+    &(
+        server1_ep.req : ^(
+                            arb_cl_ep_le11.rdy : ^(arb_cl_ep_le11.req : #server1_ep.res;#client_ep1.res, *) + (),
+                            arb_cl_ep_le21.rdy : ^(arb_cl_ep_le21.req : #server1_ep.res;#client_ep2.res, *) + ()
+                         ),
+    
+        server2_ep.req : ^(
+                            arb_cl_ep_le12.rdy : (^(arb_cl_ep_le12.req : #server2_ep.res;#client_ep1.res, *)) + (),
+                            arb_cl_ep_le22.rdy : (^(arb_cl_ep_le22.req : #server2_ep.res;#client_ep2.res, *)) + ()
+                         )
+     )
+     ;
+    #1
+)
+
+interface client_itfc(client_ep : left client_ch<T>, res_arb_client : right arbiter_server_ch<T>, client_crossbar_ep : right client_r_ch<T>) =
+    rec X . client_ep.req ; ^(client_ep.data, *: #1;X) ; rec Y . res_arb_client.rdy; ^(client_crossbar_ep.res, *: #1;Y) ; #1
+
+interface manager_itfc(manager_ep : right arbiter_server_ch<T>, manager_crossbar_ep : left server_ch<T>, manager_crossbar_d_ep : left server_r_ch<T>) =
+    manager_ep.rdy ; manager_crossbar_ep.req;#1;rec X . manager_crossbar_d_ep.req; ^(manager_crossbar_d_ep.res, *: #1;X) ; #1
+
+pool tilelink{
+    client_ep_le1 -- client_ep_ri1 : client_ch<T>,
+    client_ep_le2 -- client_ep_ri2 : client_ch<T>,
+    client_res_ep_le1 -- client_res_ep_ri1 : client_r_ch<T>,
+    client_res_ep_le2 -- client_res_ep_ri2 : client_r_ch<T>,
+
+
+    server_ep_le1 -- server_ep_ri1 : server_ch<T>,
+    server_ep_le2 -- server_ep_ri2 : server_ch<T>,
+
+    server_res_ep_le1 -- server_res_ep_ri1 : server_r_ch<T>,
+    server_res_ep_le2 -- server_res_ep_ri2 : server_r_ch<T>,
+
+
+    manager_ep_le1 -- manager_ep_ri1 : arbiter_server_ch<T>,
+    manager_ep_le2 -- manager_ep_ri2 : arbiter_server_ch<T>,
+
+    res_arb_client_le1 -- res_arb_client_ri1 : arbiter_server_ch<T>,
+    res_arb_client_le2 -- res_arb_client_ri2 : arbiter_server_ch<T>,
+
+
+    arb_cl_ep_le11 -- arb_cl_ep_ri11 : arbiter_client_ch<T>,
+    arb_cl_ep_le12 -- arb_cl_ep_ri12 : arbiter_client_ch<T>,
+    arb_cl_ep_le21 -- arb_cl_ep_ri21 : arbiter_client_ch<T>,
+    arb_cl_ep_le22 -- arb_cl_ep_ri22 : arbiter_client_ch<T>,
+
+
+    res_ma_ep_le11 -- res_ma_ep_ri11 : darbiter_client_ch<T>,
+    res_ma_ep_le12 -- res_ma_ep_ri12 : darbiter_client_ch<T>,
+    res_ma_ep_le21 -- res_ma_ep_ri21 : darbiter_client_ch<T>,
+    res_ma_ep_le22 -- res_ma_ep_ri22 : darbiter_client_ch<T>;
+
+    ic1 : client_itfc(client_ep_le1,res_arb_client_ri1, client_res_ep_ri1),
+    ic2 : client_itfc(client_ep_le2,res_arb_client_ri2, client_res_ep_ri2),
+
+    im1 : manager_itfc(manager_ep_ri1, server_ep_le1, server_res_ep_le1),
+    im2 : manager_itfc(manager_ep_ri2, server_ep_le2, server_res_ep_le2),
+
+
+    ia1 : arbiter_ifc(arb_cl_ep_ri11,arb_cl_ep_ri12, manager_ep_le1),
+    ia2 : arbiter_ifc(arb_cl_ep_ri21,arb_cl_ep_ri22, manager_ep_le2),
+    iares1 : arbiter_ifc(res_ma_ep_ri11,res_ma_ep_ri12, res_arb_client_le1),
+    iares2 : arbiter_ifc(res_ma_ep_ri21,res_ma_ep_ri22, res_arb_client_le2),
+    
+    icrA : crossbar_itfc_A( 
+                        client_ep_ri1,client_ep_ri2,
+                        arb_cl_ep_le11,arb_cl_ep_le12,
+                        arb_cl_ep_le21,arb_cl_ep_le22,
+                        server_ep_ri1, server_ep_ri2
+                    ),
+    icrD : crossbar_itfc_D( 
+                        server_res_ep_ri1,server_res_ep_ri2,
+                        res_ma_ep_le11,res_ma_ep_le12,
+                        res_ma_ep_le21,res_ma_ep_le22,
+                        client_res_ep_le1, client_res_ep_le2
+                    )
+    
+}
