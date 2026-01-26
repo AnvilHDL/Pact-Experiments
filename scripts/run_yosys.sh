@@ -36,6 +36,17 @@ yosys -m slang -p "
     write_blif $TOP_MODULE.blif
 " | tee  logs/$TOP_MODULE"_bit_level.log"
 
+yosys -m slang -p "
+    read_slang --single-unit --top $TOP_MODULE $ARGS
+    hierarchy -check -top $TOP_MODULE
+    stat
+    proc
+    fsm_detect;               # Detect FSM structures
+    fsm_extract;              # Extract FSMs into FSM cells
+    fsm_info;                 # Print FSM information (states, transitions)
+    fsm_export -o $TOP_MODULE""_fsm.kiss2;  # Export FSMs to KISS2 format
+" | tee  logs/$TOP_MODULE"_fsm.log"
+
 yosys-abc -c "
     read_blif $TOP_MODULE.blif;
     strash;

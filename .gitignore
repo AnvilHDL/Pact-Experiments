@@ -16,3 +16,4 @@ src/build/
 *.out
 tools/
 scripts/env-cva6.sh
+*.blif
