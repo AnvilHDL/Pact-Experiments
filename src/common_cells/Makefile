@@ -71,4 +71,4 @@ run: obj_dir/V$(MODULE_NAME)
 	@ $< $(TIMEOUT)
 
 clean:
-	rm -rf *.anvil.sv *_driver.cpp *.png *.dot *.log obj_dir
+	rm -rf *.anvil.sv *_driver.cpp *.png *.dot *.log obj_dir *.blif *.vcd logs/ coverage/

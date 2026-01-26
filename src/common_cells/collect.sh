@@ -1,28 +1,63 @@
 #!/bin/bash
 
+# collect as args:
 set -e
 
-while [[ "$#" -gt 0 ]]; do
+
+ARGS=""
+TOP_MODULE=""
+
+mkdir -p logs
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
     case $1 in
-        -top ) TOP_MODULE="$2"; shift ;;
-        * ) FILE="$1" ;;
+        -a|--all_args)
+            ARGS+="$2 "
+            shift 2
+            ;;
+        *)
+            TOP_MODULE="$1"
+            shift
+            ;;
     esac
-    shift
 done
 
-if [ -z "$TOP_MODULE" ] || [ -z "$FILE" ]; then
-    echo "Usage: $0 -top <top_module_name> <file_to_collect>"
-    exit 1
-fi
 
-echo "Collecting $FILE into $TOP_MODULE"
+yosys -m slang -p "
+    read_slang --single-unit --top $TOP_MODULE $ARGS
+    hierarchy -check -top $TOP_MODULE
+    stat
+    proc
+    stat
+    techmap
+    async2sync
+    dffunmap
+    stat
+    write_blif $TOP_MODULE.blif
+" | tee  logs/$TOP_MODULE"_bit_level.log"
 
-YOSYS_SCRIPT="read_slang $FILE; hierarchy -top $TOP_MODULE; synth; stat"
+yosys -m slang -p "
+    read_slang --single-unit --top $TOP_MODULE $ARGS
+    hierarchy -check -top $TOP_MODULE
+    stat
+    proc
+    fsm_detect;               # Detect FSM structures
+    fsm_extract;              # Extract FSMs into FSM cells
+    fsm_info;                 # Print FSM information (states, transitions)
+    fsm_export -o $TOP_MODULE""_fsm.kiss2;  # Export FSMs to KISS2 format
+" | tee  logs/$TOP_MODULE"_fsm.log"
 
-echo "Running: yosys -m slang -p \"$YOSYS_SCRIPT\""
+yosys-abc -c "
+    read_blif $TOP_MODULE.blif;
+    strash;
+    print_stats;
+    zero;
+    reach -B 1000000;
+" | tee logs/$TOP_MODULE"_reach.log"
 
-OUT_FILE="result_$(basename $FILE .sv).log"
-
-yosys -m slang -p "$YOSYS_SCRIPT" > "$OUT_FILE"
-
-echo "Result written to $OUT_FILE"
+echo "----------------------------------------"
+echo "Analysis Done."
+echo "Yosys Log: logs/$TOP_MODULE""_word_level.log"
+echo "Yosys Bit level Log: logs/$TOP_MODULE""_bit_level.log"
+echo "Reachability Log: $TOP_MODULE""_reach.log"
