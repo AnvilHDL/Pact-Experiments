@@ -32,7 +32,7 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fif
 interface master_itfc(mst_ep_ar : right mst_ch<ar_pack_t>, mst_ep_r : left mst_r_ch<r_pack_t>) = mst_ep_ar.rdy;mst_ep_ar.req ;#1;mst_ep_r.rdy;mst_ep_r.res;#1
 
 interface slave_itfc(read_req_ep :left slv_ch<ar_pack_t>, read_res_ep : left slv_r_ch<r_pack_t>) =
-            read_req_ep.req ; read_req_ep.gnt;rec X . read_res_ep.rdy ; ^(read_res_ep.gnt : read_res_ep.res,*:#1;X); #1
+            F read_req_ep.req ; read_req_ep.gnt;rec X . read_res_ep.rdy ; ^(read_res_ep.gnt : read_res_ep.res,*:#1;X); #1
 
 interface rr_arbiter_itfc(slv_ep1 : right slv_ch<ar_pack_t>, slv_ep2 : right slv_ch<ar_pack_t>, ar_req_ep : left mux_ch<ar_sel_pack_t>) =
 
@@ -53,7 +53,7 @@ interface mux_ar_main (
 
 interface mux_r_main (
     r_res_ep : right mst_r_ch<r_pack_t>,
-    fifo_ep : right fifo_dequeue_ch<select_t>,
+    fifo_ep : left fifo_dequeue_ch<select_t>,
     slv_ep1 : right slv_r_ch<r_pack_t>,
     slv_ep2 : right slv_r_ch<r_pack_t>
 ) =^(

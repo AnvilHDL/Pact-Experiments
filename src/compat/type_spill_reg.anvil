@@ -1,0 +1,17 @@
+interface spill_register_itfc(inp_ep : right reg_req<T>, out_ep : left reg_res<T>) =
+    ((inp_ep.req ; #1) + 
+     (^(out_ep.data, *); &(inp_ep.req , out_ep.spill, *)) 
+     + (rec X . ^(out_ep.data,*) ; ^(out_ep.spill, *: #1;X))
+    );#1
+
+
+interface master_itfc(reg_ep : left reg_req<T>) = F reg_ep.req; #1
+interface slave_itfc(reg_ep : left reg_res<T>) = F reg_ep.data ; (#reg_ep.spill + ()) ; #1
+
+pool spill_reg_pool {
+    reg_inp_ep -- reg_inp_ep2 : reg_req<T>,
+    reg_out_ep -- reg_out_ep2 : reg_res<T>;
+    ispillreg : spill_register_itfc(reg_inp_ep2, reg_out_ep2),
+    imaster : master_itfc(reg_inp_ep),
+    islave : slave_itfc(reg_out_ep)
+}
