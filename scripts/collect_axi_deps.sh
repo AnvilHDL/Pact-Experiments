@@ -38,7 +38,7 @@ for f in $FILES; do
     fi
 done
 
-CLEAN_FILES+=" src/axi_lite_mux_top.sv src/axi_router_top.sv"
+CLEAN_FILES+=" src/axi_lite_mux_top.sv src/axi_router_top.sv src/axi_lite_mux_read.sv src/axi_lite_mux_write.sv src/axi_lite_mux_read_tb.sv src/axi_lite_mux_write_tb.sv src/axi_lite_demux_read.sv src/axi_lite_demux_write.sv src/axi_lite_demux_read_tb.sv src/axi_lite_demux_write_tb.sv"
 
 echo "Filtered file list prepared."
 

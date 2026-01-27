@@ -32,6 +32,7 @@ yosys -m slang -p "
     stat
     techmap
     async2sync
+    dffunmap
     stat
     write_blif $TOP_MODULE.blif
 " | tee  logs/$TOP_MODULE"_bit_level.log"
