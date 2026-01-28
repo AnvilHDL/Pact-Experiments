@@ -47,7 +47,7 @@ interface demux_r_main (
 interface master_itfc(mux_ep_ar : right demux_ch, demux_ep_r : left demux_ch) = mux_ep_ar.rdy; mux_ep_ar.req; rec X . demux_ep_r.rdy; ^(demux_ep_r.res,*:#1;X) ; #1
 
 interface slave_itfc(slv_ep_ar : left slv_ar_ch<ar_pack_t> , slv_ep_r : left slv_r_ch<r_pack_t>) =
-         slv_ep_ar.ar_req;slv_ep_ar.gnt ; slv_ep_r.r_res; #1
+        F slv_ep_ar.ar_req;slv_ep_ar.gnt ; slv_ep_r.r_res; #1
 
 
 pool demux_read_pool {

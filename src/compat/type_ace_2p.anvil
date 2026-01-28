@@ -35,7 +35,7 @@ pool cache_coherence_pool {
                                 (
                                     ^(cs_ep_1.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;mem_ep.b_res;#1 , cs_ep_2.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;mem_ep.b_res;#1 , *)
                                 )
-                                ;mem_ep.aw_req;#1;#req_ep.w_rdy;#req_ep.w_data;mem_ep.w_req;mem_ep.b_res;
+                                ;mem_ep.aw_req;#1;#req_ep.w_data;mem_ep.w_req;mem_ep.b_res;
                                 (
                                     (#1;mem_ep.ar_req;#1;mem_ep.r_res;#req_ep.r_res)
                                     +
@@ -45,10 +45,8 @@ pool cache_coherence_pool {
         ) ,
 
     i_arb : req_ep.rdy; ^(
-                       cache_ep1.ar_req : #req_ep.ar_req; ^(req_ep.r_res : #cache_ep1.r_res,req_ep.invalid_res: #cache_ep1.invalid_res),
-                       cache_ep2.ar_req : #req_ep.ar_req; ^(req_ep.r_res : #cache_ep2.r_res,req_ep.invalid_res: #cache_ep2.invalid_res),
-                       cache_ep1.aw_req : #req_ep.aw_req;req_ep.w_rdy;#cache_ep1.w_req;#req_ep.w_data; ^(req_ep.r_res : #cache_ep1.r_res,req_ep.invalid_res: #cache_ep1.invalid_res),
-                       cache_ep2.aw_req : #req_ep.aw_req;req_ep.w_rdy;#cache_ep2.w_req;#req_ep.w_data; ^(req_ep.r_res : #cache_ep2.r_res,req_ep.invalid_res: #cache_ep2.invalid_res)
+                       cache_ep1.req : ((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep1.res,
+                       cache_ep2.req : ((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep2.res
                     ); #1,
     i_sn1 : ^(
            cs_ep_1.read_req : #1;cs_ep_1.read_res;#1;(^(cs_ep_1.snoop_data,*) + ()),
@@ -58,7 +56,7 @@ pool cache_coherence_pool {
            cs_ep_2.read_req : #1;cs_ep_2.read_res;#1;(^(cs_ep_2.snoop_data,*) + ()),
            cs_ep_2.snoop_invalidate : #1;cs_ep_2.snoop_invalidate_res;(^(cs_ep_2.snoop_data,*) + ())
            ); #1,
-    ic1 : (cache_ep1.ar_req + (cache_ep1.aw_req;cache_ep1.w_req)); ^(cache_ep1.r_res,cache_ep1.invalid_res); #1,
-    ic2 : (cache_ep2.ar_req + (cache_ep2.aw_req;cache_ep2.w_req)); ^(cache_ep2.r_res,cache_ep2.invalid_res); #1,
+    ic1 : F cache_ep1.req; cache_ep1.res;#1,
+    ic2 : F cache_ep2.req; cache_ep2.res;#1,
     imem :  ^(mem_ep.aw_req :  mem_ep.w_req ; #1; mem_ep.b_res , mem_ep.ar_req : #1;mem_ep.r_res,*); #1
 }

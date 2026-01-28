@@ -24,7 +24,7 @@ interface master_itfc(mux_ep_aw : right mast_ch<aw_pack_t>, demux_ep_w : right m
         mux_ep_aw.rdy; mux_ep_aw.req ;  rec X . demux_ep_w.rdy;^(demux_ep_w.res, * : #1;X) ; rec Y . demux_ep_b.rdy;^(demux_ep_b.res, * : #1;X);#1
 
 interface slave_itfc(slv_ep_aw : left slv_ch<aw_ch> , slv_ep_w : left slv_ch<w_pack_t> , slv_ep_b : left slv_res_ch<b_pack_t>) =
-         ((slv_ep_aw.req;slv_ep_aw.gnt)|| (slv_ep_w.req;slv_ep_w.gnt)) ; slv_ep_b.res;#1
+         F ((slv_ep_aw.req;slv_ep_aw.gnt); (slv_ep_w.req;slv_ep_w.gnt)) ; slv_ep_b.res;#1
 
 interface demux_aw_main (
     w_fifo_ep : left fifo_insert_ch<select_t>,
