@@ -4,7 +4,8 @@ interface arbiter_ifc(  ep1 : right arbiter_client_ch<T>,
     server_ep.rdy ;
     ^(
         ep1.req,
-        ep2.req
+        ep2.req,
+        *
     ) ; #1
 )
 
