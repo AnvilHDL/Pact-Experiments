@@ -54,3 +54,27 @@ This document provides a brief description of all the testbenches
 - **Purpose**: Tests write-only AXI Lite demultiplexer and read-only demultiplexer seperately
 - **Data Width**: 8-bit data
 - **Functionality**: Same as mux but selects master in round-robin fashion
+
+## ACE Testbench (`ccu_fsm_tb.sv`)
+
+Slave Behaviour : Sends transactions at power-of-2 cycles (1, 2, 4, 8, 16...)
+Cycles through 5 transaction types:
+- READ_SHARED (snoop=0001)
+- READ_UNIQUE (snoop=0111)
+- CLEAN_UNIQUE (snoop=1011)
+- WRITE_UNIQUE (snoop=000)
+- READ_NO_SNOOP (snoop=0000)
+Each slave uses different address ranges (0x000, 0x100, 0x200, 0x300)
+
+Snoop Response FSM (4 states):
+
+Monitors AC channel independently
+Maintains 16-line cache with MESI-like states
+Responds to CLEAN_INVALID, READ_SHARED, READ_UNIQUE commands
+Provides CD data when dirty (dataTransfer=1)
+Updates cache state based on snoop commands
+
+Dummy Memory Controller:
+- 12KB simple RAM array
+- 5-state FSM: IDLE -> READ_WAIT -> READ_RESP or WRITE_DATA -> WRITE_RESP
+- 1-2 cycle latency for memory access
