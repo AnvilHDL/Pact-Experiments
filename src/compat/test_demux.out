@@ -1,0 +1,56 @@
+Debug mode enabled
+[Warning]: Inferring fair choice for μ X.( (pop_ep.pop : (push_ep.full ^ *);#<1> ^ * : (push_ep.full ^ *);#<1>;X)) vs μ Y.( (push_ep.push : (pop_ep.empty ^ *);#<1> ^ * : (pop_ep.empty ^ *);#<1>;Y))
+[Warning]: Inferring fair choice for ((mst_ep1.rdy;μ X.( (fifo_ep.full : #<1>;X ^ * : fifo_ep.push;#mst_ep1.req;#slv_ep.gnt))+mst_ep2.rdy;μ Y.( (fifo_ep.full : #<1>;Y ^ * : fifo_ep.push;#mst_ep2.req;#slv_ep.gnt)))+mst_ep3.rdy;μ Z.( (fifo_ep.full : #<1>;Z ^ * : fifo_ep.push;#mst_ep3.req;#slv_ep.gnt))) vs mst_ep4.rdy;μ W.( (fifo_ep.full : #<1>;W ^ * : fifo_ep.push;#mst_ep4.req;#slv_ep.gnt))
+[Warning]: Inferring fair choice for (mst_ep1.rdy;μ X.( (fifo_ep.full : #<1>;X ^ * : fifo_ep.push;#mst_ep1.req;#slv_ep.gnt))+mst_ep2.rdy;μ Y.( (fifo_ep.full : #<1>;Y ^ * : fifo_ep.push;#mst_ep2.req;#slv_ep.gnt))) vs mst_ep3.rdy;μ Z.( (fifo_ep.full : #<1>;Z ^ * : fifo_ep.push;#mst_ep3.req;#slv_ep.gnt))
+[Warning]: Inferring fair choice for mst_ep1.rdy;μ X.( (fifo_ep.full : #<1>;X ^ * : fifo_ep.push;#mst_ep1.req;#slv_ep.gnt)) vs mst_ep2.rdy;μ Y.( (fifo_ep.full : #<1>;Y ^ * : fifo_ep.push;#mst_ep2.req;#slv_ep.gnt))
+[Warning]: Inferring fair choice for #mst_ep1.res;slv_ep.r_res vs #<1>;X
+[Warning]: Inferring fair choice for #mst_ep2.res;slv_ep.r_res vs #<1>;X
+[Warning]: Inferring fair choice for #mst_ep3.res;slv_ep.r_res vs #<1>;X
+[Warning]: Inferring fair choice for #mst_ep4.res;slv_ep.r_res vs #<1>;X
+[Warning]: Inferring fair choice for ((mst_ep1_ar.rdy;μ X.( (fifo_insert_ep.full : #<1>;X ^ * : fifo_insert_ep.push;#mst_ep1_ar.req;#slv_ep_ar.gnt))+mst_ep2_ar.rdy;μ Y.( (fifo_insert_ep.full : #<1>;Y ^ * : fifo_insert_ep.push;#mst_ep2_ar.req;#slv_ep_ar.gnt)))+mst_ep3_ar.rdy;μ Z.( (fifo_insert_ep.full : #<1>;Z ^ * : fifo_insert_ep.push;#mst_ep3_ar.req;#slv_ep_ar.gnt))) vs mst_ep4_ar.rdy;μ W.( (fifo_insert_ep.full : #<1>;W ^ * : fifo_insert_ep.push;#mst_ep4_ar.req;#slv_ep_ar.gnt))
+[Warning]: Inferring fair choice for (mst_ep1_ar.rdy;μ X.( (fifo_insert_ep.full : #<1>;X ^ * : fifo_insert_ep.push;#mst_ep1_ar.req;#slv_ep_ar.gnt))+mst_ep2_ar.rdy;μ Y.( (fifo_insert_ep.full : #<1>;Y ^ * : fifo_insert_ep.push;#mst_ep2_ar.req;#slv_ep_ar.gnt))) vs mst_ep3_ar.rdy;μ Z.( (fifo_insert_ep.full : #<1>;Z ^ * : fifo_insert_ep.push;#mst_ep3_ar.req;#slv_ep_ar.gnt))
+[Warning]: Inferring fair choice for mst_ep1_ar.rdy;μ X.( (fifo_insert_ep.full : #<1>;X ^ * : fifo_insert_ep.push;#mst_ep1_ar.req;#slv_ep_ar.gnt)) vs mst_ep2_ar.rdy;μ Y.( (fifo_insert_ep.full : #<1>;Y ^ * : fifo_insert_ep.push;#mst_ep2_ar.req;#slv_ep_ar.gnt))
+[Warning]: Inferring fair choice for #mst_ep1_r.res;slv_ep_r.r_res vs #<1>;X
+[Warning]: Inferring fair choice for #mst_ep2_r.res;slv_ep_r.r_res vs #<1>;X
+[Warning]: Inferring fair choice for #mst_ep3_r.res;slv_ep_r.r_res vs #<1>;X
+[Warning]: Inferring fair choice for #mst_ep4_r.res;slv_ep_r.r_res vs #<1>;X
+[Warning]: Inferring fair choice for μ X.( (fifo_dequeue_ep.pop : (fifo_insert_ep.full ^ *);#<1> ^ * : (fifo_insert_ep.full ^ *);#<1>;X)) vs μ Y.( (fifo_insert_ep.push : (fifo_dequeue_ep.empty ^ *);#<1> ^ * : (fifo_dequeue_ep.empty ^ *);#<1>;Y))
+All individual automata built. Starting product construction...
+Total automata to combine: 8
+ Automaton 0 (ID: slave): States = 7, Transitions = 11
+ Automaton 1 (ID: master1): States = 7, Transitions = 11
+ Automaton 2 (ID: master2): States = 7, Transitions = 11
+ Automaton 3 (ID: master3): States = 7, Transitions = 11
+ Automaton 4 (ID: master4): States = 7, Transitions = 11
+ Automaton 5 (ID: demux_ar): States = 30, Transitions = 46
+ Automaton 6 (ID: demux_r): States = 21, Transitions = 34
+ Automaton 7 (ID: fifo): States = 17, Transitions = 31
+Product construction iteration 10000, worklist size: 12, visited states: 38
+Product construction iteration 20000, worklist size: 34, visited states: 83
+Product construction iteration 30000, worklist size: 57, visited states: 174
+Product construction iteration 40000, worklist size: 71, visited states: 261
+Product construction iteration 50000, worklist size: 104, visited states: 363
+Product construction iteration 60000, worklist size: 124, visited states: 456
+Product construction iteration 70000, worklist size: 150, visited states: 541
+Product construction iteration 80000, worklist size: 149, visited states: 655
+Product construction iteration 90000, worklist size: 148, visited states: 704
+Product construction iteration 100000, worklist size: 146, visited states: 789
+Product construction iteration 110000, worklist size: 143, visited states: 874
+Product construction iteration 120000, worklist size: 134, visited states: 948
+Product construction iteration 130000, worklist size: 132, visited states: 1055
+Product construction iteration 140000, worklist size: 129, visited states: 1114
+Product construction iteration 150000, worklist size: 116, visited states: 1317
+Product construction iteration 160000, worklist size: 111, visited states: 1441
+Product construction iteration 170000, worklist size: 98, visited states: 1514
+Product construction iteration 180000, worklist size: 83, visited states: 1662
+Product construction iteration 190000, worklist size: 80, visited states: 1793
+Product construction iteration 200000, worklist size: 75, visited states: 1873
+Product construction iteration 210000, worklist size: 56, visited states: 2025
+Product construction iteration 220000, worklist size: 44, visited states: 2155
+Product construction iteration 230000, worklist size: 40, visited states: 2279
+Product construction iteration 240000, worklist size: 23, visited states: 2390
+Product construction iteration 250000, worklist size: 11, visited states: 2461
+Product Construction Completed. Total States: 2501
+Game Analysis Completed.
+Pool demux_read_pool Compatibility: true | err_msg = Compatible: Strategy found to satisfy all IDs. 
+
