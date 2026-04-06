@@ -25,7 +25,7 @@ done
 
 
 yosys -m slang -p "
-    read_slang --single-unit --top $TOP_MODULE $ARGS
+    read_slang --single-unit --ignore-assertions --top $TOP_MODULE $ARGS
     hierarchy -check -top $TOP_MODULE
     stat
     proc
@@ -38,7 +38,7 @@ yosys -m slang -p "
 " | tee  logs/$TOP_MODULE"_bit_level.log"
 
 yosys -m slang -p "
-    read_slang --single-unit --top $TOP_MODULE $ARGS
+    read_slang --single-unit --ignore-assertions --top $TOP_MODULE $ARGS
     hierarchy -check -top $TOP_MODULE
     stat
     proc
@@ -53,7 +53,8 @@ yosys-abc -c "
     strash;
     print_stats;
     zero;
-    reach -B 1000000;
+    undc;
+    reach -v -y -F 10000000000 -B 100000000;
 " | tee logs/$TOP_MODULE"_reach.log"
 
 echo "----------------------------------------"

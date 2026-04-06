@@ -18,13 +18,18 @@ module fifo_v3 #(
     input  logic  push_i,           // data is valid and can be pushed to the queue
     // as long as the queue is not empty we can pop new elements
     output dtype  data_o,           // output data
-    input  logic  pop_i             // pop head from queue
+    input  logic  pop_i ,           // pop head from queue
+    output logic push_req,           // push request, shadow signal to say push request was accepted
+    output logic pop_req ,            // pop request, shadow signal to say pop request was accepted
+    output logic progress_o           // signal to indicate progress (either push or pop was accepted)
 );
-    // local parameter
     // FIFO depth - handle the case of pass-through, synthesizer will do constant propagation
     localparam int unsigned FifoDepth = (DEPTH > 0) ? DEPTH : 1;
     // clock gating control
     logic gate_clock;
+    logic progress_n, progress_q;
+
+    assign progress_o = progress_q;
     // pointer to the read and write section of the queue
     logic [ADDR_DEPTH - 1:0] read_pointer_n, read_pointer_q, write_pointer_n, write_pointer_q;
     // keep a counter to keep track of the current queue status
@@ -53,13 +58,16 @@ module fifo_v3 #(
         data_o          = (DEPTH == 0) ? data_i : mem_q[read_pointer_q];
         mem_n           = mem_q;
         gate_clock      = 1'b1;
+        progress_n = 1'b0;
 
         // push a new element to the queue
         if (push_i && ~full_o) begin
             // push the data onto the queue
             mem_n[write_pointer_q] = data_i;
+            push_req = 1'b1;
             // un-gate the clock, we want to write something
             gate_clock = 1'b0;
+            progress_n = 1'b1;
             // increment the write counter
             // this is dead code when DEPTH is a power of two
             if (write_pointer_q == FifoDepth[ADDR_DEPTH-1:0] - 1)
@@ -74,12 +82,14 @@ module fifo_v3 #(
             // read from the queue is a default assignment
             // but increment the read pointer...
             // this is dead code when DEPTH is a power of two
+            pop_req = 1'b1;
             if (read_pointer_n == FifoDepth[ADDR_DEPTH-1:0] - 1)
                 read_pointer_n = '0;
             else
                 read_pointer_n = read_pointer_q + 1;
             // ... and decrement the overall count
             status_cnt_n   = status_cnt_q - 1;
+            progress_n = 1'b1;
         end
 
         // keep the count pointer stable if we push and pop at the same time
@@ -108,10 +118,12 @@ module fifo_v3 #(
                 read_pointer_q  <= '0;
                 write_pointer_q <= '0;
                 status_cnt_q    <= '0;
+                progress_q      <= '0;
              end else begin
                 read_pointer_q  <= read_pointer_n;
                 write_pointer_q <= write_pointer_n;
                 status_cnt_q    <= status_cnt_n;
+                progress_q      <= progress_n;
             end
         end
     end
@@ -126,7 +138,7 @@ module fifo_v3 #(
 
 endmodule // fifo_v3
 
-module master(input logic clk_i, input logic rst_ni, input logic full_o, input logic empty_o, output logic data_i, output logic push_i, input logic data_o);
+module master(input logic clk_i, input logic rst_ni, input logic full_o, input logic empty_o, output logic data_i, output logic push_i, input logic data_o,  output logic full_req);
 
 parameter int MAX_TRANSACTIONS = 8;
 
@@ -146,7 +158,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         case (state)
             IDLE: begin
                 push_i <= 0;
-                if ((cycle_count % 4 == 0) || ((cycle_count & (cycle_count - 1)) == 0 && cycle_count != 0)) begin
+                if ((cycle_count % 3 == 0) || ((cycle_count & (cycle_count - 1)) == 0 && cycle_count != 0)) begin
                     state <= TRY_PUSH;
                 end
             end
@@ -157,6 +169,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
                     data_counter <= ~data_counter;
                     state <= WAIT_ONE;
                 end else begin
+                    full_req <= 1;
                     push_i <= 0;
                     // stay in TRY_PUSH
                 end
@@ -164,6 +177,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
             WAIT_ONE: begin
                 push_i <= 0;
                 state <= IDLE;
+                progress_o <= 1;
             end
         endcase
     end
@@ -171,7 +185,7 @@ end
 
 endmodule
 
-module slave(input logic clk_i, input logic rst_ni, input logic empty_o, output logic pop_i);
+module slave(input logic clk_i, input logic rst_ni, input logic empty_o, output logic pop_i, output logic empty_req);
 
 typedef enum logic [1:0] {IDLE, TRY_POP, WAIT_ONE} state_t;
 state_t state;
@@ -187,7 +201,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         cycle_count <= cycle_count + 1;
         case (state)
             IDLE: begin
-                if ((cycle_count % 4 == 0) || ((cycle_count & (cycle_count - 1)) == 0 && cycle_count != 0)) begin
+                if ((cycle_count % 7 == 0) || ((cycle_count & (cycle_count - 1)) == 0 && cycle_count != 0)) begin
                     state <= TRY_POP;
                 end
             end
@@ -195,6 +209,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
                 if (!empty_o) begin
                     state <= WAIT_ONE;
                 end else begin
+                    empty_req <= 1;
                     // stay in TRY_POP
                 end
             end
@@ -217,6 +232,17 @@ logic data_i;
 logic push_i;
 logic data_o;
 logic pop_i;
+logic shadow_full_req;
+logic shadow_empty_req;
+logic shadow_push_req;
+logic shadow_pop_req;
+logic mst_progress;
+logic slv_progress;
+logic fifo_progress;
+
+logic mst_progress_q;
+logic slv_progress_q;
+logic  fifo_progress_q;
 
 fifo_v3 #(
     .FALL_THROUGH(1'b0),
@@ -233,7 +259,10 @@ fifo_v3 #(
     .data_i(data_i),
     .push_i(push_i),
     .data_o(data_o),
-    .pop_i(pop_i)
+    .pop_i(pop_i),
+    .push_req(shadow_push_req),
+    .pop_req(shadow_pop_req),
+    .progress_o(fifo_progress)
 );
 
 master mst (
@@ -243,14 +272,48 @@ master mst (
     .empty_o(empty_o),
     .data_i(data_i),
     .push_i(push_i),
-    .data_o(data_o)
+    .data_o(data_o),
+    .full_req(shadow_full_req),
+    .progress_o(mst_progress)
 );
 
 slave slv (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .empty_o(empty_o),
-    .pop_i(pop_i)
+    .pop_i(pop_i),
+    .pop_req(shadow_empty_req),
+    .progress_o(slv_progress)
 );
+
+always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+        mst_progress_q <= 0;
+        slv_progress_q <= 0;
+        fifo_progress_q <= 0;
+    end else begin
+        mst_progress_q <= mst_progress;
+        slv_progress_q <= slv_progress;
+        fifo_progress_q <= fifo_progress;
+    end
+end
+
+// communication safety properties
+assert property (@(posedge clk_i) disable iff (!rst_ni) (full_o |-> shadow_full_req));
+assert property (@(posedge clk_i) disable iff (!rst_ni) (empty_o |-> shadow_empty_req));
+assert property (@(posedge clk_i) disable iff (!rst_ni) (push_i |-> shadow_push_req));
+assert property (@(posedge clk_i) disable iff (!rst_ni) (pop_i |-> shadow_pop_req));
+
+// liveness properties eventually progress_o
+assert property (@(posedge clk_i) disable iff (!rst_ni) eventually (mst_progress));
+assert property (@(posedge clk_i) disable iff (!rst_ni) eventually (slv_progress));
+assert property (@(posedge clk_i) disable iff (!rst_ni) eventually (fifo_progress));
+
+assert property (@(posedge clk_i) disable iff (!rst_ni) (mst_progress_q |-> eventually mst_progress));
+assert property (@(posedge clk_i) disable iff (!rst_ni) (slv_progress_q |-> eventually slv_progress));
+assert property (@(posedge clk_i) disable iff (!rst_ni) (fifo_progress_q |-> eventually fifo_progress));
+
+
+
 
 endmodule

@@ -1,0 +1,13 @@
+[options]
+mode prove
+
+[engines]
+# This tells SBY to use ABC's advanced reachability algorithm directly
+abc pdr
+
+[script]
+read_verilog -sv -formal fifo_test.sv
+prep -top tb_fifo
+
+[files]
+fifo_test.sv
