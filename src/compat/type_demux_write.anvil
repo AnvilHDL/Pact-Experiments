@@ -1,15 +1,15 @@
 interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fifo_dequeue_ch<select_t>) =  
                                                 (
-                                                    rec X . ^( pop_ep.pop : ^(push_ep.full, *);#1,
-                                                       * :  ^(push_ep.full, *);#1;X
-                                                     )
+                                                    rec X . (^(push_ep.full, *);^( pop_ep.pop :#1,
+                                                       * :  #1;X
+                                                     ))
                                                   )
                                                                     + 
                                                   (
-                                                    rec Y . ^(
-                                                        push_ep.push : ^(pop_ep.empty, *);#1,
-                                                        * : ^(pop_ep.empty, *);#1;Y
-                                                    )
+                                                    rec Y . (^(pop_ep.empty, *);^(
+                                                        push_ep.push : #1,
+                                                        * : #1;Y
+                                                    ))
                                                   )
                                                      
                                                                     + 
@@ -21,7 +21,7 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fif
 
 
 interface master_itfc(mux_ep_aw : right mast_ch<aw_pack_t>, demux_ep_w : right mast_ch<w_pack_t>, demux_ep_b : right mast_rdy_ch<b_pack_t>) =
-        mux_ep_aw.rdy; mux_ep_aw.req ;  rec X . demux_ep_w.rdy;^(demux_ep_w.res, * : #1;X) ; rec Y . demux_ep_b.rdy;^(demux_ep_b.res, * : #1;X);#1
+        mux_ep_aw.rdy; mux_ep_aw.req ;  rec X . (demux_ep_w.rdy;^(demux_ep_w.res, * : #1;X)) ; rec Y . (demux_ep_b.rdy;^(demux_ep_b.res, * : #1;Y));#1
 
 interface slave_itfc(slv_ep_aw : left slv_ch<aw_ch> , slv_ep_w : left slv_ch<w_pack_t> , slv_ep_b : left slv_res_ch<b_pack_t>) =
          F ((slv_ep_aw.req;slv_ep_aw.gnt); (slv_ep_w.req;slv_ep_w.gnt)) ; slv_ep_b.res;#1
