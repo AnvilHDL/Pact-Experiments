@@ -1,0 +1,49 @@
+#!/bin/bash
+set -e
+
+ANVIL_DIR=../anvil
+BASE_DIR=$(pwd)
+INPUT_FILE=""
+OUTPUT_FILE=""
+JUST_CHECK=0
+debug_choice=-1
+VERBOSE=0
+
+# take output as an argument
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <input_file> -out <output_file>"
+    exit 1
+fi
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -out) OUTPUT_FILE="$2"; shift ;;
+        -d) debug_choice="$2"; shift ;;
+        -jc) JUST_CHECK=1 ;;
+        -v) VERBOSE=1 ;;
+        *) INPUT_FILE="$1" ;;
+    esac
+    shift
+done
+
+if [ -z "$INPUT_FILE" ]; then
+    echo "Error: missing input file"
+    echo "Usage: $0 <input_file> [-jc] [-d <debug_choice>] [-out <output_file>]"
+    exit 1
+fi
+
+FLAGS="-disable-lt-checks"
+if [ $JUST_CHECK -eq 1 ]; then
+    FLAGS+=" -just-check"
+elif [ $debug_choice -ne -1 ]; then
+    FLAGS+=" -debug-choice $debug_choice"
+elif [ $VERBOSE -eq 1 ]; then
+    FLAGS+=" -verbose"
+fi
+
+cd "$ANVIL_DIR" || exit 1
+if [ -z "$OUTPUT_FILE" ]; then
+    dune exec anvil -- $FLAGS "$BASE_DIR/$INPUT_FILE"
+else
+    dune exec anvil -- $FLAGS "$BASE_DIR/$INPUT_FILE" > "$BASE_DIR/$OUTPUT_FILE" 2>&1
+fi

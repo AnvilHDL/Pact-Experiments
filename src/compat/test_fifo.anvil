@@ -1,0 +1,99 @@
+import "type_fifo.anvil"
+
+proc fifo<T : type>(fifo_itfc){
+    reg data : T[8];
+    reg read_ptr : logic[3];
+    reg write_ptr : logic[3];
+    reg full : logic;
+    reg cyc : logic[8];
+
+    loop{
+        if (*full == 1'b1){
+            μ X {
+                try send pop_ep.pop(*data[*read_ptr]){
+                    try send push_ep.full(()){()} >>
+                    set read_ptr := *read_ptr + 3'd1;
+                    set full := 1'b0
+                }
+                else{
+                    try send push_ep.full(()){()} >>
+                    cycle 1 >>
+                    recurse X
+                }
+            } 
+        }
+        else if(*read_ptr == *write_ptr){
+         dprint "[Cycle %d] FIFO is empty\n" (*cyc) >>
+         μ X {
+            try x = recv push_ep.push {
+                try send pop_ep.empty(()){()} >>
+                set data[*write_ptr] := x;
+                set write_ptr := *write_ptr + 3'd1
+            }
+            else {
+                try send pop_ep.empty(()){()} >>
+                cycle 1 >>
+                recurse X
+            }
+          }
+        }
+        else{
+            offer{
+                x = recv push_ep.push => (
+                    let full = if(((*write_ptr + 3'd1) == *read_ptr)&&(~(probe pop_ep.pop))) {1'b1} else {1'b0} >>
+                    set write_ptr := *write_ptr + 3'd1;
+                    set data[*write_ptr] := x;
+                    set full := full
+                
+                ),
+                send pop_ep.pop(*data[*read_ptr])=>(
+                    set read_ptr := *read_ptr + 3'd1
+                )
+            }
+        }
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+    loop{
+        dprint "[Cycle %d] FIFO State: read_ptr = %d, write_ptr = %d, full = %b\n" (*cyc, *read_ptr, *write_ptr, *full) >>
+        cycle 1
+    }
+}
+
+
+
+proc test_fifo(){
+    chan ins_le -- ins_ri : fifo_insert_ch<select_t>;
+    chan deq_le -- deq_ri : fifo_dequeue_ch<select_t>;
+    spawn fifo<select_t>(ins_ri, deq_ri);
+    reg cyc : logic[8];
+    loop{
+        send ins_le.push(2'b00) >>
+        dprint "[Cycle %d] Pushed 00\n" (*cyc) >>
+        cycle 1 >>
+        send ins_le.push(2'b01) >>
+        dprint "[Cycle %d] Pushed 01\n" (*cyc) >>
+        cycle 1 >>
+        send ins_le.push(2'b10) >>
+        dprint "[Cycle %d] Pushed 10\n" (*cyc) >>
+        cycle 1 >>
+        send ins_le.push(2'b11) >>
+        dprint "[Cycle %d] Pushed 11\n" (*cyc) >>
+        cycle 1 >>
+        dfinish >>
+        cycle 1
+    }
+
+    loop{
+        let x = recv deq_le.pop >>
+        dprint "[Cycle %d] Popped %b\n" (*cyc, x) >>
+        cycle 1
+
+    }
+
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+
+}

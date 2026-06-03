@@ -29,3 +29,15 @@ pool fifo_pool {
     imaster : master_itfc(fifo_push_ep),
     islave : slave_itfc(fifo_pop_ep)
 }
+
+chan fifo_insert_ch<Tp : type> {
+    right push : (Tp@#1),
+    left full : (void@#1) 
+}
+
+chan fifo_dequeue_ch<Tp : type> {
+    left pop : (Tp@#1) ,
+    left empty : (void@#1)
+}
+
+type select_t = logic[2];
