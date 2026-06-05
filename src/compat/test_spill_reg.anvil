@@ -1,0 +1,147 @@
+import "type_spill_reg.anvil"
+
+proc spill_reg <T: type> (spill_register_itfc){
+    reg a : T;
+    reg b : T;
+    reg afull : logic;
+    reg bfull : logic;
+    reg cyc : logic[8];
+    loop{
+        if (~ (*afull || *bfull)){
+            let in_data = recv inp_ep.req >>
+            set a := in_data;
+            set afull := 1'b1;
+            set bfull := 1'b0
+        }
+        else if (~ (*afull & *bfull)) {
+            let out = if(*bfull){
+                *b
+            }
+            else{
+                *a
+            } >>
+            dprint "[Cycle %d] Spill Register: Ready to send data %d" (*cyc, out) >>
+            try send out_ep.data(out) {()} >>
+            dprint "[Cycle %d] Spill Register: Sent data %d, waiting for spill signal" (*cyc, out) >>
+            (
+            offer {
+                in_data = recv inp_ep.req => (
+                    set a := in_data
+                ),
+                _ = recv out_ep.spill => (
+                    cycle 1
+                ),
+                # => (
+                    cycle 1
+                )
+            };
+            (
+                if((ready inp_ep.req) && ~(ready out_ep.spill)){
+                    let b = if(*bfull){
+                        *b
+                    }
+                    else{
+                        *a
+                    } >>
+                    set afull := 1'b1;
+                    set bfull := 1'b1;
+                    set b := b
+                }
+                else if (ready out_ep.spill&& ~(ready inp_ep.req)){
+                    set afull := 1'b0;
+                    set bfull := 1'b0
+                }
+                else if (ready out_ep.spill && ready inp_ep.req){
+                    set afull := 1'b1;
+                    set bfull := 1'b0
+                }
+                else{
+                    let b = if(*bfull){
+                        *b
+                    }
+                    else{
+                        *a
+                    } >>
+                    set afull := 1'b0;
+                    set bfull := 1'b1;
+                    set b := b
+                }
+                    
+
+            )
+            )
+        }
+        else{
+            rec X  {
+                let out = *b >>
+                try send out_ep.data(out) {()} >>
+                try _ = recv out_ep.spill{
+                    set b := *a;
+                    set afull := 1'b0;
+                    set bfull := 1'b1
+                }
+                else {
+                    set afull := *afull >>
+                    recurse X
+                }
+            }
+        
+
+        }        
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+    loop{
+        dprint "[Cycle %d] Spill Register: A (%d) Full %b, B (%d) Full %b" (*cyc, *a, *afull, *b, *bfull) >>
+        cycle 1
+    }
+}
+
+
+proc test_spill_reg(){
+    chan req_le -- req_ri : reg_req<logic[8]>;
+    chan res_le -- res_ri : reg_res<logic[8]>;
+    spawn spill_reg<logic[8]>(req_ri, res_le);
+    reg cyc : logic[8];
+
+    loop{
+        send req_le.req(8'd1) >>
+        dprint "[Cycle %d]  Enqueued data 1 to spill register" (*cyc) >>
+        cycle 1 >>
+        let res = recv res_ri.data >>
+        dprint "[Cycle %d] Received data %d from spill register" (*cyc, res) >>
+        send res_ri.spill(()) >>
+        dprint "[Cycle %d] Spilled data %d from spill register" (*cyc, res) >>
+        cycle 1 >>
+        send req_le.req(8'd2) >>
+        dprint "[Cycle %d]  Enqueued data 2 to spill register" (*cyc) >>
+        cycle 1 >>
+        let res2 = recv res_ri.data >>
+        dprint "[Cycle %d] Received data %d from spill register" (*cyc, res2) >>
+        send req_le.req(8'd3) >>
+        dprint "[Cycle %d]  Enqueued data 3 to spill register" (*cyc) >>
+        cycle 4 >>
+        let d = recv res_ri.data >>
+        dprint "[Cycle %d] Received data %d from spill register" (*cyc, d) >>
+        send res_ri.spill(()) >>
+        dprint "[Cycle %d] Spilled data %d from spill register" (*cyc, d) >>
+        cycle 1 >>
+        let d2 = recv res_ri.data >>
+        dprint "[Cycle %d] Received data %d from spill register" (*cyc, d2) >>
+        send res_ri.spill(()) >>
+        dprint "[Cycle %d] Spilled data %d from spill register" (*cyc, d2) >>
+        cycle 3 >>
+        dfinish >>
+        cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+    loop{
+        cycle 20 >>
+        dfinish >>
+        cycle 1
+    }
+
+}

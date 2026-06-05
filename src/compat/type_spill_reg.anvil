@@ -1,8 +1,8 @@
 interface spill_register_itfc(inp_ep : right reg_req<T>, out_ep : left reg_res<T>) =
     ((inp_ep.req ; #1) + 
-     (^(out_ep.data, *); &(inp_ep.req , out_ep.spill, *)) 
+     (^(out_ep.data, *); (&(inp_ep.req , out_ep.spill, *);#1) || (#1))  
      + (rec X . (^(out_ep.data,*) ; ^(out_ep.spill, *: #1;X)))
-    );#1
+    )
 
 
 interface master_itfc(reg_ep : left reg_req<T>) = F reg_ep.req; #1
@@ -14,4 +14,13 @@ pool spill_reg_pool {
     ispillreg : spill_register_itfc(reg_inp_ep2, reg_out_ep2),
     imaster : master_itfc(reg_inp_ep),
     islave : slave_itfc(reg_out_ep)
+}
+
+chan reg_req <T : type> {
+    right req : (T@#1)
+}
+
+chan reg_res <T : type> {
+    left spill : (void@#1),
+    right data : (T@#1) <<
 }
