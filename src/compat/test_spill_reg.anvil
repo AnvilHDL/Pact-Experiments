@@ -20,9 +20,9 @@ proc spill_reg <T: type> (spill_register_itfc){
             else{
                 *a
             } >>
-            dprint "[Cycle %d] Spill Register: Ready to send data %d" (*cyc, out) >>
+            // dprint "[Cycle %d] Spill Register: Ready to send data %d" (*cyc, out) >>
             try send out_ep.data(out) {()} >>
-            dprint "[Cycle %d] Spill Register: Sent data %d, waiting for spill signal" (*cyc, out) >>
+            // dprint "[Cycle %d] Spill Register: Sent data %d, waiting for spill signal" (*cyc, out) >>
             (
             offer {
                 in_data = recv inp_ep.req => (
@@ -109,29 +109,39 @@ proc test_spill_reg(){
         send req_le.req(8'd1) >>
         dprint "[Cycle %d]  Enqueued data 1 to spill register" (*cyc) >>
         cycle 1 >>
+
+
         let res = recv res_ri.data >>
         dprint "[Cycle %d] Received data %d from spill register" (*cyc, res) >>
         send res_ri.spill(()) >>
         dprint "[Cycle %d] Spilled data %d from spill register" (*cyc, res) >>
         cycle 1 >>
+
+
         send req_le.req(8'd2) >>
         dprint "[Cycle %d]  Enqueued data 2 to spill register" (*cyc) >>
         cycle 1 >>
-        let res2 = recv res_ri.data >>
-        dprint "[Cycle %d] Received data %d from spill register" (*cyc, res2) >>
+
+
+
         send req_le.req(8'd3) >>
         dprint "[Cycle %d]  Enqueued data 3 to spill register" (*cyc) >>
         cycle 4 >>
+
         let d = recv res_ri.data >>
         dprint "[Cycle %d] Received data %d from spill register" (*cyc, d) >>
         send res_ri.spill(()) >>
         dprint "[Cycle %d] Spilled data %d from spill register" (*cyc, d) >>
         cycle 1 >>
+
         let d2 = recv res_ri.data >>
         dprint "[Cycle %d] Received data %d from spill register" (*cyc, d2) >>
         send res_ri.spill(()) >>
         dprint "[Cycle %d] Spilled data %d from spill register" (*cyc, d2) >>
         cycle 3 >>
+
+        dprint "[Cycle %d] Test complete" (*cyc) >>
+        cycle 1 >>
         dfinish >>
         cycle 1
     }
