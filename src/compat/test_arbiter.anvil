@@ -1,0 +1,99 @@
+import "type_arbiter.anvil"
+proc arbiter<Tp : type>(rr_arbiter_itfc){
+    reg prio : logic[2];
+    reg cyc : logic[8];
+    loop{
+        let prio = *prio >>
+        xoffer prio {
+            _ = recv slv_ep1.req => (
+                send mst_ep.req(1'd1) >>
+                send slv_ep1.gnt(()) >>
+                set prio := 2'd3
+            ),
+            _ = recv slv_ep2.req => (
+                send mst_ep.req(1'd1) >>
+                send slv_ep2.gnt(()) >>
+                set prio := 2'd0
+            ),
+            _ = recv slv_ep3.req => (
+                send mst_ep.req(1'd1) >>
+                send slv_ep3.gnt(()) >>
+                set prio := 2'd1
+            ),
+            _ = recv slv_ep4.req => (
+                send mst_ep.req(1'd1) >>
+                send slv_ep4.gnt(()) >>
+                set prio := 2'd2
+            ),
+            # => (
+                set prio := *prio
+            )
+        }
+    }
+}
+
+proc test_arbiter(){
+    chan slv_le1 -- slv_ri1 : arbiter_slave_ch<logic>;
+    chan slv_le2 -- slv_ri2 : arbiter_slave_ch<logic>;
+    chan slv_le3 -- slv_ri3 : arbiter_slave_ch<logic>;
+    chan slv_le4 -- slv_ri4 : arbiter_slave_ch<logic>;
+    chan mst_le -- mst_ri : arbiter_master_ch<logic>;
+    reg cyc : logic[8];
+
+    spawn arbiter<logic>(slv_ri1, slv_ri2, slv_ri3, slv_ri4, mst_le);
+    // slave 1
+    loop{
+        send slv_le1.req(1'd1) >>
+        dprint "[Cycle %d] Slave 1: is selected" (*cyc) >>
+        let _ = recv slv_le1.gnt >>
+        dprint "[Cycle %d] Slave 1: received grant" (*cyc) >>
+        cycle 1
+    }
+
+    // slave 2
+    loop{
+        send slv_le2.req(1'd1) >>
+        dprint "[Cycle %d] Slave 2: is selected" (*cyc) >>
+        let _ = recv slv_le2.gnt >>
+        dprint "[Cycle %d] Slave 2: received grant" (*cyc) >>
+        cycle 1 
+    }
+
+    // slave 3
+    loop{
+        send slv_le3.req(1'd1) >>
+        dprint "[Cycle %d] Slave 3: is selected" (*cyc) >>
+        let _ = recv slv_le3.gnt >>
+        dprint "[Cycle %d] Slave 3: received grant" (*cyc) >>
+        cycle 1
+
+    }
+
+    // slave 4
+    loop{
+        send slv_le4.req(1'd1) >>
+        dprint "[Cycle %d] Slave 4: is selected" (*cyc) >>
+        let _ = recv slv_le4.gnt >>
+        dprint "[Cycle %d] Slave 4: received grant" (*cyc) >>
+        cycle 1 
+
+    }
+
+    // master
+    loop{
+        let _ = recv mst_ri.req >>
+        dprint "[Cycle %d] Master is enabled" (*cyc) >>
+        cycle 3
+    }
+
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+    loop{
+        cycle 20 >>
+        dfinish >>
+        cycle 1
+    }
+
+}
+    
