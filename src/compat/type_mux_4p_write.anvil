@@ -1,24 +1,13 @@
-interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fifo_dequeue_ch<select_t>) =  
+interface fifo_itfc(push_ep : right fifo_insert_ch<T>, pop_ep : right fifo_dequeue_ch<T>) =  
                                                 (
-                                                    rec X . (^(push_ep.full, *);^( pop_ep.pop : #1;(&(push_ep.push , pop_ep.pop) + (
-                                                                                                                                        rec Z . (^(pop_ep.empty, *);^(
-                                                                                                                                            push_ep.push,
-                                                                                                                                            * : #1;Z
-                                                                                                                                        ))
-
-                                                                                                                                    )  ); #1,
+                                                    rec X . (^(push_ep.full, *);^( pop_ep.pop : #1;&(push_ep.push , pop_ep.pop); #1,
                                                                         * :  #1;X
                                                             ))
                                                 )
                                                                     + 
                                                   (
                                                     rec Y . (^(pop_ep.empty, *);^(
-                                                        push_ep.push : #1;(&(push_ep.push , pop_ep.pop)+(
-                                                                rec K . (^(push_ep.full, *); ^(
-                                                        pop_ep.pop,
-                                                        * : #1;K
-                                                    ))
-                                                        ) ); #1,
+                                                        push_ep.push : #1;&(push_ep.push , pop_ep.pop); #1,
                                                         * : #1;Y
                                                     ))
                                                   )
@@ -130,8 +119,18 @@ pool mux_write_transaction_pool {
 }
 
 
-    
 
 
 
 
+chan fifo_insert_ch<Tp : type> {
+    right push : (Tp@#1),
+    left full : (void@#1) 
+}
+
+chan fifo_dequeue_ch<Tp : type> {
+    left pop : (Tp@#1) ,
+    left empty : (void@#1)
+}
+
+type select_t = logic[2];

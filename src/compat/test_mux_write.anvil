@@ -1,0 +1,95 @@
+import "type_mux_4p_write.anvil"
+
+proc fifo<T : type>(fifo_itfc){
+    reg mem : T[8];
+    reg read_ptr : logic[3];
+    reg write_ptr : logic[3];
+    reg full : logic;
+    reg cyc : logic[8];
+    loop{
+        if(*full){
+            rec X {
+                try send push_ep.full(()) {()} >>
+                try send pop_ep.pop(*mem[*read_ptr]){
+                    (
+                        set read_ptr := *read_ptr + 3'd1;
+                        set full := 1'd0
+                    ) >>
+                    offer{
+                        x = recv push_ep.push => (
+                            let full = if(((*write_ptr + 3'd1) == *read_ptr)&&(~(probe pop_ep.pop))) {1'b1} else {1'b0} >>
+                            set write_ptr := *write_ptr + 3'd1;
+                            set mem[*write_ptr] := x;
+                            set full := full
+                        
+                        ),
+                        send pop_ep.pop(*mem[*read_ptr])=>(
+                            set read_ptr := *read_ptr + 3'd1
+                        )
+                    }
+                }
+                else{
+                    cycle 1 >>
+                    recurse X
+                }
+            }
+
+        }
+        else if(*read_ptr == *write_ptr){
+            rec Y {
+                try send pop_ep.empty(()) {()} >>
+                try x = recv push_ep.push {
+                    (
+                    set mem[*write_ptr] := x;
+                    set write_ptr := *write_ptr + 3'd1
+                    ) >>
+
+                    offer{
+                        x = recv push_ep.push => (
+                            let full = if(((*write_ptr + 3'd1) == *read_ptr)&&(~(probe pop_ep.pop))) {1'b1} else {1'b0} >>
+                            set write_ptr := *write_ptr + 3'd1;
+                            set mem[*write_ptr] := x;
+                            set full := full
+                        
+                        ),
+                        send pop_ep.pop(*mem[*read_ptr])=>(
+                            set read_ptr := *read_ptr + 3'd1
+                        )
+                    }
+                } 
+                else {
+                    cycle 1 >>
+                    recurse Y
+                }
+            }
+
+        }
+        else{
+            offer{
+                x = recv push_ep.push => (
+                    let full = if(((*write_ptr + 3'd1) == *read_ptr)&&(~(probe pop_ep.pop))) {1'b1} else {1'b0} >>
+                    set write_ptr := *write_ptr + 3'd1;
+                    set mem[*write_ptr] := x;
+                    set full := full
+                ),
+                send pop_ep.pop(*mem[*read_ptr])=>(
+                    set read_ptr := *read_ptr + 3'd1
+                )
+            }
+        }
+
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc test_mux_write(){
+    chan push_ep_le -- push_ep_ri : fifo_insert_ch<logic[3]>;
+    chan pop_ep_le -- pop_ep_ri : fifo_dequeue_ch<logic[3]>;
+    spawn fifo<logic[3]>(push_ep_le, pop_ep_le);
+    loop{
+        cycle 20 >>
+        dfinish
+    }
+}
