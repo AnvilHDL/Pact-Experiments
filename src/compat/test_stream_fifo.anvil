@@ -1,0 +1,118 @@
+import "type_stream_fifo.anvil"
+
+proc stream_fifo<T : type>(stream_fifo_if){
+    reg data : T[8];
+    reg read_ptr : logic[3];
+    reg write_ptr : logic[3];
+    reg full : logic;
+
+    loop{
+        if(*full){
+            send pop_ep.pop(*data[*read_ptr]) >>
+            try x = recv push_ep.push {
+                set data[*write_ptr] := x;
+                set write_ptr := *write_ptr + 3'd1;
+                set read_ptr := *read_ptr + 3'd1
+            }
+            else {
+                set full := 1'b0;
+                set read_ptr := *read_ptr + 3'd1
+            }
+        }
+        else if (*read_ptr == *write_ptr){
+            let x = recv push_ep.push >>
+            set data[*write_ptr] := x;
+            set write_ptr := *write_ptr + 3'd1
+        }
+        else{
+            offer{
+                x = recv push_ep.push => (
+                    let full = if(((*write_ptr + 3'd1) == *read_ptr)&&(~(probe pop_ep.pop))) {1'b1} else {1'b0} >>
+                    set write_ptr := *write_ptr + 3'd1;
+                    set data[*write_ptr] := x;
+                    set full := full
+                
+                ),
+                send pop_ep.pop(*data[*read_ptr])=>(
+                    set read_ptr := *read_ptr + 3'd1
+                )
+            }
+        }
+    }
+}
+
+proc test_stream_fifo(){
+    chan push_le -- push_ri : push_ch<byte>;
+    chan pop_le -- pop_ri : pop_ch<byte>;
+    spawn stream_fifo<byte>(push_le, pop_le);
+    reg cyc : byte;
+
+     
+    loop{
+        send push_ri.push(8'd1) >>
+        cycle 1 >>
+        send push_ri.push(8'd2) >>
+        cycle 1 >>
+        send push_ri.push(8'd3) >>
+        cycle 1 >>
+        send push_ri.push(8'd4) >>
+        cycle 1 >>
+        send push_ri.push(8'd5) >>
+        cycle 1 >>
+        send push_ri.push(8'd6) >>
+        cycle 1 >>
+        send push_ri.push(8'd7) >>
+        cycle 1 >>
+        send push_ri.push(8'd8) >>
+        dprint "[Cycle %d] Finished pushing 8 elements into the FIFO | Trying Overflows \n" (*cyc) >>
+        cycle 1 >>
+        try send push_ri.push(8'd9) {
+            dprint "[Cycle %d] Should not have been able to push into the FIFO, but push succeeded \n" (*cyc)
+        }
+        else {
+            dprint "[Cycle %d] Overflow correctly handled, push was not successful \n" (*cyc)
+        }>>
+        dprint "[Cycle %d] Trying Simultaneous Push and Pop \n" (*cyc) >>
+        cycle 1 >>
+        let x1 = recv pop_ri.pop >>
+        send push_ri.push(8'd9) >> 
+        dprint "[Cycle %d] Popped value: %d | Pushed value: 9 | Emptying FIFO \n" (*cyc, x1) >>
+        cycle 1 >>
+        let x2 = recv pop_ri.pop >>
+        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x2) >>
+        cycle 1 >>
+        let x3 = recv pop_ri.pop >>
+        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x3) >>
+        cycle 1 >>
+        let x4 = recv pop_ri.pop >>
+        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x4) >>
+        cycle 1 >>
+        let x5 = recv pop_ri.pop >>
+        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x5) >>
+        cycle 1 >>
+        let x6 = recv pop_ri.pop >>
+        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x6) >>
+        cycle 1 >>
+        let x7 = recv pop_ri.pop >>
+        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x7) >>
+        cycle 1 >>
+        let x8 = recv pop_ri.pop >>
+        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x8) >>
+        cycle 1 >>
+        let x9 = recv pop_ri.pop >>
+        dprint "[Cycle %d] Popped value: %d | Fifo is empty | trying underflow\n" (*cyc, x9) >>
+        cycle 1 >>
+        try x10 = recv pop_ri.pop {
+            dprint "[Cycle %d] Should not have received any value, but got %d \n" (*cyc, x10)
+        }
+        else {
+            dprint "[Cycle %d] Underflow correctly handled, no value received \n" (*cyc)
+        }>>
+        cycle 1 >>
+        dfinish >>
+        cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
