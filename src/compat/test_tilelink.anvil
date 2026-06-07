@@ -1,0 +1,200 @@
+import "type_tilelink.anvil"
+proc tilelink_arb(arbiter_ifc){
+    reg prio : logic;
+    loop{
+        let _ = recv server_ep.rdy >>
+        let prio = *prio >>
+        xoffer prio{
+            _ = recv ep1.req => (set prio := *prio + 1),
+            _ = recv ep2.req => (set prio := *prio + 1),
+            # => (set prio := *prio)
+        }
+    }
+
+}
+
+
+proc crossbar_A<T : type, U : type>(crossbar_itfc_A){
+    loop{
+        offer{
+            x = recv client_ep1.req => (
+                if (x == 1'd0){
+                    try send arb_cl_ep_le11.req(()) {
+                        let data = recv client_ep1.data >>
+                        send server1_ep.req(data_pack_t::{data = data; id = 1'd0})
+                    }
+                }else{
+                    try send arb_cl_ep_le21.req(()) {
+                        let data = recv client_ep1.data >>
+                        send server2_ep.req(data_pack_t::{data = data; id = 1'd0})
+                    }
+                }
+            ),
+            y = recv client_ep2.req => (
+                if (y == 1'd0){
+                    try send arb_cl_ep_le12.req(()) {
+                        let data = recv client_ep2.data >>
+                        send server1_ep.req(data_pack_t::{data = data; id = 1'd1})
+                    }
+                }else{
+                    try send arb_cl_ep_le22.req(()) {
+                        let data = recv client_ep2.data >>
+                        send server2_ep.req(data_pack_t::{data = data; id = 1'd1})
+                    }
+                }
+            ),
+            # =>(
+                ()
+            )
+        } >>
+        cycle 1
+    }
+}
+
+
+proc crossbar_D<T : type>(crossbar_itfc_D){
+    loop{
+        offer{
+            a = recv server1_ep.req => (
+                if (a == 1'd0){
+                    try send arb_cl_ep_le11.req(()) {
+                        let data = recv server1_ep.res >>
+                        send client_ep1.res(data)
+                    }
+                }else{
+                    try send arb_cl_ep_le21.req(()) {
+                        let data = recv server1_ep.res >>
+                        send client_ep2.res(data)
+                    }
+                }
+            ),
+            b = recv server2_ep.req => (
+                if (b == 1'd0){
+                    try send arb_cl_ep_le12.req(()) {
+                        let data = recv server2_ep.res >>
+                        send client_ep1.res(data)
+                    }
+                }else{
+                    try send arb_cl_ep_le22.req(()) {
+                        let data = recv server2_ep.res >>
+                        send client_ep2.res(data)
+                    }
+                }
+            ),
+            # =>(
+                ()
+            )
+        } >>
+        cycle 1
+    }
+}
+
+
+proc client<T : type, id : int>(client_itfc){
+    reg client_select : logic;
+    reg data : logic[3];
+    reg cyc : logic[8];
+    loop{
+        {
+            (
+                try send res_arb_client.rdy(()) {
+                    try  x = recv client_crossbar_ep.res {
+                        dprint "[Cycle %d] Client %d received response: %d\n" (*cyc, id, x) >>
+                        set data := x;
+                        set client_select := *client_select + 1'd1
+                    }
+                    else{
+                        cycle 1
+                    }
+                }
+                else{
+                    cycle 1
+                }
+            );
+            (
+                if (1'd1) {
+                    try send client_ep.req(*client_select) {
+                        try send client_ep.data(*data) {
+                            dprint "[Cycle %d] Client %d sent request to Master %d with data: %d\n" (*cyc, id, *client_select, *data) >>
+                            cycle 1
+                        }
+                        else{
+                            cycle 1
+                        }
+                    }
+                    else{
+                        cycle 1
+                    }
+                }
+                else{
+                    cycle 1
+                }
+            ) 
+        }
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+
+
+proc manager<T : type, U : type, id : int>(manager_itfc){
+    reg data : logic[3];
+    reg next_id : logic;
+    reg cyc : logic[8];
+    loop{
+        rec Y {
+            send manager_ep.rdy(()) >>
+            try x = recv manager_crossbar_ep.req {
+                dprint "[Cycle %d] Manager %d received request from client %d\n" (*cyc, id, x.id) >>
+                set data := x.data;
+                set next_id := x.id
+            }
+            else{
+                cycle 1 >>
+                recurse Y
+            }
+        } >>
+        cycle 1 >>
+        rec X {
+            send manager_crossbar_d_ep.req(*next_id) >>
+            let next_data = *data + 3'd1 >>
+            try send manager_crossbar_d_ep.res(next_data) {
+                dprint "[Cycle %d] Manager %d sent response: %d to client %d\n" (*cyc, id, next_data, *next_id)
+            }
+            else{
+                cycle 1 >>
+                recurse X
+            }
+        } >>
+        cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+
+proc test_tilelink(){
+    pool p : tilelink;
+    spawn client<logic[3], 1>[p.ic1];
+    spawn client<logic[3], 2>[p.ic2];
+    spawn manager<data_pack_t, logic[3], 1>[p.im1];
+    spawn manager<data_pack_t, logic[3], 2>[p.im2];
+    spawn crossbar_A<logic[3], data_pack_t>[p.icrA];
+    spawn crossbar_D<logic[3]>[p.icrD];
+    spawn tilelink_arb[p.ia1];
+    spawn tilelink_arb[p.ia2];
+    spawn tilelink_arb[p.iares1];
+    spawn tilelink_arb[p.iares2];
+    
+    loop{
+        dprint "------------------\n" () >>
+        cycle 20 >>
+        dprint "------------------\n" () >>
+        dfinish >>
+        cycle 1
+    }
+
+}
