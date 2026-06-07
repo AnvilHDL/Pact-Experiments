@@ -84,10 +84,52 @@ proc fifo<T : type>(fifo_itfc){
     }
 }
 
+
+proc arbiter<T : type, T1 : type> (rr_arbiter_itfc){
+    reg prio : logic[2];
+    loop{
+        xoffer{
+          x = recv slv_ep1.req => (
+                let data = aw_sel_pack_t::{aw_pack = x; select = 3'd0} >>
+                send aw_req_ep.req(data) >>
+                let _ = recv aw_req_ep.gnt >>
+                send slv_ep1.gnt(())
+          ),
+          x = recv slv_ep2.req => (
+                let data = aw_sel_pack_t::{aw_pack = x; select = 3'd1} >>
+                send aw_req_ep.req(data) >>
+                let _ = recv aw_req_ep.gnt >>
+                send slv_ep2.gnt(())
+          ),
+          x = recv slv_ep3.req => (
+                let data = aw_sel_pack_t::{aw_pack = x; select = 3'd2} >>
+                send aw_req_ep.req(data) >>
+                let _ = recv aw_req_ep.gnt >>
+                send slv_ep3.gnt(())
+          ),
+          x = recv slv_ep4.req => (
+                let data = aw_sel_pack_t::{aw_pack = x; select = 3'd3} >>
+                send aw_req_ep.req(data) >>
+                let _ = recv aw_req_ep.gnt >>
+                send slv_ep4.gnt(())
+          )
+        } >>
+        set prio := *prio + 2'd1
+    }
+}
+
+
 proc test_mux_write(){
     chan push_ep_le -- push_ep_ri : fifo_insert_ch<logic[3]>;
     chan pop_ep_le -- pop_ep_ri : fifo_dequeue_ch<logic[3]>;
+    chan slv_ep_le1 -- slv_ep_ri1 : slv_ch<aw_pack_t>;
+    chan slv_ep_le2 -- slv_ep_ri2 : slv_ch<aw_pack_t>;
+    chan slv_ep_le3 -- slv_ep_ri3 : slv_ch<aw_pack_t>;
+    chan slv_ep_le4 -- slv_ep_ri4 : slv_ch<aw_pack_t>;
+    chan slv_res_ep_le1 -- slv_res_ep_ri1 : mux_ch<aw_sel_pack_t>;
+
     spawn fifo<logic[3]>(push_ep_le, pop_ep_le);
+    spawn arbiter<aw_pack_t, aw_sel_pack_t>(slv_ep_ri1, slv_ep_ri2, slv_ep_ri3, slv_ep_ri4, slv_res_ep_le1);
     loop{
         cycle 20 >>
         dfinish

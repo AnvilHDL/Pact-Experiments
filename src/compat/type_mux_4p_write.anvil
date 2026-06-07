@@ -23,7 +23,7 @@ interface master_itfc(mst_ep_aw : right mst_ch<aw_pack_t>, mst_ep_w : right mst_
 interface slave_itfc(write_req_ep : left slv_ch<aw_pack_t>, write_data_ep : left slv_r_ch<w_pack_t>, write_res_ep  : left slv_res_ch<b_pack_t>) =
             write_req_ep.req ; write_req_ep.gnt; rec X . (write_data_ep.rdy; ^(write_data_ep.data : write_data_ep.gnt, * : #1; X) ); rec Y . (write_res_ep.rdy; ^(write_res_ep.gnt : write_res_ep.res, * : #1; Y)); #1
 
-interface rr_arbiter_itfc(slv_ep1 : right slv_ch<aw_pack_t>, slv_ep2 : right slv_ch<aw_pack_t>, slv_ep3 : right slv_ch<aw_pack_t>, slv_ep4 : right slv_ch<aw_pack_t>, aw_req_ep : left mux_ch<aw_sel_pack_t>) =
+interface rr_arbiter_itfc(slv_ep1 : right slv_ch<T>, slv_ep2 : right slv_ch<T>, slv_ep3 : right slv_ch<T>, slv_ep4 : right slv_ch<T>, aw_req_ep : left mux_ch<T1>) =
 ^( 
    slv_ep1.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep1.gnt,
    slv_ep2.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep2.gnt,
@@ -134,3 +134,54 @@ chan fifo_dequeue_ch<Tp : type> {
 }
 
 type select_t = logic[2];
+
+
+
+
+type prot_t = logic[3];
+type resp_t = logic[2];
+type strb_t = logic[4];
+
+type select_t = logic[3];
+type A = logic;
+type T = logic;
+
+
+struct aw_pack_t {
+    addr : A,
+    prot : prot_t
+}
+
+struct w_pack_t {
+    data : T,
+    strb : strb_t
+}
+
+struct b_pack_t {
+    resp : resp_t
+}
+
+struct ar_pack_t {
+    addr : A,
+    prot : prot_t
+}
+
+struct r_pack_t {
+    data : T,
+    resp : resp_t
+}
+
+struct aw_sel_pack_t {
+    aw_pack : aw_pack_t,
+    select : select_t
+}
+
+
+chan slv_ch<Tp : type> {
+    right req : (Tp@#1),
+    left gnt : (void@#1)
+}
+chan mux_ch<Tp : type> {
+    right req : (Tp@#1),
+    left gnt : (void@#1)
+}
