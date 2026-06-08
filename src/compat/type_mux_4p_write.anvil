@@ -49,16 +49,15 @@ interface mux_w_main (
     w_fifo_ep : left fifo_dequeue_ch<select_t>,
     b_fifo_ep : left fifo_insert_ch<select_t>,
     w_mst_ep : left mst_ch<w_pack_t>
-) =^(
+) =&(
         w_fifo_ep.empty,
-        * : ^(b_fifo_ep.full, 
-              * : (#w_fifo_ep.pop||#b_fifo_ep.push); rec X . ^(
+        b_fifo_ep.full,
+        * :  #w_fifo_ep.pop;#b_fifo_ep.push; rec X . ^(
                                                         slv_ep1.rdy : ((#slv_ep1.data;w_mst_ep.req;#slv_ep1.gnt) + (#1;X)),
                                                         slv_ep2.rdy : ((#slv_ep2.data;w_mst_ep.req;#slv_ep2.gnt) + (#1;X)),
                                                         slv_ep3.rdy : ((#slv_ep3.data;w_mst_ep.req;#slv_ep3.gnt) + (#1;X)),
                                                         slv_ep4.rdy : ((#slv_ep4.data;w_mst_ep.req;#slv_ep4.gnt) + (#1;X))
                                                       )                                            
-            )            
 ); #1
 
 interface mux_b_main (
