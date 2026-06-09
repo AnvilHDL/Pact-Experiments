@@ -34,7 +34,7 @@ fi
 
 FLAGS="-disable-lt-checks"
 if [ $JUST_CHECK -eq 1 ]; then
-    FLAGS+=" -just-check"
+    FLAGS+=" -just-check -disable-compat-checks"
 elif [ $debug_choice -ne -1 ]; then
     FLAGS+=" -debug-choice $debug_choice"
 elif [ $VERBOSE -eq 1 ]; then

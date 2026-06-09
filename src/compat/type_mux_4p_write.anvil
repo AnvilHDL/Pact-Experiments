@@ -1,21 +1,4 @@
-interface fifo_itfc(push_ep : right fifo_insert_ch<T>, pop_ep : right fifo_dequeue_ch<T>) =  
-                                                (
-                                                    rec X . (^(push_ep.full, *);^( pop_ep.pop : #1;&(push_ep.push , pop_ep.pop); #1,
-                                                                        * :  #1;X
-                                                            ))
-                                                )
-                                                                    + 
-                                                  (
-                                                    rec Y . (^(pop_ep.empty, *);^(
-                                                        push_ep.push : #1;&(push_ep.push , pop_ep.pop); #1,
-                                                        * : #1;Y
-                                                    ))
-                                                  )
-                                                     
-                                                                    + 
-                                                    (
-                                                        &(push_ep.push , pop_ep.pop) ; #1
-                                                    )
+import "mux_commons.anvilh"
 
 
 interface master_itfc(mst_ep_aw : right mst_ch<aw_pack_t>, mst_ep_w : right mst_ch<w_pack_t>, mst_ep_b : left mst_res_ch<b_pack_t>) = F mst_ep_aw.rdy ; mst_ep_aw.req ; #1; mst_ep_w.rdy ; mst_ep_w.req;#1;mst_ep_b.rdy;mst_ep_b.res;#1
