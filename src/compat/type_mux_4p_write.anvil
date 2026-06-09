@@ -36,10 +36,7 @@ interface mux_aw_main (
     aw_req_ep : right mux_ch<aw_sel_pack_t>,
     aw_mst_ep : left mst_ch <aw_pack_t>,
     fifo_ep : left fifo_insert_ch<select_t>
-) =^(
-    aw_req_ep.req : aw_mst_ep.rdy ; rec X . ^(fifo_ep.full: #1;X, * : #fifo_ep.push;#aw_mst_ep.req;#aw_req_ep.gnt),
-    *
-    ) ; #1
+) = aw_req_ep.req;aw_mst_ep.rdy ; rec X . ^(fifo_ep.full: #1;X, * : #fifo_ep.push;#aw_mst_ep.req;#aw_req_ep.gnt);#1
 
 interface mux_w_main (
     slv_ep1 : right slv_w_ch<w_pack_t>,
