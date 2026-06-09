@@ -217,7 +217,7 @@ proc mux_b_main(mux_b_main){
                     xoffer bentry{
                         _ = recv slv_ep1.rdy => (
                             if (bentry == 2'd0){
-                                let b = recv b_mst_ep.req >>
+                                let b = recv b_mst_ep.res >>
                                 send slv_ep1.res(b)
                             }
                             else{
@@ -228,7 +228,7 @@ proc mux_b_main(mux_b_main){
                         ),
                         _ = recv slv_ep2.rdy => (
                             if (bentry == 2'd1){
-                                let b = recv b_mst_ep.req >>
+                                let b = recv b_mst_ep.res >>
                                 send slv_ep2.res(b)
                             }
                             else{
@@ -239,7 +239,7 @@ proc mux_b_main(mux_b_main){
                         ),
                         _ = recv slv_ep3.rdy => (
                             if (bentry == 2'd2){
-                                let b = recv b_mst_ep.req >>
+                                let b = recv b_mst_ep.res >>
                                 send slv_ep3.res(b)
                             }   
                             else{
@@ -250,7 +250,7 @@ proc mux_b_main(mux_b_main){
                         ),
                         _ = recv slv_ep4.rdy => (
                             if (bentry == 2'd3){
-                                let b = recv b_mst_ep.req >>
+                                let b = recv b_mst_ep.res >>
                                 send slv_ep4.res(b)
                             }
                             else{
@@ -269,6 +269,26 @@ proc mux_b_main(mux_b_main){
 
 }
 
+proc master(master_itfc){
+    reg mem : byte[256];
+    reg addr : logic[8];
+    loop{
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        send mst_ep_aw.rdy(()) >>
+        let req = recv mst_ep_aw.req >>
+        set addr := req.addr >>
+        send mst_ep_w.rdy(()) >>
+        let wdata = recv mst_ep_w.req >>
+        set mem[*addr] := wdata.data >>
+        send mst_ep_b.rdy (()) >>
+        send mst_ep_b.res(b_pack_t::{resp = 1'b1}) >>
+        cycle 1
+    }
+}
+    
 
 proc slave<id : int>(slave_itfc){
     reg cyc : logic[8];
@@ -326,7 +346,7 @@ proc test_mux_write(){
     chan slv_b_ep_le2 -- slv_b_ep_ri2 : slv_res_ch<b_pack_t> ;
     chan slv_b_ep_le3 -- slv_b_ep_ri3 : slv_res_ch<b_pack_t> ;
     chan slv_b_ep_le4 -- slv_b_ep_ri4 : slv_res_ch<b_pack_t> ;
-    chan b_mst_ep_le -- b_mst_ep_ri : mst_ch<b_pack_t> ;
+    chan b_mst_ep_le -- b_mst_ep_ri : mst_res_ch<b_pack_t> ;
 
 
     spawn fifo<select_t>(w_push_ep_ri, w_pop_ep_ri);
@@ -336,7 +356,7 @@ proc test_mux_write(){
     spawn mux_aw_main(aw_req_ep_ri, aw_mst_ep_le, w_push_ep_le);
     spawn mux_b_main(b_pop_ep_le, b_mst_ep_ri, slv_b_ep_ri1, slv_b_ep_ri2, slv_b_ep_ri3, slv_b_ep_ri4);
     spawn slave<1>(slv_ep_le1, slv_data_ep1, slv_b_ep_le1);
-
+    spawn master(aw_mst_ep_ri, mux_ep_w, b_mst_ep_le);   
     loop{
         cycle 20 >>
         dfinish
