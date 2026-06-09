@@ -88,33 +88,37 @@ proc fifo<T : type>(fifo_itfc){
 proc arbiter<T : type, T1 : type> (rr_arbiter_itfc){
     reg prio : logic[2];
     loop{
-        xoffer{
+        let prio = *prio >>
+        xoffer prio{
           x = recv slv_ep1.req => (
                 let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
                 send aw_req_ep.req(data) >>
                 let _ = recv aw_req_ep.gnt >>
-                send slv_ep1.gnt(())
+                send slv_ep1.gnt(()) >>
+                set prio := 2'd1
           ),
           x = recv slv_ep2.req => (
                 let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
                 send aw_req_ep.req(data) >>
                 let _ = recv aw_req_ep.gnt >>
-                send slv_ep2.gnt(())
+                send slv_ep2.gnt(()) >>
+                set prio := 2'd2
           ),
           x = recv slv_ep3.req => (
                 let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
                 send aw_req_ep.req(data) >>
                 let _ = recv aw_req_ep.gnt >>
-                send slv_ep3.gnt(())
+                send slv_ep3.gnt(()) >>
+                set prio := 2'd3
           ),
           x = recv slv_ep4.req => (
                 let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
                 send aw_req_ep.req(data) >>
                 let _ = recv aw_req_ep.gnt >>
-                send slv_ep4.gnt(())
+                send slv_ep4.gnt(()) >>
+                set prio := 2'd0
           )
-        } >>
-        set prio := *prio + 2'd1
+        }
     }
 }
 
@@ -272,6 +276,7 @@ proc mux_b_main(mux_b_main){
 proc master(master_itfc){
     reg mem : byte[256];
     reg addr : logic[8];
+    reg cyc : logic[8];
     loop{
         cycle 1 >>
         cycle 1 >>
@@ -279,13 +284,18 @@ proc master(master_itfc){
         cycle 1 >>
         send mst_ep_aw.rdy(()) >>
         let req = recv mst_ep_aw.req >>
+        dprint "[Cycle %d] Master received aw req with addr %d\n" (*cyc, req.addr) >>
         set addr := req.addr >>
         send mst_ep_w.rdy(()) >>
         let wdata = recv mst_ep_w.req >>
+        dprint "[Cycle %d] Master received w req with data %d\n" (*cyc, wdata.data) >>
         set mem[*addr] := wdata.data >>
         send mst_ep_b.rdy (()) >>
         send mst_ep_b.res(b_pack_t::{resp = 1'b1}) >>
         cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
     }
 }
     
@@ -300,11 +310,15 @@ proc slave<id : int>(slave_itfc){
         set state := *state + aid >>
         let res = aw_pack_t::{addr = *state; prot = 1'b0} >>
         send write_req_ep.req(res) >>
+        dprint "[Cycle %d] Slave %d write req selected with addr %d\n" (*cyc, id, res.addr) >>
         let _ = recv write_req_ep.gnt >>
+        dprint "[Cycle %d] Slave %d write req granted\n" (*cyc, id) >>
         rec x {
             send write_data_ep.rdy(()) >>
             let res = w_pack_t::{data = *cyc;strb = 1'b0} >>
-            try send write_data_ep.data(res) {()}
+            try send write_data_ep.data(res) {
+                dprint "[Cycle %d] Slave %d write data sent with data %d\n" (*cyc, id, res.data)
+            }
             else{
                 cycle 1 >>
                 recurse x
@@ -312,7 +326,9 @@ proc slave<id : int>(slave_itfc){
         } >>
         rec Y {
             send write_res_ep.rdy(()) >>
-            try res = recv write_res_ep.res {()}
+            try res = recv write_res_ep.res {
+                dprint "[Cycle %d] Slave %d write response received\n" (*cyc, id)
+            }
             else{
                 cycle 1 >>
                 recurse Y
@@ -320,43 +336,27 @@ proc slave<id : int>(slave_itfc){
         } >>
         cycle 1
     }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
 }
 
 proc test_mux_write(){
-    chan w_push_ep_le -- w_push_ep_ri : fifo_insert_ch<select_t> ;
-    chan w_pop_ep_le -- w_pop_ep_ri : fifo_dequeue_ch<select_t> ;
-    chan b_push_ep_le -- b_push_ep_ri : fifo_insert_ch<select_t> ;
-    chan b_pop_ep_le -- b_pop_ep_ri : fifo_dequeue_ch<select_t> ;
-    chan slv_ep_le1 -- slv_ep_ri1 : slv_ch<aw_pack_t> ;
-    chan slv_ep_le2 -- slv_ep_ri2 : slv_ch<aw_pack_t> ;
-    chan slv_ep_le3 -- slv_ep_ri3 : slv_ch<aw_pack_t> ;
-    chan slv_ep_le4 -- slv_ep_ri4 : slv_ch<aw_pack_t> ;
-    chan slv_res_ep_le1 -- slv_res_ep_ri1 : mux_ch<aw_sel_pack_t> ;
 
-    chan slv_data_ep1 -- mux_data_ep1 : slv_w_ch<w_pack_t> ;
-    chan slv_data_ep2 -- mux_data_ep2 : slv_w_ch<w_pack_t> ;
-    chan slv_data_ep3 -- mux_data_ep3 : slv_w_ch<w_pack_t> ;
-    chan slv_data_ep4 -- mux_data_ep4 : slv_w_ch<w_pack_t> ;
-    chan mst_ep_w -- mux_ep_w : mst_ch<w_pack_t> ;
+    pool p : mux_write_transaction_pool;
 
-    chan aw_req_ep_le -- aw_req_ep_ri : mux_ch<aw_sel_pack_t> ;
-    chan aw_mst_ep_le -- aw_mst_ep_ri : mst_ch<aw_pack_t> ;
+    spawn slave<1>[p.islv1];
+    spawn slave<2>[p.islv2];
+    spawn slave<3>[p.islv3];
+    spawn slave<4>[p.islv4];
+    spawn master[p.imst];
+    spawn arbiter<aw_pack_t, aw_sel_pack_t>[p.iarb];
+    spawn mux_aw_main[p.iaw];
+    spawn mux_w_main[p.iw];
+    spawn mux_b_main[p.ib];
+    spawn fifo<select_t>[p.iwf];
+    spawn fifo<select_t>[p.ibf];
 
-    chan slv_b_ep_le1 -- slv_b_ep_ri1 : slv_res_ch<b_pack_t> ;
-    chan slv_b_ep_le2 -- slv_b_ep_ri2 : slv_res_ch<b_pack_t> ;
-    chan slv_b_ep_le3 -- slv_b_ep_ri3 : slv_res_ch<b_pack_t> ;
-    chan slv_b_ep_le4 -- slv_b_ep_ri4 : slv_res_ch<b_pack_t> ;
-    chan b_mst_ep_le -- b_mst_ep_ri : mst_res_ch<b_pack_t> ;
-
-
-    spawn fifo<select_t>(w_push_ep_ri, w_pop_ep_ri);
-    spawn fifo<select_t>(b_push_ep_ri, b_pop_ep_ri);
-    spawn mux_w_main(mux_data_ep1, mux_data_ep2, mux_data_ep3, mux_data_ep4, w_pop_ep_le, b_push_ep_le,mst_ep_w);
-    spawn arbiter<aw_pack_t, aw_sel_pack_t>(slv_ep_ri1, slv_ep_ri2, slv_ep_ri3, slv_ep_ri4, slv_res_ep_le1);
-    spawn mux_aw_main(aw_req_ep_ri, aw_mst_ep_le, w_push_ep_le);
-    spawn mux_b_main(b_pop_ep_le, b_mst_ep_ri, slv_b_ep_ri1, slv_b_ep_ri2, slv_b_ep_ri3, slv_b_ep_ri4);
-    spawn slave<1>(slv_ep_le1, slv_data_ep1, slv_b_ep_le1);
-    spawn master(aw_mst_ep_ri, mux_ep_w, b_mst_ep_le);   
     loop{
         cycle 20 >>
         dfinish

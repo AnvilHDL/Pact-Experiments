@@ -97,7 +97,7 @@ pool mux_write_transaction_pool {
     // master interfaces
     mux_ep_aw -- mst_ep_aw : mst_ch<aw_pack_t>,
     mux_ep_w -- mst_ep_w : mst_ch<w_pack_t>,
-    mst_ep_b -- mux_ep_b : mst_res_ch<b_pack_t>,
+    mst_ep_b -- mux_ep_b   : mst_res_ch<b_pack_t>,
 
     aw_req_ep -- mux_aw_req_ep : mux_ch<aw_sel_pack_t>,
 
@@ -110,10 +110,10 @@ pool mux_write_transaction_pool {
     islv2 : slave_itfc(slv_ep2, slv_data_ep2, slv_res_ep2),
     islv3 : slave_itfc(slv_ep3, slv_data_ep3, slv_res_ep3),
     islv4 : slave_itfc(slv_ep4, slv_data_ep4, slv_res_ep4),
-    imst : master_itfc(mux_ep_aw, mux_ep_w, mst_ep_b),
+    imst : master_itfc(mst_ep_aw, mst_ep_w, mst_ep_b),
     iarb : rr_arbiter_itfc(arb_ep1, arb_ep2, arb_ep3, arb_ep4, aw_req_ep),
-    iaw : mux_aw_main(mux_aw_req_ep, mst_ep_aw, w_fifo_push),
-    iw : mux_w_main(mux_data_ep1, mux_data_ep2, mux_data_ep3, mux_data_ep4, w_fifo_pop, b_fifo_push, mst_ep_w),
+    iaw : mux_aw_main(mux_aw_req_ep, mux_ep_aw, w_fifo_push),
+    iw : mux_w_main(mux_data_ep1, mux_data_ep2, mux_data_ep3, mux_data_ep4, w_fifo_pop, b_fifo_push, mux_ep_w),
     ib : mux_b_main(b_fifo_pop, mux_ep_b, mux_res_ep1, mux_res_ep2, mux_res_ep3, mux_res_ep4),
     iwf : fifo_itfc(w_fifo_push_ri, w_fifo_pop_ri),
     ibf : fifo_itfc(b_fifo_push_ri, b_fifo_pop_ri)

@@ -10,9 +10,9 @@ all: obj_dir/V$(MODULE_NAME)
 
 ANVIL_FLAGS=
 ifdef LTOFF
-    ANVIL_FLAGS = -disable-lt-checks -O 3
+    ANVIL_FLAGS = -disable-lt-checks -O 2
 else
-    ANVIL_FLAGS = -O 3
+    ANVIL_FLAGS = -O 2
 endif
 
 ifdef DEBUG
