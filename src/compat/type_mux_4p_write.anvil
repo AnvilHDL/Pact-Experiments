@@ -18,10 +18,10 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<T>, pop_ep : right fifo_deque
                                                     )
 
 
-interface master_itfc(mst_ep_aw : right mst_ch<aw_pack_t>, mst_ep_w : right mst_ch<w_pack_t>, mst_ep_b : left mst_ch<b_pack_t>) = mst_ep_aw.rdy ; mst_ep_aw.req ; mst_ep_w.rdy ; mst_ep_w.req;#1;mst_ep_b.rdy;mst_ep_b.req;#1
+interface master_itfc(mst_ep_aw : right mst_ch<aw_pack_t>, mst_ep_w : right mst_ch<w_pack_t>, mst_ep_b : left mst_ch<b_pack_t>) = F mst_ep_aw.rdy ; mst_ep_aw.req ; mst_ep_w.rdy ; mst_ep_w.req;#1;mst_ep_b.rdy;mst_ep_b.req;#1
 
 interface slave_itfc(write_req_ep : left slv_ch<aw_pack_t>, write_data_ep : left slv_w_ch<w_pack_t>, write_res_ep  : left slv_res_ch<b_pack_t>) =
-            write_req_ep.req ; write_req_ep.gnt; rec X . (write_data_ep.rdy; ^(write_data_ep.data, * : #1; X) ); rec Y . (write_res_ep.rdy; ^(write_res_ep.res, * : #1; Y)); #1
+            F write_req_ep.req ; write_req_ep.gnt; rec X . (write_data_ep.rdy; ^(write_data_ep.data, * : #1; X) ); rec Y . (write_res_ep.rdy; ^(write_res_ep.res, * : #1; Y)); #1
 
 interface rr_arbiter_itfc(slv_ep1 : right slv_ch<T>, slv_ep2 : right slv_ch<T>, slv_ep3 : right slv_ch<T>, slv_ep4 : right slv_ch<T>, aw_req_ep : left mux_ch<T1>) =
 ^( 
@@ -139,13 +139,13 @@ type select_t = logic[2];
 
 
 
-type prot_t = logic[3];
-type resp_t = logic[2];
-type strb_t = logic[4];
+type prot_t = logic;
+type resp_t = logic;
+type strb_t = logic;
 
 type select_t = logic[2];
-type A = logic;
-type T = logic;
+type A = logic[8];
+type T = logic[8];
 
 
 struct aw_pack_t {

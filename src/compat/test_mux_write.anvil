@@ -270,6 +270,37 @@ proc mux_b_main(mux_b_main){
 }
 
 
+proc slave<id : int>(slave_itfc){
+    reg cyc : logic[8];
+    reg counter : logic[8];
+    reg last_counter : logic[8];
+    reg state : logic[8];
+    loop{
+        let aid = id[0+:8] >>
+        set state := *state + aid >>
+        let res = aw_pack_t::{addr = *state; prot = 1'b0} >>
+        send write_req_ep.req(res) >>
+        let _ = recv write_req_ep.gnt >>
+        rec x {
+            send write_data_ep.rdy(()) >>
+            let res = w_pack_t::{data = *cyc;strb = 1'b0} >>
+            try send write_data_ep.data(res) {()}
+            else{
+                cycle 1 >>
+                recurse x
+            }
+        } >>
+        rec Y {
+            send write_res_ep.rdy(()) >>
+            try res = recv write_res_ep.res {()}
+            else{
+                cycle 1 >>
+                recurse Y
+            }
+        } >>
+        cycle 1
+    }
+}
 
 proc test_mux_write(){
     chan w_push_ep_le -- w_push_ep_ri : fifo_insert_ch<select_t> ;
@@ -304,6 +335,7 @@ proc test_mux_write(){
     spawn arbiter<aw_pack_t, aw_sel_pack_t>(slv_ep_ri1, slv_ep_ri2, slv_ep_ri3, slv_ep_ri4, slv_res_ep_le1);
     spawn mux_aw_main(aw_req_ep_ri, aw_mst_ep_le, w_push_ep_le);
     spawn mux_b_main(b_pop_ep_le, b_mst_ep_ri, slv_b_ep_ri1, slv_b_ep_ri2, slv_b_ep_ri3, slv_b_ep_ri4);
+    spawn slave<1>(slv_ep_le1, slv_data_ep1, slv_b_ep_le1);
 
     loop{
         cycle 20 >>
