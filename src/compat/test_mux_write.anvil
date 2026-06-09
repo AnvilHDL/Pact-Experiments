@@ -207,6 +207,68 @@ proc mux_aw_main(mux_aw_main){
     }
 }
 
+proc mux_b_main(mux_b_main){
+    loop{
+        try _ = recv b_fifo_ep.empty { ()}
+        else{
+            try _ = recv b_mst_ep.rdy {
+                let bentry = recv b_fifo_ep.pop >>
+                rec X{
+                    xoffer bentry{
+                        _ = recv slv_ep1.rdy => (
+                            if (bentry == 2'd0){
+                                let b = recv b_mst_ep.req >>
+                                send slv_ep1.res(b)
+                            }
+                            else{
+                                dprint "Something went wrong! | bentry = %d\n vs id = 2'd0" (bentry) >>
+                                cycle 1 >>
+                                recurse X
+                            }
+                        ),
+                        _ = recv slv_ep2.rdy => (
+                            if (bentry == 2'd1){
+                                let b = recv b_mst_ep.req >>
+                                send slv_ep2.res(b)
+                            }
+                            else{
+                                dprint "Something went wrong! | bentry = %d\n vs id = 2'd1" (bentry) >>
+                                cycle 1 >>
+                                recurse X
+                            }
+                        ),
+                        _ = recv slv_ep3.rdy => (
+                            if (bentry == 2'd2){
+                                let b = recv b_mst_ep.req >>
+                                send slv_ep3.res(b)
+                            }   
+                            else{
+                                dprint "Something went wrong! | bentry = %d\n vs id = 2'd2" (bentry) >>
+                                cycle 1 >>
+                                recurse X
+                            }
+                        ),
+                        _ = recv slv_ep4.rdy => (
+                            if (bentry == 2'd3){
+                                let b = recv b_mst_ep.req >>
+                                send slv_ep4.res(b)
+                            }
+                            else{
+                                dprint "Something went wrong! | bentry = %d\n vs id = 2'd3" (bentry) >>
+                                cycle 1 >>
+                                recurse X
+                            }
+                        )
+                    } 
+                }
+            }
+            
+        } >>
+        cycle 1
+    }
+
+}
+
 
 
 proc test_mux_write(){
@@ -229,6 +291,11 @@ proc test_mux_write(){
     chan aw_req_ep_le -- aw_req_ep_ri : mux_ch<aw_sel_pack_t> ;
     chan aw_mst_ep_le -- aw_mst_ep_ri : mst_ch<aw_pack_t> ;
 
+    chan slv_b_ep_le1 -- slv_b_ep_ri1 : slv_res_ch<b_pack_t> ;
+    chan slv_b_ep_le2 -- slv_b_ep_ri2 : slv_res_ch<b_pack_t> ;
+    chan slv_b_ep_le3 -- slv_b_ep_ri3 : slv_res_ch<b_pack_t> ;
+    chan slv_b_ep_le4 -- slv_b_ep_ri4 : slv_res_ch<b_pack_t> ;
+    chan b_mst_ep_le -- b_mst_ep_ri : mst_ch<b_pack_t> ;
 
 
     spawn fifo<select_t>(w_push_ep_ri, w_pop_ep_ri);
@@ -236,6 +303,7 @@ proc test_mux_write(){
     spawn mux_w_main(mux_data_ep1, mux_data_ep2, mux_data_ep3, mux_data_ep4, w_pop_ep_le, b_push_ep_le,mst_ep_w);
     spawn arbiter<aw_pack_t, aw_sel_pack_t>(slv_ep_ri1, slv_ep_ri2, slv_ep_ri3, slv_ep_ri4, slv_res_ep_le1);
     spawn mux_aw_main(aw_req_ep_ri, aw_mst_ep_le, w_push_ep_le);
+    spawn mux_b_main(b_pop_ep_le, b_mst_ep_ri, slv_b_ep_ri1, slv_b_ep_ri2, slv_b_ep_ri3, slv_b_ep_ri4);
 
     loop{
         cycle 20 >>

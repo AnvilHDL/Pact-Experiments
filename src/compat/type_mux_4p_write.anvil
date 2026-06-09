@@ -18,10 +18,10 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<T>, pop_ep : right fifo_deque
                                                     )
 
 
-interface master_itfc(mst_ep_aw : right mst_ch<aw_pack_t>, mst_ep_w : right mst_ch<w_pack_t>, mst_ep_b : left mst_res_ch<b_pack_t>) = mst_ep_aw.rdy ; mst_ep_aw.req ; mst_ep_w.rdy ; mst_ep_w.req;#1;mst_ep_b.res;#1
+interface master_itfc(mst_ep_aw : right mst_ch<aw_pack_t>, mst_ep_w : right mst_ch<w_pack_t>, mst_ep_b : left mst_ch<b_pack_t>) = mst_ep_aw.rdy ; mst_ep_aw.req ; mst_ep_w.rdy ; mst_ep_w.req;#1;mst_ep_b.rdy;mst_ep_b.req;#1
 
 interface slave_itfc(write_req_ep : left slv_ch<aw_pack_t>, write_data_ep : left slv_w_ch<w_pack_t>, write_res_ep  : left slv_res_ch<b_pack_t>) =
-            write_req_ep.req ; write_req_ep.gnt; rec X . (write_data_ep.rdy; ^(write_data_ep.data, * : #1; X) ); rec Y . (write_res_ep.rdy; ^(write_res_ep.gnt : write_res_ep.res, * : #1; Y)); #1
+            write_req_ep.req ; write_req_ep.gnt; rec X . (write_data_ep.rdy; ^(write_data_ep.data, * : #1; X) ); rec Y . (write_res_ep.rdy; ^(write_res_ep.res, * : #1; Y)); #1
 
 interface rr_arbiter_itfc(slv_ep1 : right slv_ch<T>, slv_ep2 : right slv_ch<T>, slv_ep3 : right slv_ch<T>, slv_ep4 : right slv_ch<T>, aw_req_ep : left mux_ch<T1>) =
 ^( 
@@ -62,19 +62,21 @@ interface mux_w_main (
 
 interface mux_b_main (
     b_fifo_ep : left fifo_dequeue_ch<select_t>,
-    b_mst_ep : right mst_res_ch<b_pack_t>,
+    b_mst_ep : right mst_ch<b_pack_t>,
     slv_ep1 : right slv_res_ch<b_pack_t>,
     slv_ep2 : right slv_res_ch<b_pack_t>,
     slv_ep3 : right slv_res_ch<b_pack_t>,
     slv_ep4 : right slv_res_ch<b_pack_t>
 ) = ^(
         b_fifo_ep.empty,
-        * : #b_fifo_ep.pop ; rec X.  ^(
-                                         slv_ep1.rdy : (#slv_ep1.gnt;b_mst_ep.res;#slv_ep1.res) + (#1;X),
-                                          slv_ep2.rdy : (#slv_ep2.gnt;b_mst_ep.res;#slv_ep2.res) + (#1;X),
-                                          slv_ep3.rdy : (#slv_ep3.gnt;b_mst_ep.res;#slv_ep3.res) + (#1;X),
-                                          slv_ep4.rdy : (#slv_ep4.gnt;b_mst_ep.res;#slv_ep4.res) + (#1;X)
-                                    )      
+        * : ^(b_mst_ep.rdy : #b_fifo_ep.pop ; rec X.  ^(
+                                         slv_ep1.rdy : (#b_mst_ep.req;#slv_ep1.res) + (#1;X),
+                                          slv_ep2.rdy : (#b_mst_ep.req;#slv_ep2.res) + (#1;X),
+                                          slv_ep3.rdy : (#b_mst_ep.req;#slv_ep3.res) + (#1;X),
+                                          slv_ep4.rdy : (#b_mst_ep.req;#slv_ep4.res) + (#1;X)
+                                    ),
+                *)
+
     ) ; #1
                             
                                             
@@ -95,7 +97,7 @@ pool mux_write_transaction_pool {
     // master interfaces
     mst_ep_aw -- mux_ep_aw : mst_ch<aw_pack_t>,
     mst_ep_w -- mux_ep_w : mst_ch<w_pack_t>,
-    mst_ep_b -- mux_ep_b : mst_res_ch<b_pack_t>,
+    mst_ep_b -- mux_ep_b : mst_ch<b_pack_t>,
 
     aw_req_ep -- mux_aw_req_ep : mux_ch<aw_sel_pack_t>,
 
@@ -193,4 +195,9 @@ chan slv_w_ch<Tp : type> {
 chan mst_ch<Tp : type> {
     left rdy : (void@#1),
     right req : (Tp@#1)
+}
+
+chan slv_res_ch<Tp : type> {
+    right rdy : (void@#1),
+    left res : (Tp@#1)
 }
