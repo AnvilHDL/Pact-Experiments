@@ -1,7 +1,7 @@
 import "mux_commons.anvilh"
 
 interface master_itfc(mux_ep_aw : right mast_ch<aw_pack_t>, demux_ep_w : right mast_ch<w_pack_t>, demux_ep_b : left mast_res_ch<b_pack_t>) =
-       F mux_ep_aw.rdy; mux_ep_aw.req ; #1; rec X . (demux_ep_w.rdy;^(demux_ep_w.res, * : #1;X)) ; #1; rec Y . (demux_ep_b.rdy;^(demux_ep_b.res, * : #1;Y));#1
+       F mux_ep_aw.rdy; mux_ep_aw.req ; #1; rec X . (demux_ep_w.rdy;^(demux_ep_w.req, * : #1;X)) ; #1; rec Y . (demux_ep_b.rdy;^(demux_ep_b.res, * : #1;Y));#1
 
 interface slave_itfc(slv_ep_aw : left slv_ch<aw_ch> , slv_ep_w : left slv_ch<w_pack_t> , slv_ep_b : left slv_res_ch<b_pack_t>) =
         F slv_ep_aw.req;slv_ep_aw.gnt; slv_ep_w.req;slv_ep_w.gnt; slv_ep_b.res;#1
@@ -32,10 +32,10 @@ interface demux_w_main (
         w_fifo_ep.empty,
         b_fifo_ep.full, 
               * : ^(slv_ep.req : #w_fifo_ep.pop ; #b_fifo_ep.push; rec X . ^(
-                                mst_ep1.rdy : (#mst_ep1.res;#slv_ep.gnt)+(#1;X),
-                                mst_ep2.rdy : (#mst_ep2.res;#slv_ep.gnt)+(#1;X),
-                                mst_ep3.rdy : (#mst_ep3.res;#slv_ep.gnt)+(#1;X),
-                                mst_ep4.rdy : (#mst_ep4.res;#slv_ep.gnt)+(#1;X)
+                                mst_ep1.rdy : (#mst_ep1.req;#slv_ep.gnt)+(#1;X),
+                                mst_ep2.rdy : (#mst_ep2.req;#slv_ep.gnt)+(#1;X),
+                                mst_ep3.rdy : (#mst_ep3.req;#slv_ep.gnt)+(#1;X),
+                                mst_ep4.rdy : (#mst_ep4.req;#slv_ep.gnt)+(#1;X)
                             ),
                     *)
     ) ; #1
@@ -150,8 +150,7 @@ chan slv_res_ch<Tp : type> {
 
 chan mast_ch<Tp : type> {
     left rdy : (void@#1),
-    right req : (Tp@#1),
-    right res : (Tp@#1)
+    right req : (Tp@#1)
 }
 
 chan mast_res_ch<Tp : type> {

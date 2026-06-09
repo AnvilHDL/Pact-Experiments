@@ -1,0 +1,276 @@
+import "type_demux_write.anvil"
+
+
+proc demux_aw_main(demux_aw_main){
+    reg cyc : logic[8];
+    loop{
+        let req = recv slv_ep.req >>
+        let sel = req.select >>
+        if (sel == 2'd0){
+            let _ = recv mst_ep1.rdy >>
+            rec X {
+                try _ = recv w_fifo_ep.full {
+                    cycle 1 >>
+                    recurse X
+                }
+                else {
+                    send w_fifo_ep.push(sel) >>
+                    send mst_ep1.req(req.aw_pack) >>
+                    send slv_ep.gnt(())
+                }
+            }
+        }
+        else if (sel == 2'd1){
+            let _ = recv mst_ep2.rdy >>
+            rec X {
+                try _ = recv w_fifo_ep.full {
+                    cycle 1 >>
+                    recurse X
+                }
+                else {
+                    send w_fifo_ep.push(sel) >>
+                    send mst_ep2.req(req.aw_pack) >>
+                    send slv_ep.gnt(())
+                }
+            }
+        }
+        else if (sel == 2'd2){
+            let _ = recv mst_ep3.rdy >>
+            rec X {
+                try _ = recv w_fifo_ep.full {
+                    cycle 1 >>
+                    recurse X
+                }
+                else {
+                    send w_fifo_ep.push(sel) >>
+                    send mst_ep3.req(req.aw_pack) >>
+                    send slv_ep.gnt(())
+                }
+            }
+        }
+        else{
+            let _ = recv mst_ep4.rdy >>
+            rec X {
+                try _ = recv w_fifo_ep.full {
+                    cycle 1 >>
+                    recurse X
+                }
+                else {
+                    send w_fifo_ep.push(sel) >>
+                    send mst_ep4.req(req.aw_pack) >>
+                    send slv_ep.gnt(())
+                }
+            }
+        } >>
+        cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc demux_w_main(demux_w_main){
+    reg cyc : logic[8];
+    loop{
+        offer{
+            _ = recv w_fifo_ep.empty =>(),
+            _ = recv b_fifo_ep.full =>(),
+            # => (
+                try x = recv slv_ep.req {
+                    let wentry = recv w_fifo_ep.pop >>
+                    send b_fifo_ep.push(wentry) >>
+                    rec X  {
+                        xoffer wentry{
+                            _ = recv mst_ep1.rdy => (
+                                if (wentry == 2'd0){
+                                    send mst_ep1.req(x) >>
+                                    send slv_ep.gnt(())
+                                }
+                                else{
+                                    dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd0" (*cyc, wentry) >>
+                                    cycle 1 >>
+                                    recurse X
+                                }
+                            ),
+                            _ = recv mst_ep2.rdy => (
+                                if (wentry == 2'd1){
+                                    send mst_ep2.req(x) >>
+                                    send slv_ep.gnt(())
+                                }
+                                else{
+                                    dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd1" (*cyc, wentry) >>
+                                    cycle 1 >>
+                                    recurse X
+                                }
+                            ),
+                            _ = recv mst_ep3.rdy => (
+                                if (wentry == 2'd2){
+                                    send mst_ep3.req(x) >>
+                                    send slv_ep.gnt(())
+                                }
+                                else{
+                                    dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd2" (*cyc, wentry) >>
+                                    cycle 1 >>
+                                    recurse X
+                                }
+                            ),
+                            _ = recv mst_ep4.rdy => (
+                                if (wentry == 2'd3){
+                                    send mst_ep4.req(x) >>
+                                    send slv_ep.gnt(())
+                                }
+                                else{
+                                    dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd3" (*cyc, wentry) >>
+                                    cycle 1 >>
+                                    recurse X
+                                }
+                            )
+                        }
+                    }
+                } 
+            )
+        } >> 
+        cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc demux_b_main(demux_b_main){
+    loop{
+        try _ = recv b_fifo_ep.empty { () }
+        else{
+            let bentry = recv b_fifo_ep.pop >>
+            rec X {
+                xoffer bentry{
+                    _ = recv mst_ep1.rdy => (
+                        if (bentry == 2'd0){
+                            let b = recv mst_ep1.res >>
+                            send slv_ep.res(b)
+                        }
+                        else{
+                            dprint "Something went wrong! | bentry = %d\n vs id = 2'd0" (bentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    ),
+                    _ = recv mst_ep2.rdy => (
+                        if (bentry == 2'd1){
+                            let b = recv mst_ep2.res >>
+                            send slv_ep.res(b)
+                        }
+                        else{
+                            dprint "Something went wrong! | bentry = %d\n vs id = 2'd1" (bentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    ),
+                    _ = recv mst_ep3.rdy => (
+                        if (bentry == 2'd2){
+                            let b = recv mst_ep3.res >>
+                            send slv_ep.res(b)
+                        }
+                        else{
+                            dprint "Something went wrong! | bentry = %d\n vs id = 2'd2" (bentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    ),
+                    _ = recv mst_ep4.rdy => (
+                        if (bentry == 2'd3){
+                            let b = recv mst_ep4.res >>
+                            send slv_ep.res(b)
+                        }
+                        else{
+                            dprint "Something went wrong! | bentry = %d\n vs id = 2'd3" (bentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    )
+                }
+            }
+        } >>
+        cycle 1
+    }
+
+}
+
+proc master<id : int>(master_itfc){
+    reg mem : byte[256];
+    reg addr : logic[8];
+    reg cyc : logic[8];
+    loop{
+        send mux_ep_aw.rdy(()) >>
+        let aw = recv mux_ep_aw.req >>
+        set addr := aw.addr >>
+        dprint "[Cycle %d] Master %d received aw addr %d\n" (*cyc, id, aw.addr) >>
+        rec X {
+            send demux_ep_w.rdy(()) >>
+            try w = recv demux_ep_w.req {
+                set mem[*addr] := w.data >>
+                dprint "[Cycle %d] Master %d received w data %d\n" (*cyc, id, w.data)
+            }
+            else{
+                cycle 1 >>
+                recurse X
+            }
+        } >>
+        send demux_ep_b.rdy(()) >>
+        send demux_ep_b.res(b_pack_t::{resp = 1'b1}) >>
+        dprint "[Cycle %d] Master %d sent b response\n" (*cyc, id) >>
+        cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc slave(slave_itfc){
+    reg cyc : logic[8];
+    reg addr : logic[8];
+    reg sel : logic[2];
+    loop{
+        let curr_addr = *addr >>
+        let curr_sel = *sel >>
+        let aw = aw_pack_t::{addr = curr_addr; prot = 1'b0} >>
+        let req = aw_ch::{aw_pack = aw; select = curr_sel} >>
+        send slv_ep_aw.req(req) >>
+        dprint "[Cycle %d] Slave write aw addr %d selected master %d\n" (*cyc, aw.addr, req.select) >>
+        let _ = recv slv_ep_aw.gnt >>
+        let w = w_pack_t::{data = *cyc; strb = 1'b0} >>
+        send slv_ep_w.req(w) >>
+        let _ = recv slv_ep_w.gnt >>
+        dprint "[Cycle %d] Slave write data %d granted\n" (*cyc, w.data) >>
+        let b = recv slv_ep_b.res >>
+        dprint "[Cycle %d] Slave received b response %d\n" (*cyc, b.resp) >>
+        (
+        set addr := *addr + 8'd1;
+        set sel := *sel + 2'd1
+        )
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc test_demux_write(){
+
+    pool p : axi_type_demux_write_pool;
+
+    spawn slave[p.i1];
+    spawn master<1>[p.i2];
+    spawn master<2>[p.i3];
+    spawn master<3>[p.i4];
+    spawn master<4>[p.i5];
+    spawn demux_aw_main[p.i6];
+    spawn demux_w_main[p.i7];
+    spawn demux_b_main[p.i8];
+    spawn fifo<select_t>[p.i9];
+    spawn fifo<select_t>[p.i10];
+
+    loop{
+        cycle 30 >>
+        dfinish
+    }
+}
