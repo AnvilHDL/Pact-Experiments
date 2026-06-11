@@ -1,7 +1,7 @@
 import "type_mux_read_simplified.anvil"
 
 
-proc arbiter<T : type, T1 : type> (rr_arbiter_itfc){
+proc arbiter<T : type, T1 : type> (r_rr_arbiter_itfc){
     reg prio : logic[2];
     loop{
         let prio = *prio >>
@@ -121,7 +121,7 @@ proc mux_r_main(mux_r_main){
     }
 }
 
-proc master(master_itfc){
+proc master_read(master_read_itfc){
     reg mem : byte[256];
     reg addr : logic[8];
     reg cyc : logic[8];
@@ -145,7 +145,7 @@ proc master(master_itfc){
     }
 }
 
-proc slave<id : int>(slave_itfc){
+proc slave_read<id : int>(slave_read_itfc){
     reg cyc : logic[8];
     reg state : logic[8];
     loop{
@@ -177,11 +177,11 @@ proc test_mux_read(){
 
     pool p : mux_read_transaction_pool;
 
-    spawn slave<1>[p.islv1];
-    spawn slave<2>[p.islv2];
-    spawn slave<3>[p.islv3];
-    spawn slave<4>[p.islv4];
-    spawn master[p.imst];
+    spawn slave_read<1>[p.islv1];
+    spawn slave_read<2>[p.islv2];
+    spawn slave_read<3>[p.islv3];
+    spawn slave_read<4>[p.islv4];
+    spawn master_read[p.imst];
     spawn arbiter<ar_pack_t, ar_sel_pack_t>[p.iarb];
     spawn mux_ar_main[p.imux_ar];
     spawn mux_r_main[p.imux_r];

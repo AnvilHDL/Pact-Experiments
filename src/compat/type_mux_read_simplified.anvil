@@ -1,12 +1,12 @@
 import "mux_commons.anvilh"
 
 
-interface master_itfc(mst_ep_ar : right mst_ch<ar_pack_t>, mst_ep_r : left mst_r_ch<r_pack_t>) = F mst_ep_ar.rdy;mst_ep_ar.req ;#1;mst_ep_r.rdy;mst_ep_r.res;#1
+interface master_read_itfc(mst_ep_ar : right r_mst_ch<ar_pack_t>, mst_ep_r : left mst_r_ch<r_pack_t>) = F mst_ep_ar.rdy;mst_ep_ar.req ;#1;mst_ep_r.rdy;mst_ep_r.res;#1
 
-interface slave_itfc(read_req_ep :left slv_ch<ar_pack_t>, read_res_ep : left slv_r_ch<r_pack_t>) =
+interface slave_read_itfc(read_req_ep :left r_slv_ch<ar_pack_t>, read_res_ep : left slv_r_ch<r_pack_t>) =
             F read_req_ep.req ; read_req_ep.gnt;rec X . (read_res_ep.rdy ; ^(read_res_ep.res,*:#1;X)); #1
 
-interface rr_arbiter_itfc(slv_ep1 : right slv_ch<ar_pack_t>, slv_ep2 : right slv_ch<ar_pack_t>,slv_ep3 : right slv_ch<ar_pack_t>, slv_ep4 : right slv_ch<ar_pack_t>, ar_req_ep : left mux_ch<ar_sel_pack_t>) =
+interface r_rr_arbiter_itfc(slv_ep1 : right r_slv_ch<ar_pack_t>, slv_ep2 : right r_slv_ch<ar_pack_t>,slv_ep3 : right r_slv_ch<ar_pack_t>, slv_ep4 : right r_slv_ch<ar_pack_t>, ar_req_ep : left r_mux_ch<ar_sel_pack_t>) =
 
 ^( 
    slv_ep1.req : ar_req_ep.req;ar_req_ep.gnt;#slv_ep1.gnt,
@@ -18,8 +18,8 @@ interface rr_arbiter_itfc(slv_ep1 : right slv_ch<ar_pack_t>, slv_ep2 : right slv
 
 
 interface mux_ar_main (
-    ar_req_ep : right mux_ch<ar_sel_pack_t>,
-    ar_mst_ep : left mst_ch <ar_pack_t>,
+    ar_req_ep : right r_mux_ch<ar_sel_pack_t>,
+    ar_mst_ep : left r_mst_ch <ar_pack_t>,
     fifo_ep : left fifo_insert_ch<select_t>
 ) = ar_req_ep.req ; ar_mst_ep.rdy ; rec X . ^(fifo_ep.full: #1;X, * : #fifo_ep.push;#ar_mst_ep.req;#ar_req_ep.gnt); #1
 
@@ -43,33 +43,33 @@ interface mux_r_main (
 ); #1
 
 pool mux_read_transaction_pool {
-    slv_ep1 -- arb_ep1 : slv_ch<ar_pack_t>,
-    slv_ep2 -- arb_ep2 : slv_ch<ar_pack_t>,
-    slv_ep3 -- arb_ep3 : slv_ch<ar_pack_t>,
-    slv_ep4 -- arb_ep4 : slv_ch<ar_pack_t>,
+    slv_ep1 -- arb_ep1 : r_slv_ch<ar_pack_t>,
+    slv_ep2 -- arb_ep2 : r_slv_ch<ar_pack_t>,
+    slv_ep3 -- arb_ep3 : r_slv_ch<ar_pack_t>,
+    slv_ep4 -- arb_ep4 : r_slv_ch<ar_pack_t>,
     slv_res_ep1 -- mux_res_ep1 : slv_r_ch<r_pack_t>,
     slv_res_ep2 -- mux_res_ep2 : slv_r_ch<r_pack_t>,
     slv_res_ep3 -- mux_res_ep3 : slv_r_ch<r_pack_t>,
     slv_res_ep4 -- mux_res_ep4 : slv_r_ch<r_pack_t>,
 
-    ar_req_ep -- mux_ar_req_ep : mux_ch<ar_sel_pack_t>,
+    ar_req_ep -- mux_ar_req_ep : r_mux_ch<ar_sel_pack_t>,
 
-    mux_ep_ar -- mst_ep_ar : mst_ch<ar_pack_t>,
+    mux_ep_ar -- mst_ep_ar : r_mst_ch<ar_pack_t>,
     mst_ep_r -- mux_ep_r : mst_r_ch<r_pack_t>,
 
 
     fifo_push_ep -- fifo_push_ep_ri : fifo_insert_ch<select_t>,
     fifo_pop_ep -- fifo_pop_ep_ri : fifo_dequeue_ch<select_t>;
 
-    islv1 : slave_itfc(slv_ep1, slv_res_ep1),
-    islv2 : slave_itfc(slv_ep2, slv_res_ep2),
-    islv3 : slave_itfc(slv_ep3, slv_res_ep3),
-    islv4 : slave_itfc(slv_ep4, slv_res_ep4),
+    islv1 : slave_read_itfc(slv_ep1, slv_res_ep1),
+    islv2 : slave_read_itfc(slv_ep2, slv_res_ep2),
+    islv3 : slave_read_itfc(slv_ep3, slv_res_ep3),
+    islv4 : slave_read_itfc(slv_ep4, slv_res_ep4),
     
 
-    iarb : rr_arbiter_itfc(arb_ep1, arb_ep2, arb_ep3, arb_ep4, ar_req_ep),
+    iarb : r_rr_arbiter_itfc(arb_ep1, arb_ep2, arb_ep3, arb_ep4, ar_req_ep),
     
-    imst : master_itfc(mst_ep_ar, mst_ep_r),
+    imst : master_read_itfc(mst_ep_ar, mst_ep_r),
     imux_ar : mux_ar_main(mux_ar_req_ep, mux_ep_ar,  fifo_push_ep),
     imux_r : mux_r_main(mux_ep_r, fifo_pop_ep, mux_res_ep1, mux_res_ep2, mux_res_ep3, mux_res_ep4),
     ififo : fifo_itfc(fifo_push_ep_ri, fifo_pop_ep_ri)    
@@ -109,17 +109,17 @@ struct ar_sel_pack_t {
     select : select_t
 }
 
-chan slv_ch<Tp : type> {
+chan r_slv_ch<Tp : type> {
     right req : (Tp@#1),
     left gnt : (void@#1)
 }
 
-chan mux_ch<Tp : type> {
+chan r_mux_ch<Tp : type> {
     right req : (Tp@#1),
     left gnt : (void@#1)
 }
 
-chan mst_ch<Tp : type> {
+chan r_mst_ch<Tp : type> {
     left rdy : (void@#1),
     right req : (Tp@#1)
 }

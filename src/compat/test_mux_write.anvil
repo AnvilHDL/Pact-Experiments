@@ -1,6 +1,6 @@
 import "type_mux_4p_write.anvil"
 
-proc arbiter<T : type, T1 : type> (rr_arbiter_itfc){
+proc arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
     reg prio : logic[2];
     loop{
         let prio = *prio >>
@@ -188,7 +188,7 @@ proc mux_b_main(mux_b_main){
 
 }
 
-proc master(master_itfc){
+proc master_write(master_write_itfc){
     reg mem : byte[256];
     reg addr : logic[8];
     reg cyc : logic[8];
@@ -215,7 +215,7 @@ proc master(master_itfc){
 }
     
 
-proc slave<id : int>(slave_itfc){
+proc slave_write<id : int>(slave_write_itfc){
     reg cyc : logic[8];
     reg counter : logic[8];
     reg last_counter : logic[8];
@@ -259,12 +259,11 @@ proc slave<id : int>(slave_itfc){
 proc test_mux_write(){
 
     pool p : mux_write_transaction_pool;
-
-    spawn slave<1>[p.islv1];
-    spawn slave<2>[p.islv2];
-    spawn slave<3>[p.islv3];
-    spawn slave<4>[p.islv4];
-    spawn master[p.imst];
+    spawn slave_write<1>[p.islv1];
+    spawn slave_write<2>[p.islv2];
+    spawn slave_write<3>[p.islv3];
+    spawn slave_write<4>[p.islv4];
+    spawn master_write[p.imst];
     spawn arbiter<aw_pack_t, aw_sel_pack_t>[p.iarb];
     spawn mux_aw_main[p.iaw];
     spawn mux_w_main[p.iw];

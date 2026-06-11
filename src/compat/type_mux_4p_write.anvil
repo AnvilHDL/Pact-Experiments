@@ -1,12 +1,12 @@
 import "mux_commons.anvilh"
 
 
-interface master_itfc(mst_ep_aw : right mst_ch<aw_pack_t>, mst_ep_w : right mst_ch<w_pack_t>, mst_ep_b : left mst_res_ch<b_pack_t>) = F mst_ep_aw.rdy ; mst_ep_aw.req ; #1; mst_ep_w.rdy ; mst_ep_w.req;#1;mst_ep_b.rdy;mst_ep_b.res;#1
+interface master_write_itfc(mst_ep_aw : right w_mst_ch<aw_pack_t>, mst_ep_w : right w_mst_ch<w_pack_t>, mst_ep_b : left mst_res_ch<b_pack_t>) = F mst_ep_aw.rdy ; mst_ep_aw.req ; #1; mst_ep_w.rdy ; mst_ep_w.req;#1;mst_ep_b.rdy;mst_ep_b.res;#1
 
-interface slave_itfc(write_req_ep : left slv_ch<aw_pack_t>, write_data_ep : left slv_w_ch<w_pack_t>, write_res_ep  : left slv_res_ch<b_pack_t>) =
+interface slave_write_itfc(write_req_ep : left w_slv_ch<aw_pack_t>, write_data_ep : left slv_w_ch<w_pack_t>, write_res_ep  : left slv_res_ch<b_pack_t>) =
             F write_req_ep.req ; write_req_ep.gnt; rec X . (write_data_ep.rdy; ^(write_data_ep.data, * : #1; X) ); rec Y . (write_res_ep.rdy; ^(write_res_ep.res, * : #1; Y)); #1
 
-interface rr_arbiter_itfc(slv_ep1 : right slv_ch<T>, slv_ep2 : right slv_ch<T>, slv_ep3 : right slv_ch<T>, slv_ep4 : right slv_ch<T>, aw_req_ep : left mux_ch<T1>) =
+interface w_rr_arbiter_itfc(slv_ep1 : right w_slv_ch<T>, slv_ep2 : right w_slv_ch<T>, slv_ep3 : right w_slv_ch<T>, slv_ep4 : right w_slv_ch<T>, aw_req_ep : left w_mux_ch<T1>) =
 ^( 
    slv_ep1.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep1.gnt,
    slv_ep2.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep2.gnt,
@@ -16,8 +16,8 @@ interface rr_arbiter_itfc(slv_ep1 : right slv_ch<T>, slv_ep2 : right slv_ch<T>, 
 ) ; #1
 
 interface mux_aw_main (
-    aw_req_ep : right mux_ch<aw_sel_pack_t>,
-    aw_mst_ep : left mst_ch <aw_pack_t>,
+    aw_req_ep : right w_mux_ch<aw_sel_pack_t>,
+    aw_mst_ep : left w_mst_ch <aw_pack_t>,
     fifo_ep : left fifo_insert_ch<select_t>
 ) = aw_req_ep.req;aw_mst_ep.rdy ; rec X . ^(fifo_ep.full: #1;X, * : #fifo_ep.push;#aw_mst_ep.req;#aw_req_ep.gnt);#1
 
@@ -28,7 +28,7 @@ interface mux_w_main (
     slv_ep4 : right slv_w_ch<w_pack_t>,
     w_fifo_ep : left fifo_dequeue_ch<select_t>,
     b_fifo_ep : left fifo_insert_ch<select_t>,
-    w_mst_ep : left mst_ch<w_pack_t>
+    w_mst_ep : left w_mst_ch<w_pack_t>
 ) =&(
         w_fifo_ep.empty,
         b_fifo_ep.full,
@@ -64,40 +64,40 @@ interface mux_b_main (
                             
                                             
 pool mux_write_transaction_pool {
-    slv_ep1 -- arb_ep1 : slv_ch<aw_pack_t>,
-    slv_ep2 -- arb_ep2 : slv_ch<aw_pack_t>,
-    slv_ep3 -- arb_ep3 : slv_ch<aw_pack_t>,
-    slv_ep4 -- arb_ep4 : slv_ch<aw_pack_t>,
-    slv_data_ep1 -- mux_data_ep1 : slv_w_ch<w_pack_t>,
-    slv_data_ep2 -- mux_data_ep2 : slv_w_ch<w_pack_t>,
-    slv_data_ep3 -- mux_data_ep3 : slv_w_ch<w_pack_t>,
-    slv_data_ep4 -- mux_data_ep4 : slv_w_ch<w_pack_t>,
-    slv_res_ep1 -- mux_res_ep1 : slv_res_ch<b_pack_t>,
-    slv_res_ep2 -- mux_res_ep2 : slv_res_ch<b_pack_t>,
-    slv_res_ep3 -- mux_res_ep3 : slv_res_ch<b_pack_t>,
-    slv_res_ep4 -- mux_res_ep4 : slv_res_ch<b_pack_t>,
+    w_slv_ep1 -- w_arb_ep1 : w_slv_ch<aw_pack_t>,
+    w_slv_ep2 -- w_arb_ep2 : w_slv_ch<aw_pack_t>,
+    w_slv_ep3 -- w_arb_ep3 : w_slv_ch<aw_pack_t>,
+    w_slv_ep4 -- w_arb_ep4 : w_slv_ch<aw_pack_t>,
+    w_slv_data_ep1 -- w_mux_data_ep1 : slv_w_ch<w_pack_t>,
+    w_slv_data_ep2 -- w_mux_data_ep2 : slv_w_ch<w_pack_t>,
+    w_slv_data_ep3 -- w_mux_data_ep3 : slv_w_ch<w_pack_t>,
+    w_slv_data_ep4 -- w_mux_data_ep4 : slv_w_ch<w_pack_t>,
+    w_slv_res_ep1 -- w_mux_res_ep1 : slv_res_ch<b_pack_t>,
+    w_slv_res_ep2 -- w_mux_res_ep2 : slv_res_ch<b_pack_t>,
+    w_slv_res_ep3 -- w_mux_res_ep3 : slv_res_ch<b_pack_t>,
+    w_slv_res_ep4 -- w_mux_res_ep4 : slv_res_ch<b_pack_t>,
     
     // master interfaces
-    mux_ep_aw -- mst_ep_aw : mst_ch<aw_pack_t>,
-    mux_ep_w -- mst_ep_w : mst_ch<w_pack_t>,
-    mst_ep_b -- mux_ep_b   : mst_res_ch<b_pack_t>,
+    w_mux_ep_aw -- w_mst_ep_aw : w_mst_ch<aw_pack_t>,
+    w_mux_ep_w -- w_mst_ep_w : w_mst_ch<w_pack_t>,
+    w_mst_ep_b -- w_mux_ep_b   : mst_res_ch<b_pack_t>,
 
-    aw_req_ep -- mux_aw_req_ep : mux_ch<aw_sel_pack_t>,
+    w_aw_req_ep -- w_mux_aw_req_ep : w_mux_ch<aw_sel_pack_t>,
 
     w_fifo_push -- w_fifo_push_ri : fifo_insert_ch<select_t>,
     w_fifo_pop -- w_fifo_pop_ri : fifo_dequeue_ch<select_t>,
     b_fifo_push -- b_fifo_push_ri : fifo_insert_ch<select_t>,
     b_fifo_pop -- b_fifo_pop_ri : fifo_dequeue_ch<select_t>;
 
-    islv1 : slave_itfc(slv_ep1, slv_data_ep1, slv_res_ep1),
-    islv2 : slave_itfc(slv_ep2, slv_data_ep2, slv_res_ep2),
-    islv3 : slave_itfc(slv_ep3, slv_data_ep3, slv_res_ep3),
-    islv4 : slave_itfc(slv_ep4, slv_data_ep4, slv_res_ep4),
-    imst : master_itfc(mst_ep_aw, mst_ep_w, mst_ep_b),
-    iarb : rr_arbiter_itfc(arb_ep1, arb_ep2, arb_ep3, arb_ep4, aw_req_ep),
-    iaw : mux_aw_main(mux_aw_req_ep, mux_ep_aw, w_fifo_push),
-    iw : mux_w_main(mux_data_ep1, mux_data_ep2, mux_data_ep3, mux_data_ep4, w_fifo_pop, b_fifo_push, mux_ep_w),
-    ib : mux_b_main(b_fifo_pop, mux_ep_b, mux_res_ep1, mux_res_ep2, mux_res_ep3, mux_res_ep4),
+    islv1 : slave_write_itfc(w_slv_ep1, w_slv_data_ep1, w_slv_res_ep1),
+    islv2 : slave_write_itfc(w_slv_ep2, w_slv_data_ep2, w_slv_res_ep2),
+    islv3 : slave_write_itfc(w_slv_ep3, w_slv_data_ep3, w_slv_res_ep3),
+    islv4 : slave_write_itfc(w_slv_ep4, w_slv_data_ep4, w_slv_res_ep4),
+    imst : master_write_itfc(w_mst_ep_aw, w_mst_ep_w, w_mst_ep_b),
+    iarb : w_rr_arbiter_itfc(w_arb_ep1, w_arb_ep2, w_arb_ep3, w_arb_ep4, w_aw_req_ep),
+    iaw : mux_aw_main(w_mux_aw_req_ep, w_mux_ep_aw, w_fifo_push),
+    iw : mux_w_main(w_mux_data_ep1, w_mux_data_ep2, w_mux_data_ep3, w_mux_data_ep4, w_fifo_pop, b_fifo_push, w_mux_ep_w),
+    ib : mux_b_main(b_fifo_pop, w_mux_ep_b, w_mux_res_ep1, w_mux_res_ep2, w_mux_res_ep3, w_mux_res_ep4),
     iwf : fifo_itfc(w_fifo_push_ri, w_fifo_pop_ri),
     ibf : fifo_itfc(b_fifo_push_ri, b_fifo_pop_ri)
 }
@@ -161,11 +161,11 @@ struct aw_sel_pack_t {
 }
 
 
-chan slv_ch<Tp : type> {
+chan w_slv_ch<Tp : type> {
     right req : (Tp@#1),
     left gnt : (void@#1)
 }
-chan mux_ch<Tp : type> {
+chan w_mux_ch<Tp : type> {
     right req : (Tp@#1),
     left gnt : (void@#1)
 }
@@ -175,7 +175,7 @@ chan slv_w_ch<Tp : type> {
     right data : (Tp@#1)
 }
 
-chan mst_ch<Tp : type> {
+chan w_mst_ch<Tp : type> {
     left rdy : (void@#1),
     right req : (Tp@#1)
 }
