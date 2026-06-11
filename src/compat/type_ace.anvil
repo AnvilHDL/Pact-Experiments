@@ -7,10 +7,10 @@ pool cache_coherence_pool {
     cs_ep_3 -- cs_ep_3_ri : snoop_ch,
     cs_ep_4 -- cs_ep_4_ri : snoop_ch,
     mem_ep -- mem_ep_ri : mem_ch,
-    cache_ep1 -- cache_ep1_ri : cache_ch,
-    cache_ep2 -- cache_ep2_ri : cache_ch,
-    cache_ep3 -- cache_ep3_ri : cache_ch,
-    cache_ep4 -- cache_ep4_ri : cache_ch;
+    cache_ep1 -- cache_ep1_ri : cache_req_ch,
+    cache_ep2 -- cache_ep2_ri : cache_req_ch,
+    cache_ep3 -- cache_ep3_ri : cache_req_ch,
+    cache_ep4 -- cache_ep4_ri : cache_req_ch;
 
 
 
@@ -27,7 +27,7 @@ pool cache_coherence_pool {
     ic2 :   client_itfc(cache_ep2),
     ic3 :   client_itfc(cache_ep3),
     ic4 :   client_itfc(cache_ep4),
-    
+
     imem :  mem_itfc(mem_ep_ri)
 }
 
@@ -39,10 +39,10 @@ interface arb_itfc(cache_ep1 : right cache_req_ch,
                     req_ep : left main_req_ch) =
 
                     req_ep.rdy; ^(
-                       cache_ep1.req : ((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep1.res,
-                       cache_ep2.req : ((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep2.res,
-                       cache_ep3.req : ((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep3.res,
-                       cache_ep4.req : ((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep4.res
+                       cache_ep1.req : #1;((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep1.res,
+                       cache_ep2.req : #1;((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep2.res,
+                       cache_ep3.req : #1;((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep3.res,
+                       cache_ep4.req : #1;((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep4.res
                     ); #1
 
 interface snoop_itfc(cs_ep : left snoop_ch) = ^(
@@ -96,3 +96,49 @@ interface ace_itfc(
                                 )
                             );#1
         )
+
+
+struct req_pack_t {
+    addr : byte,
+    data : byte,
+    is_write : logic,
+    is_atom : logic
+}
+struct res_pack_t {
+    data : byte,
+    ack : logic
+}
+    
+chan cache_req_ch{
+    right req : (req_pack_t@#1),
+    left res : (res_pack_t@#1)
+}
+
+
+chan main_req_ch{
+    left rdy : (void@#1),
+    right ar_req : (byte@#1),
+    right aw_req : (byte@#1),
+    right w_data : (byte@#1),
+    left r_res : (byte@#1),
+    left invalid_res : (void@#1)
+}
+
+chan snoop_ch{
+    left read_req : (byte@#1),
+    right read_res : (logic@#1),
+    left snoop_invalidate : (void@#1),
+    right snoop_invalidate_res : (logic@#1),
+    right snoop_data : (byte@#1)
+}
+
+chan mem_ch{
+    right aw_req : (byte@#1),
+    right w_req : (byte@#1),
+    left b_res : (void@#1),
+    right ar_req : (byte@#1),
+    left r_res : (byte@#1)
+}
+
+
+type byte = logic[8];

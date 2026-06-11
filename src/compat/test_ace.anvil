@@ -1,1 +1,155 @@
-proc
+import "type_ace.anvil"
+
+proc arbiter(arb_itfc){
+    reg prio : logic[2];
+    reg req : req_pack_t;
+
+    loop{
+        let prio = *prio >>
+        let _ = recv req_ep.rdy >>
+        xoffer prio{
+            x = recv cache_ep1.req => (
+                set req := x >>
+                let res = if (*req.is_write) {
+                    send req_ep.aw_req(*req.addr) >>
+                    send req_ep.w_data(*req.data) >>
+                    let res = xoffer{
+                        y = recv req_ep.invalid_res => (
+                            res_pack_t::{data = 8'd0; ack = 1'b1}
+                        ),
+                        y = recv req_ep.r_res => (
+                            if (~(*req.is_atom)){
+                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
+                            } >>
+                            res_pack_t::{data = y; ack = 1'b0}
+                        )
+                    } >>
+                    res
+                }
+                else{
+                    send req_ep.ar_req(*req.addr) >>
+                    let res = xoffer{
+                        y = recv req_ep.invalid_res => (
+                            res_pack_t::{data = 8'd0; ack = 1'b1}
+                        ),
+                        y = recv req_ep.r_res => (
+                            if (*req.is_atom){
+                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
+                            } >>
+                            res_pack_t::{data = y; ack = 1'b0}
+                        )
+                    } >>
+                    res
+                } >>
+                send cache_ep1.res(res)
+            ),
+            x = recv cache_ep2.req => (
+                set req := x >>
+                let res =  if (x.is_write) {
+                    send req_ep.aw_req(x.addr) >>
+                    send req_ep.w_data(x.data) >>
+                    let res = xoffer{
+                        y = recv req_ep.invalid_res => (
+                            res_pack_t::{data = 8'd0; ack = 1'b1}
+                        ),
+                        y = recv req_ep.r_res => (
+                            if (~(*req.is_atom)){
+                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
+                            } >>
+                            res_pack_t::{data = 8'd0; ack = 1'b0}
+                        )
+                    } >>
+                    res
+                }
+                else{
+                    send req_ep.ar_req(*req.addr) >>
+                    let res = xoffer{
+                        y = recv req_ep.invalid_res => (
+                            res_pack_t::{data = 8'd0; ack = 1'b1}
+                        ),
+                        y = recv req_ep.r_res => (
+                            if (*req.is_atom){
+                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
+                            } >>
+                            res_pack_t::{data = y; ack = 1'b0}
+                        )
+
+                    } >>
+                    res
+                } >>
+                send cache_ep2.res(res)
+            ),
+            x = recv cache_ep3.req => (
+                set req := x >>
+                let res =  if (*req.is_write) {
+                    send req_ep.aw_req(*req.addr) >>
+                    send req_ep.w_data(*req.data) >>
+                    let res = xoffer{
+                        y = recv req_ep.invalid_res => (
+                            res_pack_t::{data = 8'd0; ack = 1'b1}
+                        ),
+                        y = recv req_ep.r_res => (
+                            if (~(*req.is_atom)){
+                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
+                            } >>
+                            res_pack_t::{data = y; ack = 1'b0}
+                        )
+                    } >>
+                    res
+                }
+                else{
+                    send req_ep.ar_req(*req.addr) >>
+                    let res = xoffer{
+                        y = recv req_ep.invalid_res => (
+                            res_pack_t::{data = 8'd0; ack = 1'b1}
+                        ),
+                        y = recv req_ep.r_res => (
+                            if (*req.is_atom){
+                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
+                            } >>
+                            res_pack_t::{data = y; ack = 1'b0}
+                        )
+                    } >>
+                    res
+                } >>
+                send cache_ep3.res(res)
+            ),
+            x = recv cache_ep4.req => (
+                set req := x >>
+                let res =  if (*req.is_write) {
+                    send req_ep.aw_req(*req.addr) >>
+                    send req_ep.w_data(*req.data) >>
+                    let res = xoffer{
+                        y = recv req_ep.invalid_res => (
+                            res_pack_t::{data = 8'd0; ack = 1'b1}
+                        ),
+                        y = recv req_ep.r_res => (
+                            if (~(*req.is_atom)){
+                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
+                            } >>
+                            res_pack_t::{data = y; ack = 1'b0}
+                        )
+                    } >>
+                    res
+                }
+                else{
+                    send req_ep.ar_req(*req.addr)  >>
+                    let res = xoffer{
+                        y = recv req_ep.invalid_res => (
+                            res_pack_t::{data = 8'd0; ack = 1'b1}
+                        ),
+                        y = recv req_ep.r_res => (
+                            if (*req.is_atom){
+                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
+                            } >>
+                            res_pack_t::{data = y; ack = 1'b0}
+                        )
+                    } >>
+                    res 
+                } >>
+                send cache_ep4.res(res)
+            )
+        } >>
+        cycle 1
+    }
+}
