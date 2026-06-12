@@ -341,8 +341,7 @@ proc cache_client<id : int>(client_itfc, snoop_itfc){
     loop{
         let aid = id[0+:8] >>
         let sid = id[0+:2] >>
-        cycle 1 >>
-        cycle 1 >>
+        cycle 2 >>
         let addr0 = *addr_base + aid >>
         let line0 = addr0[0+:4] >>
         let read_shared = req_pack_t::{src = sid; addr = addr0; data = 8'd0; is_write = 1'b0; is_atom = 1'b0; clean = 1'b0; is_unique = 1'b0; no_snoop = 1'b0} >>
@@ -358,9 +357,7 @@ proc cache_client<id : int>(client_itfc, snoop_itfc){
             dprint "[Cycle %d] Client %d read-shared data %d addr %d\n" (*cyc, id, res0.data, addr0)
         } >>
         set addr_base := *addr_base + 8'd1 >>
-
-        cycle 1 >>
-        cycle 1 >>
+        cycle 2 >>
         let addr1 = *addr_base + aid >>
         let line1 = addr1[0+:4] >>
         let read_unique = req_pack_t::{src = sid; addr = addr1; data = 8'd0; is_write = 1'b0; is_atom = 1'b0; clean = 1'b0; is_unique = 1'b1; no_snoop = 1'b0} >>
@@ -376,11 +373,7 @@ proc cache_client<id : int>(client_itfc, snoop_itfc){
             dprint "[Cycle %d] Client %d read-unique data %d addr %d\n" (*cyc, id, res1.data, addr1)
         } >>
         set addr_base := *addr_base + 8'd1 >>
-
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
+        cycle 4 >>
         let addr2 = *addr_base + aid >>
         let line2 = addr2[0+:4] >>
         let clean_unique = req_pack_t::{src = sid; addr = addr2; data = 8'd0; is_write = 1'b0; is_atom = 1'b0; clean = 1'b1; is_unique = 1'b1; no_snoop = 1'b0} >>
@@ -397,15 +390,7 @@ proc cache_client<id : int>(client_itfc, snoop_itfc){
         } >>
         set addr_base := *addr_base + 8'd1 >>
 
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
+        cycle 8 >>
 
 
 
@@ -426,25 +411,7 @@ proc cache_client<id : int>(client_itfc, snoop_itfc){
             set state[line3] := state_t::{valid = 1'b1; dirty = 1'b1; shd = 1'b0}
         } >>
         set addr_base := *addr_base + 8'd1 >>
-
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-
-
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
+        cycle 16 >>
 
         let addr4 = *addr_base + aid >>
         let line4 = addr4[0+:4] >>
