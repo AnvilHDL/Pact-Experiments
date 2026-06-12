@@ -1,155 +1,521 @@
 import "type_ace.anvil"
 
+struct state_t{
+    valid : logic,
+    dirty : logic,
+    shd : logic
+}
+
 proc arbiter(arb_itfc){
     reg prio : logic[2];
-    reg req : req_pack_t;
 
     loop{
-        let prio = *prio >>
         let _ = recv req_ep.rdy >>
-        xoffer prio{
-            x = recv cache_ep1.req => (
-                set req := x >>
-                let res = if (*req.is_write) {
-                    send req_ep.aw_req(*req.addr) >>
-                    send req_ep.w_data(*req.data) >>
-                    let res = xoffer{
-                        y = recv req_ep.invalid_res => (
-                            res_pack_t::{data = 8'd0; ack = 1'b1}
-                        ),
-                        y = recv req_ep.r_res => (
-                            if (~(*req.is_atom)){
-                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
-                            } >>
-                            res_pack_t::{data = y; ack = 1'b0}
-                        )
-                    } >>
-                    res
+        let cur_prio = *prio >>
+        xoffer cur_prio{
+            req = recv cache_ep1.req => (
+                cycle 1 >>
+                if (req.is_write){
+                    send req_ep.aw_req(req) >>
+                    send req_ep.w_data(req.data)
                 }
                 else{
-                    send req_ep.ar_req(*req.addr) >>
-                    let res = xoffer{
-                        y = recv req_ep.invalid_res => (
-                            res_pack_t::{data = 8'd0; ack = 1'b1}
-                        ),
-                        y = recv req_ep.r_res => (
-                            if (*req.is_atom){
-                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
-                            } >>
-                            res_pack_t::{data = y; ack = 1'b0}
-                        )
-                    } >>
-                    res
+                    send req_ep.ar_req(req)
                 } >>
-                send cache_ep1.res(res)
+                let res = xoffer{
+                    _ = recv req_ep.invalid_res => (
+                        res_pack_t::{data = 8'd0; ack = 1'b1}
+                    ),
+                    data = recv req_ep.r_res => (
+                        res_pack_t::{data = data; ack = 1'b0}
+                    )
+                } >>
+                send cache_ep1.res(res) >>
+                set prio := 2'd1
             ),
-            x = recv cache_ep2.req => (
-                set req := x >>
-                let res =  if (x.is_write) {
-                    send req_ep.aw_req(x.addr) >>
-                    send req_ep.w_data(x.data) >>
-                    let res = xoffer{
-                        y = recv req_ep.invalid_res => (
-                            res_pack_t::{data = 8'd0; ack = 1'b1}
-                        ),
-                        y = recv req_ep.r_res => (
-                            if (~(*req.is_atom)){
-                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
-                            } >>
-                            res_pack_t::{data = 8'd0; ack = 1'b0}
-                        )
-                    } >>
-                    res
+            req = recv cache_ep2.req => (
+                cycle 1 >>
+                if (req.is_write){
+                    send req_ep.aw_req(req) >>
+                    send req_ep.w_data(req.data)
                 }
                 else{
-                    send req_ep.ar_req(*req.addr) >>
-                    let res = xoffer{
-                        y = recv req_ep.invalid_res => (
-                            res_pack_t::{data = 8'd0; ack = 1'b1}
-                        ),
-                        y = recv req_ep.r_res => (
-                            if (*req.is_atom){
-                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
-                            } >>
-                            res_pack_t::{data = y; ack = 1'b0}
-                        )
+                    send req_ep.ar_req(req)
+                } >>
+                let res = xoffer{
+                    _ = recv req_ep.invalid_res => (
+                        res_pack_t::{data = 8'd0; ack = 1'b1}
+                    ),
+                    data = recv req_ep.r_res => (
+                        res_pack_t::{data = data; ack = 1'b0}
+                    )
+                } >>
+                send cache_ep2.res(res) >>
+                set prio := 2'd2
+            ),
+            req = recv cache_ep3.req => (
+                cycle 1 >>
+                if (req.is_write){
+                    send req_ep.aw_req(req) >>
+                    send req_ep.w_data(req.data)
+                }
+                else{
+                    send req_ep.ar_req(req)
+                } >>
+                let res = xoffer{
+                    _ = recv req_ep.invalid_res => (
+                        res_pack_t::{data = 8'd0; ack = 1'b1}
+                    ),
+                    data = recv req_ep.r_res => (
+                        res_pack_t::{data = data; ack = 1'b0}
+                    )
+                } >>
+                send cache_ep3.res(res) >>
+                set prio := 2'd3
+            ),
+            req = recv cache_ep4.req => (
+                cycle 1 >>
+                if (req.is_write){
+                    send req_ep.aw_req(req) >>
+                    send req_ep.w_data(req.data)
+                }
+                else{
+                    send req_ep.ar_req(req)
+                } >>
+                let res = xoffer{
+                    _ = recv req_ep.invalid_res => (
+                        res_pack_t::{data = 8'd0; ack = 1'b1}
+                    ),
+                    data = recv req_ep.r_res => (
+                        res_pack_t::{data = data; ack = 1'b0}
+                    )
+                } >>
+                send cache_ep4.res(res) >>
+                set prio := 2'd0
+            )
+        }
+    }
+}
 
-                    } >>
-                    res
-                } >>
-                send cache_ep2.res(res)
+proc mem_controller(mem_itfc){
+    reg mem : byte[256];
+    reg cyc : logic[16];
+
+    loop{
+        xoffer{
+            addr = recv mem_ep.ar_req => (
+                cycle 1 >>
+                send mem_ep.r_res(*mem[addr]) >>
+                dprint "[Cycle %d] Memory read addr %d data %d\n" (*cyc, addr, *mem[addr])
             ),
-            x = recv cache_ep3.req => (
-                set req := x >>
-                let res =  if (*req.is_write) {
-                    send req_ep.aw_req(*req.addr) >>
-                    send req_ep.w_data(*req.data) >>
-                    let res = xoffer{
-                        y = recv req_ep.invalid_res => (
-                            res_pack_t::{data = 8'd0; ack = 1'b1}
-                        ),
-                        y = recv req_ep.r_res => (
-                            if (~(*req.is_atom)){
-                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
-                            } >>
-                            res_pack_t::{data = y; ack = 1'b0}
-                        )
-                    } >>
-                    res
-                }
-                else{
-                    send req_ep.ar_req(*req.addr) >>
-                    let res = xoffer{
-                        y = recv req_ep.invalid_res => (
-                            res_pack_t::{data = 8'd0; ack = 1'b1}
-                        ),
-                        y = recv req_ep.r_res => (
-                            if (*req.is_atom){
-                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
-                            } >>
-                            res_pack_t::{data = y; ack = 1'b0}
-                        )
-                    } >>
-                    res
-                } >>
-                send cache_ep3.res(res)
+            addr = recv mem_ep.aw_req => (
+                cycle 1 >>
+                let data = recv mem_ep.w_req >>
+                set mem[addr] := data >>
+                send mem_ep.b_res(()) >>
+                dprint "[Cycle %d] Memory write addr %d data %d\n" (*cyc, addr, data)
             ),
-            x = recv cache_ep4.req => (
-                set req := x >>
-                let res =  if (*req.is_write) {
-                    send req_ep.aw_req(*req.addr) >>
-                    send req_ep.w_data(*req.data) >>
-                    let res = xoffer{
-                        y = recv req_ep.invalid_res => (
-                            res_pack_t::{data = 8'd0; ack = 1'b1}
-                        ),
-                        y = recv req_ep.r_res => (
-                            if (~(*req.is_atom)){
-                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
-                            } >>
-                            res_pack_t::{data = y; ack = 1'b0}
-                        )
-                    } >>
-                    res
-                }
-                else{
-                    send req_ep.ar_req(*req.addr)  >>
-                    let res = xoffer{
-                        y = recv req_ep.invalid_res => (
-                            res_pack_t::{data = 8'd0; ack = 1'b1}
-                        ),
-                        y = recv req_ep.r_res => (
-                            if (*req.is_atom){
-                                dprint "Something went wrong! | is_atom = %b\n" (*req.is_atom)
-                            } >>
-                            res_pack_t::{data = y; ack = 1'b0}
-                        )
-                    } >>
-                    res 
-                } >>
-                send cache_ep4.res(res)
+            # => (
+                ()
             )
         } >>
+        cycle 1
+    }
+
+    loop{
+        set cyc := *cyc + 16'd1
+    }
+}
+
+proc ace_main(ace_itfc){
+    reg cyc : logic[16];
+
+    loop{
+        send req_ep.rdy(()) >>
+        xoffer{
+            req = recv req_ep.ar_req => (
+                cycle 1 >>
+                if (req.no_snoop){
+                    send mem_ep.ar_req(req.addr) >>
+                    cycle 1 >>
+                    let data = recv mem_ep.r_res >>
+                    send req_ep.r_res(data) >>
+                    dprint "[Cycle %d] CCU read-no-snoop addr %d data %d\n" (*cyc, req.addr, data)
+                }
+                else if (req.clean || req.is_unique){
+                    {
+                        (send cs_ep_1.snoop_invalidate(req.addr));
+                        (send cs_ep_2.snoop_invalidate(req.addr));
+                        (send cs_ep_3.snoop_invalidate(req.addr));
+                        (send cs_ep_4.snoop_invalidate(req.addr))
+                    } >>
+                    cycle 1 >>
+                    {
+                        (let r = recv cs_ep_1.snoop_invalidate_res >> if (r){dprint "[Cycle %d] CCU invalidated client 0 addr %d\n" (*cyc, req.addr)});
+                        (let r = recv cs_ep_2.snoop_invalidate_res >> if (r){dprint "[Cycle %d] CCU invalidated client 1 addr %d\n" (*cyc, req.addr)});
+                        (let r = recv cs_ep_3.snoop_invalidate_res >> if (r){dprint "[Cycle %d] CCU invalidated client 2 addr %d\n" (*cyc, req.addr)});
+                        (let r = recv cs_ep_4.snoop_invalidate_res >> if (r){dprint "[Cycle %d] CCU invalidated client 3 addr %d\n" (*cyc, req.addr)})
+                    } >>
+                    cycle 1 >>
+                    xoffer{
+                        data = recv cs_ep_1.snoop_data => (
+                            send mem_ep.aw_req(req.addr) >>
+                            cycle 1 >>
+                            send mem_ep.w_req(data) >>
+                            cycle 1 >>
+                            let _ = recv mem_ep.b_res >>
+                            dprint "[Cycle %d] CCU wrote back dirty data from client 0 addr %d data %d\n" (*cyc, req.addr, data)
+                        ),
+                        data = recv cs_ep_2.snoop_data => (
+                            send mem_ep.aw_req(req.addr) >>
+                            cycle 1 >>
+                            send mem_ep.w_req(data) >>
+                            cycle 1 >>
+                            let _ = recv mem_ep.b_res >>
+                            dprint "[Cycle %d] CCU wrote back dirty data from client 1 addr %d data %d\n" (*cyc, req.addr, data)
+                        ),
+                        data = recv cs_ep_3.snoop_data => (
+                            send mem_ep.aw_req(req.addr) >>
+                            cycle 1 >>
+                            send mem_ep.w_req(data) >>
+                            cycle 1 >>
+                            let _ = recv mem_ep.b_res >>
+                            dprint "[Cycle %d] CCU wrote back dirty data from client 2 addr %d data %d\n" (*cyc, req.addr, data)
+                        ),
+                        data = recv cs_ep_4.snoop_data => (
+                            send mem_ep.aw_req(req.addr) >>
+                            cycle 1 >>
+                            send mem_ep.w_req(data) >>
+                            cycle 1 >>
+                            let _ = recv mem_ep.b_res >>
+                            dprint "[Cycle %d] CCU wrote back dirty data from client 3 addr %d data %d\n" (*cyc, req.addr, data)
+                        ),
+                        # => (
+                            ()
+                        )
+                    } >>
+                    if (req.clean){
+                        send req_ep.invalid_res(()) >>
+                        dprint "[Cycle %d] CCU clean-unique complete addr %d\n" (*cyc, req.addr)
+                    }
+                    else{
+                        cycle 1 >>
+                        send mem_ep.ar_req(req.addr) >>
+                        cycle 1 >>
+                        let data = recv mem_ep.r_res >>
+                        send req_ep.r_res(data) >>
+                        dprint "[Cycle %d] CCU read-unique addr %d data %d\n" (*cyc, req.addr, data)
+                    }
+                }
+                else{
+                    {
+                        (send cs_ep_1.read_req(req.addr));
+                        (send cs_ep_2.read_req(req.addr));
+                        (send cs_ep_3.read_req(req.addr));
+                        (send cs_ep_4.read_req(req.addr))
+                    } >>
+                    cycle 1 >>
+                    {
+                        (let r = recv cs_ep_1.read_res >> if (r){dprint "[Cycle %d] CCU read hit client 0 addr %d\n" (*cyc, req.addr)});
+                        (let r = recv cs_ep_2.read_res >> if (r){dprint "[Cycle %d] CCU read hit client 1 addr %d\n" (*cyc, req.addr)});
+                        (let r = recv cs_ep_3.read_res >> if (r){dprint "[Cycle %d] CCU read hit client 2 addr %d\n" (*cyc, req.addr)});
+                        (let r = recv cs_ep_4.read_res >> if (r){dprint "[Cycle %d] CCU read hit client 3 addr %d\n" (*cyc, req.addr)})
+                    } >>
+                    cycle 1 >>
+                    let data = xoffer{
+                        data = recv cs_ep_1.snoop_data => (
+                            dprint "[Cycle %d] CCU read data from client 0 addr %d data %d\n" (*cyc, req.addr, data) >>
+                            data
+                        ),
+                        data = recv cs_ep_2.snoop_data => (
+                            dprint "[Cycle %d] CCU read data from client 1 addr %d data %d\n" (*cyc, req.addr, data) >>
+                            data
+                        ),
+                        data = recv cs_ep_3.snoop_data => (
+                            dprint "[Cycle %d] CCU read data from client 2 addr %d data %d\n" (*cyc, req.addr, data) >>
+                            data
+                        ),
+                        data = recv cs_ep_4.snoop_data => (
+                            dprint "[Cycle %d] CCU read data from client 3 addr %d data %d\n" (*cyc, req.addr, data) >>
+                            data
+                        ),
+                        # => (
+                            send mem_ep.ar_req(req.addr) >>
+                            cycle 1 >>
+                            let data = recv mem_ep.r_res >>
+                            dprint "[Cycle %d] CCU read fallback memory addr %d data %d\n" (*cyc, req.addr, data) >>
+                            data
+                        )
+                    } >>
+                    send req_ep.r_res(data)
+                }
+            ),
+            req = recv req_ep.aw_req => (
+                cycle 1 >>
+                let wdata = recv req_ep.w_data >>
+                {
+                    (send cs_ep_1.snoop_invalidate(req.addr));
+                    (send cs_ep_2.snoop_invalidate(req.addr));
+                    (send cs_ep_3.snoop_invalidate(req.addr));
+                    (send cs_ep_4.snoop_invalidate(req.addr))
+                } >>
+                cycle 1 >>
+                {
+                    (let r = recv cs_ep_1.snoop_invalidate_res >> if (r){dprint "[Cycle %d] CCU write invalidated client 0 addr %d\n" (*cyc, req.addr)});
+                    (let r = recv cs_ep_2.snoop_invalidate_res >> if (r){dprint "[Cycle %d] CCU write invalidated client 1 addr %d\n" (*cyc, req.addr)});
+                    (let r = recv cs_ep_3.snoop_invalidate_res >> if (r){dprint "[Cycle %d] CCU write invalidated client 2 addr %d\n" (*cyc, req.addr)});
+                    (let r = recv cs_ep_4.snoop_invalidate_res >> if (r){dprint "[Cycle %d] CCU write invalidated client 3 addr %d\n" (*cyc, req.addr)})
+                } >>
+                cycle 1 >>
+                xoffer{
+                    data = recv cs_ep_1.snoop_data => (
+                        send mem_ep.aw_req(req.addr) >>
+                        cycle 1 >>
+                        send mem_ep.w_req(data) >>
+                        cycle 1 >>
+                        let _ = recv mem_ep.b_res >>
+                        dprint "[Cycle %d] CCU writeback before write from client 0 addr %d data %d\n" (*cyc, req.addr, data)
+                    ),
+                    data = recv cs_ep_2.snoop_data => (
+                        send mem_ep.aw_req(req.addr) >>
+                        cycle 1 >>
+                        send mem_ep.w_req(data) >>
+                        cycle 1 >>
+                        let _ = recv mem_ep.b_res >>
+                        dprint "[Cycle %d] CCU writeback before write from client 1 addr %d data %d\n" (*cyc, req.addr, data)
+                    ),
+                    data = recv cs_ep_3.snoop_data => (
+                        send mem_ep.aw_req(req.addr) >>
+                        cycle 1 >>
+                        send mem_ep.w_req(data) >>
+                        cycle 1 >>
+                        let _ = recv mem_ep.b_res >>
+                        dprint "[Cycle %d] CCU writeback before write from client 2 addr %d data %d\n" (*cyc, req.addr, data)
+                    ),
+                    data = recv cs_ep_4.snoop_data => (
+                        send mem_ep.aw_req(req.addr) >>
+                        cycle 1 >>
+                        send mem_ep.w_req(data) >>
+                        cycle 1 >>
+                        let _ = recv mem_ep.b_res >>
+                        dprint "[Cycle %d] CCU writeback before write from client 3 addr %d data %d\n" (*cyc, req.addr, data)
+                    ),
+                    # => (
+                        ()
+                    )
+                } >>
+                cycle 1 >>
+                send mem_ep.aw_req(req.addr) >>
+                cycle 1 >>
+                send mem_ep.w_req(wdata) >>
+                cycle 1 >>
+                let _ = recv mem_ep.b_res >>
+                if (req.is_atom){
+                    cycle 1 >>
+                    send mem_ep.ar_req(req.addr) >>
+                    cycle 1 >>
+                    let data = recv mem_ep.r_res >>
+                    send req_ep.r_res(data) >>
+                    dprint "[Cycle %d] CCU atomic write addr %d returned %d\n" (*cyc, req.addr, data)
+                }
+                else{
+                    send req_ep.invalid_res(()) >>
+                    dprint "[Cycle %d] CCU write-unique complete addr %d data %d\n" (*cyc, req.addr, wdata)
+                }
+            )
+        } >>
+        cycle 1
+    }
+
+    loop{
+        set cyc := *cyc + 16'd1
+    }
+}
+
+proc cache_client<id : int>(client_itfc, snoop_itfc){
+    reg mem : byte[16];
+    reg addr_base : byte;
+    reg cyc : logic[16];
+    reg state : state_t[16];
+
+    loop{
+        let aid = id[0+:8] >>
+        let sid = id[0+:2] >>
+        cycle 1 >>
+        cycle 1 >>
+        let addr0 = *addr_base + aid >>
+        let line0 = addr0[0+:4] >>
+        let read_shared = req_pack_t::{src = sid; addr = addr0; data = 8'd0; is_write = 1'b0; is_atom = 1'b0; clean = 1'b0; is_unique = 1'b0; no_snoop = 1'b0} >>
+        send cache_ep.req(read_shared) >>
+        dprint "[Cycle %d] Client %d read-shared addr %d\n" (*cyc, id, addr0) >>
+        let res0 = recv cache_ep.res >>
+        if (res0.ack){
+            dprint "[Cycle %d] Client %d read-shared unexpectedly acked addr %d\n" (*cyc, id, addr0)
+        }
+        else{
+            set mem[line0] := res0.data >>
+            set state[line0] := state_t::{valid = 1'b1; dirty = 1'b0; shd = 1'b1} >>
+            dprint "[Cycle %d] Client %d read-shared data %d addr %d\n" (*cyc, id, res0.data, addr0)
+        } >>
+        set addr_base := *addr_base + 8'd1 >>
+
+        cycle 1 >>
+        cycle 1 >>
+        let addr1 = *addr_base + aid >>
+        let line1 = addr1[0+:4] >>
+        let read_unique = req_pack_t::{src = sid; addr = addr1; data = 8'd0; is_write = 1'b0; is_atom = 1'b0; clean = 1'b0; is_unique = 1'b1; no_snoop = 1'b0} >>
+        send cache_ep.req(read_unique) >>
+        dprint "[Cycle %d] Client %d read-unique addr %d\n" (*cyc, id, addr1) >>
+        let res1 = recv cache_ep.res >>
+        if (res1.ack){
+            dprint "[Cycle %d] Client %d read-unique unexpectedly acked addr %d\n" (*cyc, id, addr1)
+        }
+        else{
+            set mem[line1] := res1.data >>
+            set state[line1] := state_t::{valid = 1'b1; dirty = 1'b0; shd = 1'b0} >>
+            dprint "[Cycle %d] Client %d read-unique data %d addr %d\n" (*cyc, id, res1.data, addr1)
+        } >>
+        set addr_base := *addr_base + 8'd1 >>
+
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        let addr2 = *addr_base + aid >>
+        let line2 = addr2[0+:4] >>
+        let clean_unique = req_pack_t::{src = sid; addr = addr2; data = 8'd0; is_write = 1'b0; is_atom = 1'b0; clean = 1'b1; is_unique = 1'b1; no_snoop = 1'b0} >>
+        send cache_ep.req(clean_unique) >>
+        dprint "[Cycle %d] Client %d clean-unique addr %d\n" (*cyc, id, addr2) >>
+        let res2 = recv cache_ep.res >>
+        if (res2.ack){
+            set state[line2] := state_t::{valid = 1'b1; dirty = 1'b0; shd = 1'b0} >>
+            dprint "[Cycle %d] Client %d clean-unique complete addr %d\n" (*cyc, id, addr2)
+        }
+        else{
+            set mem[line2] := res2.data >>
+            set state[line2] := state_t::{valid = 1'b1; dirty = 1'b0; shd = 1'b0}
+        } >>
+        set addr_base := *addr_base + 8'd1 >>
+
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+
+
+
+        let addr3 = *addr_base + aid >>
+        let line3 = addr3[0+:4] >>
+        let wdata = *cyc[0+:8] + aid >>
+        let write_unique = req_pack_t::{src = sid; addr = addr3; data = wdata; is_write = 1'b1; is_atom = 1'b0; clean = 1'b0; is_unique = 1'b1; no_snoop = 1'b0} >>
+        send cache_ep.req(write_unique) >>
+        dprint "[Cycle %d] Client %d write-unique addr %d data %d\n" (*cyc, id, addr3, wdata) >>
+        let res3 = recv cache_ep.res >>
+        if (res3.ack){
+            set mem[line3] := wdata >>
+            set state[line3] := state_t::{valid = 1'b1; dirty = 1'b1; shd = 1'b0} >>
+            dprint "[Cycle %d] Client %d write-unique ack addr %d data %d\n" (*cyc, id, addr3, wdata)
+        }
+        else{
+            set mem[line3] := res3.data >>
+            set state[line3] := state_t::{valid = 1'b1; dirty = 1'b1; shd = 1'b0}
+        } >>
+        set addr_base := *addr_base + 8'd1 >>
+
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+
+
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+
+        let addr4 = *addr_base + aid >>
+        let line4 = addr4[0+:4] >>
+        let read_no_snoop = req_pack_t::{src = sid; addr = addr4; data = 8'd0; is_write = 1'b0; is_atom = 1'b0; clean = 1'b0; is_unique = 1'b0; no_snoop = 1'b1} >>
+        send cache_ep.req(read_no_snoop) >>
+        dprint "[Cycle %d] Client %d read-no-snoop addr %d\n" (*cyc, id, addr4) >>
+        let res4 = recv cache_ep.res >>
+        if (~res4.ack){
+            set mem[line4] := res4.data >>
+            set state[line4] := state_t::{valid = 1'b0; dirty = 1'b0; shd = 1'b0} >>
+            dprint "[Cycle %d] Client %d read-no-snoop data %d addr %d\n" (*cyc, id, res4.data, addr4)
+        } >>
+        set addr_base := *addr_base + 8'd1
+    }
+
+    loop{
+        xoffer{
+            addr = recv cs_ep.read_req => (
+                let line = addr[0+:4] >>
+                let hit = *state[line].valid >>
+                cycle 1 >>
+                send cs_ep.read_res(hit) >>
+                cycle 1 >>
+                if (hit && ((*state[line].dirty) || (~(*state[line].shd)))){
+                    try send cs_ep.snoop_data(*mem[line]){
+                        dprint "[Cycle %d] Client %d supplied snoop data addr %d data %d\n" (*cyc, id, addr, *mem[line])
+                    }
+                    else{
+                        ()
+                    } >>
+                    set state[line] := state_t::{valid = 1'b1; dirty = 1'b0; shd = 1'b1}
+                }
+            ),
+            addr = recv cs_ep.snoop_invalidate => (
+                let line = addr[0+:4] >>
+                let hit = *state[line].valid >>
+                let dirty = *state[line].dirty >>
+                cycle 1 >>
+                send cs_ep.snoop_invalidate_res(hit) >>
+                if (hit && dirty){
+                    try send cs_ep.snoop_data(*mem[line]){
+                        dprint "[Cycle %d] Client %d wrote back snoop data addr %d data %d\n" (*cyc, id, addr, *mem[line])
+                    }
+                    else{
+                        ()
+                    }
+                } >>
+                set state[line] := state_t::{valid = 1'b0; dirty = 1'b0; shd = 1'b0}
+            )
+        }
+    }
+
+    loop{
+        set cyc := *cyc + 16'd1
+    }
+}
+
+proc test_ace(){
+    pool p : cache_coherence_pool;
+
+    spawn ace_main[p.i_main];
+    spawn arbiter[p.i_arb];
+    spawn mem_controller[p.imem];
+    spawn cache_client<0>[p.ic1, p.i_sn1];
+    spawn cache_client<1>[p.ic2, p.i_sn2];
+    spawn cache_client<2>[p.ic3, p.i_sn3];
+    spawn cache_client<3>[p.ic4, p.i_sn4];
+
+    loop{
+        cycle 256 >>
+        dfinish >>
         cycle 1
     }
 }

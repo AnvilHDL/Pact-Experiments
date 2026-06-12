@@ -52,7 +52,7 @@ interface snoop_itfc(cs_ep : left snoop_ch) = ^(
 
 interface client_itfc(cache_ep : left cache_req_ch) = F cache_ep.req; cache_ep.res;#1
 
-interface mem_itfc(mem_ep : right mem_ch) = ^(mem_ep.aw_req :  mem_ep.w_req ; #1; mem_ep.b_res , mem_ep.ar_req : #1;mem_ep.r_res,*); #1
+interface mem_itfc(mem_ep : right mem_ch) = ^(mem_ep.aw_req : #1;mem_ep.w_req ; #1; mem_ep.b_res , mem_ep.ar_req : #1;mem_ep.r_res,*); #1
 
 
 interface ace_itfc(
@@ -65,6 +65,10 @@ interface ace_itfc(
 ) =     req_ep.rdy; ^(
             req_ep.ar_req : #1;(
                                 (
+                                    mem_ep.ar_req;#1;mem_ep.r_res;#req_ep.r_res
+                                )
+                                                    +
+                                (
                                     (cs_ep_1.read_req || cs_ep_2.read_req||cs_ep_3.read_req || cs_ep_4.read_req); #1; (#cs_ep_1.read_res || #cs_ep_2.read_res || #cs_ep_3.read_res || #cs_ep_4.read_res);#1;
                                     ^(cs_ep_1.snoop_data : #req_ep.r_res, cs_ep_2.snoop_data : #req_ep.r_res, cs_ep_3.snoop_data : #req_ep.r_res, cs_ep_4.snoop_data : #req_ep.r_res, * : mem_ep.ar_req ; #1; mem_ep.r_res; #req_ep.r_res)
                                 ) 
@@ -72,7 +76,12 @@ interface ace_itfc(
                                 (
                                     (cs_ep_1.snoop_invalidate || cs_ep_2.snoop_invalidate||cs_ep_3.snoop_invalidate || cs_ep_4.snoop_invalidate);#1;(#cs_ep_1.snoop_invalidate_res || #cs_ep_2.snoop_invalidate_res || #cs_ep_3.snoop_invalidate_res || #cs_ep_4.snoop_invalidate_res);#1
                                     ;(
-                                        ^(#cs_ep_1.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;mem_ep.b_res, #cs_ep_2.snoop_data : mem_ep.aw_req,#cs_ep_3.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;mem_ep.b_res, #cs_ep_4.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;mem_ep.b_res, * )
+                                        ^(#cs_ep_1.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res, 
+                                          #cs_ep_2.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res, 
+                                          #cs_ep_3.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res, 
+                                          #cs_ep_4.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res, 
+                                          * 
+                                        )
                                         ;
                                         (
                                             (#1;mem_ep.ar_req;#1;mem_ep.r_res;#req_ep.r_res)
@@ -82,13 +91,13 @@ interface ace_itfc(
                                     )
                                 )
                             );#1, 
-            req_ep.aw_req : #1
+            req_ep.aw_req : #1;#req_ep.w_data
                             ;(
                                 (cs_ep_1.snoop_invalidate || cs_ep_2.snoop_invalidate||cs_ep_3.snoop_invalidate || cs_ep_4.snoop_invalidate);#1;(#cs_ep_1.snoop_invalidate_res || #cs_ep_2.snoop_invalidate_res || #cs_ep_3.snoop_invalidate_res || #cs_ep_4.snoop_invalidate_res);#1;
                                 (
-                                    ^(cs_ep_1.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;mem_ep.b_res;#1 , cs_ep_2.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;mem_ep.b_res;#1 , cs_ep_3.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;mem_ep.b_res;#1 , cs_ep_4.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;mem_ep.b_res;#1, * )
+                                    ^(cs_ep_1.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res;#1 , cs_ep_2.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res;#1 , cs_ep_3.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res;#1 , cs_ep_4.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res;#1, * : #1 )
                                 )
-                                ;mem_ep.aw_req;#1;#req_ep.w_data;mem_ep.w_req;mem_ep.b_res;
+                                ;mem_ep.aw_req;#1;mem_ep.w_req;#1;mem_ep.b_res;
                                 (
                                     (#1;mem_ep.ar_req;#1;mem_ep.r_res;#req_ep.r_res)
                                     +
@@ -99,10 +108,14 @@ interface ace_itfc(
 
 
 struct req_pack_t {
+    src : logic[2],
     addr : byte,
     data : byte,
     is_write : logic,
-    is_atom : logic
+    is_atom : logic,
+    clean : logic,
+    is_unique : logic,
+    no_snoop : logic
 }
 struct res_pack_t {
     data : byte,
@@ -117,8 +130,8 @@ chan cache_req_ch{
 
 chan main_req_ch{
     left rdy : (void@#1),
-    right ar_req : (byte@#1),
-    right aw_req : (byte@#1),
+    right ar_req : (req_pack_t@#1),
+    right aw_req : (req_pack_t@#1),
     right w_data : (byte@#1),
     left r_res : (byte@#1),
     left invalid_res : (void@#1)
@@ -127,7 +140,7 @@ chan main_req_ch{
 chan snoop_ch{
     left read_req : (byte@#1),
     right read_res : (logic@#1),
-    left snoop_invalidate : (void@#1),
+    left snoop_invalidate : (byte@#1),
     right snoop_invalidate_res : (logic@#1),
     right snoop_data : (byte@#1)
 }
