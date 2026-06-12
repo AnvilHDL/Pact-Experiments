@@ -1,7 +1,7 @@
 
 
 pool cache_coherence_pool {
-    req_ep -- req_ep_ri : ace_req_ch,
+    req_ep -- req_ep_ri : main_req_ch,
     cs_ep_1 -- cs_ep_1_ri : snoop_ch,
     cs_ep_2 -- cs_ep_2_ri : snoop_ch,
     cs_ep_3 -- cs_ep_3_ri : snoop_ch,
