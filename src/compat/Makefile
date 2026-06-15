@@ -6,7 +6,7 @@ TEST_DRIVER = sim_main.cpp
 
 all: obj_dir/V$(MODULE_NAME)
 
-.PHONY: run clean
+.PHONY: run clean debug
 
 ANVIL_FLAGS=
 ifdef LTOFF
@@ -35,11 +35,11 @@ ifdef WTC
 	ANVIL_FLAGS += -weak-typecasts
 endif
 
-
-
+debug:
+	python3 debug.py
 
 ifdef DEBUG
-	python3 debug.py
+$(MODULE_NAME).anvil.sv: debug
 endif
 
 obj_dir/V$(MODULE_NAME): $(MODULE_NAME)_driver.cpp $(MODULE_NAME).anvil.sv
