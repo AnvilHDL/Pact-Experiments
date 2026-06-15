@@ -54,7 +54,11 @@ module axi_write_demux_slave #(
         SEND_AW: begin
           aw_valid_o <= 1;
           aw_o.addr <= {master_select, 6'b0};
-          if (aw_ready_i) begin
+          if (aw_valid_o && aw_ready_i) begin
+`ifdef AXI_DEMUX_WRITE_TB_TRACE
+            $display("[Cycle %0d] Slave write aw addr %0d selected master %0d",
+                     cycle_count, {master_select, 6'b0}, master_select);
+`endif
             aw_valid_o <= 0;
             state <= SEND_W;
           end
@@ -63,7 +67,11 @@ module axi_write_demux_slave #(
           w_valid_o <= 1;
           w_o.data <= data_count;
           w_o.strb <= 1'b1;
-          if (w_ready_i) begin
+          if (w_valid_o && w_ready_i) begin
+`ifdef AXI_DEMUX_WRITE_TB_TRACE
+            $display("[Cycle %0d] Slave write data %0d granted",
+                     cycle_count, data_count);
+`endif
             w_valid_o <= 0;
             data_count <= data_count + 1;
             state <= WAIT_B;
@@ -71,6 +79,10 @@ module axi_write_demux_slave #(
         end
         WAIT_B: begin
           if (b_valid_i) begin
+`ifdef AXI_DEMUX_WRITE_TB_TRACE
+            $display("[Cycle %0d] Slave received b response %0d",
+                     cycle_count, b_i.resp);
+`endif
             master_select <= (master_select + 1) % NoMstPorts;
             state <= IDLE;
           end
@@ -102,6 +114,7 @@ module axi_write_demux_master #(
 
   typedef enum logic [1:0] {IDLE, RECV_W, SEND_B} state_t;
   state_t state;
+  logic [31:0] cycle_count;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -110,20 +123,30 @@ module axi_write_demux_master #(
       w_ready_o <= 0;
       b_valid_o <= 0;
       b_o <= '0;
+      cycle_count <= 0;
     end else begin
+      cycle_count <= cycle_count + 1;
       case (state)
         IDLE: begin
           aw_ready_o <= 1;
           w_ready_o <= 0;
           b_valid_o <= 0;
           if (aw_valid_i) begin
+`ifdef AXI_DEMUX_WRITE_TB_TRACE
+            $display("[Cycle %0d] Master %0d received aw addr %0d",
+                     cycle_count, MasterId, aw_i.addr);
+`endif
             state <= RECV_W;
           end
         end
         RECV_W: begin
           aw_ready_o <= 0;
           w_ready_o <= 1;
-          if (w_valid_i) begin
+          if (w_ready_o && w_valid_i) begin
+`ifdef AXI_DEMUX_WRITE_TB_TRACE
+            $display("[Cycle %0d] Master %0d received w data %0d",
+                     cycle_count, MasterId, w_i.data);
+`endif
             w_ready_o <= 0;
             state <= SEND_B;
           end
@@ -131,7 +154,11 @@ module axi_write_demux_master #(
         SEND_B: begin
           b_valid_o <= 1;
           b_o.resp <= 2'b00;
-          if (b_ready_i) begin
+          if (b_valid_o && b_ready_i) begin
+`ifdef AXI_DEMUX_WRITE_TB_TRACE
+            $display("[Cycle %0d] Master %0d sent b response",
+                     cycle_count, MasterId);
+`endif
             b_valid_o <= 0;
             state <= IDLE;
           end
