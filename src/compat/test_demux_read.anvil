@@ -74,53 +74,25 @@ proc demux_r_main(demux_r_main){
         try _ = recv fifo_ep.empty { () }
         else{
             let rentry = recv fifo_ep.pop >>
-            rec X {
-                xoffer rentry{
-                    _  = recv mst_ep1.rdy => (
-                        if (rentry == 2'd0){
-                            let r = recv mst_ep1.res >>
-                            send slv_ep.r_res(r)
-                        }                    
-                        else{
-                            dprint "Something went wrong! | rentry = %d\n vs id = 2'd0" (rentry) >>
-                            cycle 1 >>
-                            recurse X
-                        }
-                    ),
-                    _ = recv mst_ep2.rdy => (
-                        if (rentry == 2'd1){
-                            let r = recv mst_ep2.res >>
-                            send slv_ep.r_res(r)
-                        }                    
-                        else{
-                            dprint "Something went wrong! | rentry = %d\n vs id = 2'd1" (rentry) >>
-                            cycle 1 >>
-                            recurse X
-                        }
-                    ),
-                    _ = recv mst_ep3.rdy => (
-                        if (rentry == 2'd2){
-                            let r = recv mst_ep3.res >>
-                            send slv_ep.r_res(r)
-                        }                    
-                        else{
-                            dprint "Something went wrong! | rentry = %d\n vs id = 2'd2" (rentry) >>
-                            cycle 1 >>
-                            recurse X
-                        }
-                    ),
-                    _ = recv mst_ep4.rdy => (
-                        if (rentry == 2'd3){
-                            let r = recv mst_ep4.res >>
-                            send slv_ep.r_res(r)
-                        }
-                        else{
-                            dprint "Something went wrong! | rentry = %d\n vs id = 2'd3" (rentry) >>
-                            cycle 1 >>
-                            recurse X
-                        }
-                    )
-                }
+            if (rentry == 2'd0){
+                let _ = recv mst_ep1.rdy >>
+                let r = recv mst_ep1.res >>
+                send slv_ep.r_res(r)
+            }
+            else if (rentry == 2'd1){
+                let _ = recv mst_ep2.rdy >>
+                let r = recv mst_ep2.res >>
+                send slv_ep.r_res(r)
+            }
+            else if (rentry == 2'd2){
+                let _ = recv mst_ep3.rdy >>
+                let r = recv mst_ep3.res >>
+                send slv_ep.r_res(r)
+            }
+            else{
+                let _ = recv mst_ep4.rdy >>
+                let r = recv mst_ep4.res >>
+                send slv_ep.r_res(r)
             }
         } >>
         cycle 1
@@ -129,23 +101,25 @@ proc demux_r_main(demux_r_main){
 }
 
 proc master<id : int>(master_itfc){
-    reg mem : byte[256];
-    reg addr : logic[8];
+    reg count : logic[8];
     reg cyc : logic[8];
     loop{
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
         send mux_ep_ar.rdy(()) >>
         let ar = recv mux_ep_ar.req >>
-        set addr := ar.addr >>
-        dprint "[Cycle %d] Master %d received ar addr %d\n" (*cyc, id, ar.addr) >>
-        let r = r_pack_t::{data = *mem[*addr]; resp = 1'b1} >>
+        cycle 1 >>
+        let recv_cyc = *cyc - 8'd1 >>
+        dprint "[Cycle %d] Master %d received ar addr %d\n" (recv_cyc, id, ar.addr) >>
+        cycle 1 >>
+        let aid = id[0+:8] >>
+        let rdata = (aid * 8'd10) + *count >>
+        let r = r_pack_t::{data = rdata; resp = 1'b0} >>
         send demux_ep_r.rdy(()) >>
         send demux_ep_r.res(r) >>
-        dprint "[Cycle %d] Master %d sent r data %d\n" (*cyc, id, r.data) >>
-        cycle 1
+        cycle 1 >>
+        let sent_cyc = *cyc - 8'd1 >>
+        dprint "[Cycle %d] Master %d sent r data %d\n" (sent_cyc, id, r.data) >>
+        set count := *count + 8'd1 >>
+        ()
     }
     loop{
         set cyc := *cyc + 8'd1
@@ -154,22 +128,45 @@ proc master<id : int>(master_itfc){
 
 proc slave(slave_itfc){
     reg cyc : logic[8];
-    reg addr : logic[8];
-    reg sel : logic[2];
+
     loop{
-        let curr_addr = *addr >>
-        let curr_sel = *sel >>
-        let ar = ar_pack_t::{addr = curr_addr; prot = 1'b0} >>
-        let req = ar_ch::{ar_pack = ar; select = curr_sel} >>
-        send slv_ep_ar.ar_req(req) >>
-        dprint "[Cycle %d] Slave read ar addr %d selected master %d\n" (*cyc, ar.addr, req.select) >>
+        cycle 3 >>
+        let ar0 = ar_pack_t::{addr = 8'd0; prot = 1'b0} >>
+        let req0 = ar_ch::{ar_pack = ar0; select = 2'd0} >>
+        dprint "[Cycle %d] Slave read ar addr %d selected master %d\n" (*cyc, ar0.addr, req0.select) >>
+        send slv_ep_ar.ar_req(req0) >>
         let _ = recv slv_ep_ar.gnt >>
-        let r = recv slv_ep_r.r_res >>
-        dprint "[Cycle %d] Slave received r data %d\n" (*cyc, r.data) >>
-        (
-        set addr := *addr + 8'd1;
-        set sel := *sel + 2'd1
-        )
+        let r0 = recv slv_ep_r.r_res >>
+        dprint "[Cycle %d] Slave received r data %d\n" (*cyc, r0.data) >>
+
+        cycle 5 >>
+        let ar1 = ar_pack_t::{addr = 8'd64; prot = 1'b0} >>
+        let req1 = ar_ch::{ar_pack = ar1; select = 2'd1} >>
+        dprint "[Cycle %d] Slave read ar addr %d selected master %d\n" (*cyc, ar1.addr, req1.select) >>
+        send slv_ep_ar.ar_req(req1) >>
+        let _ = recv slv_ep_ar.gnt >>
+        let r1 = recv slv_ep_r.r_res >>
+        dprint "[Cycle %d] Slave received r data %d\n" (*cyc, r1.data) >>
+
+        cycle 6 >>
+        let ar2 = ar_pack_t::{addr = 8'd128; prot = 1'b0} >>
+        let req2 = ar_ch::{ar_pack = ar2; select = 2'd2} >>
+        dprint "[Cycle %d] Slave read ar addr %d selected master %d\n" (*cyc, ar2.addr, req2.select) >>
+        send slv_ep_ar.ar_req(req2) >>
+        let _ = recv slv_ep_ar.gnt >>
+        let r2 = recv slv_ep_r.r_res >>
+        dprint "[Cycle %d] Slave received r data %d\n" (*cyc, r2.data) >>
+
+        cycle 14 >>
+        let ar3 = ar_pack_t::{addr = 8'd192; prot = 1'b0} >>
+        let req3 = ar_ch::{ar_pack = ar3; select = 2'd3} >>
+        dprint "[Cycle %d] Slave read ar addr %d selected master %d\n" (*cyc, ar3.addr, req3.select) >>
+        send slv_ep_ar.ar_req(req3) >>
+        let _ = recv slv_ep_ar.gnt >>
+        let r3 = recv slv_ep_r.r_res >>
+        dprint "[Cycle %d] Slave received r data %d\n" (*cyc, r3.data) >>
+
+        cycle 2
     }
     loop{
         set cyc := *cyc + 8'd1
@@ -182,16 +179,16 @@ proc test_demux_read(){
     pool p : demux_read_pool;
 
     spawn slave[p.slave];
-    spawn master<1>[p.master1];
-    spawn master<2>[p.master2];
-    spawn master<3>[p.master3];
-    spawn master<4>[p.master4];
+    spawn master<0>[p.master1];
+    spawn master<1>[p.master2];
+    spawn master<2>[p.master3];
+    spawn master<3>[p.master4];
     spawn demux_ar_main[p.demux_ar];
     spawn demux_r_main[p.demux_r];
     spawn fifo<select_t>[p.fifo];
 
     loop{
-        cycle 30 >>
+        cycle 38 >>
         dfinish
     }
 }

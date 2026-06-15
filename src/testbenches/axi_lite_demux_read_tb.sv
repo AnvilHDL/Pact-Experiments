@@ -45,13 +45,21 @@ module axi_read_demux_slave #(
         SEND_AR: begin
           ar_valid_o <= 1;
           ar_o.addr <= {master_select, 6'b0};
-          if (ar_ready_i) begin
+          if (ar_valid_o && ar_ready_i) begin
+`ifdef AXI_DEMUX_READ_TB_TRACE
+            $display("[Cycle %0d] Slave read ar addr %0d selected master %0d",
+                     cycle_count, {master_select, 6'b0}, master_select);
+`endif
             ar_valid_o <= 0;
             state <= WAIT_R;
           end
         end
         WAIT_R: begin
           if (r_valid_i) begin
+`ifdef AXI_DEMUX_READ_TB_TRACE
+            $display("[Cycle %0d] Slave received r data %0d",
+                     cycle_count, r_i.data);
+`endif
             master_select <= (master_select + 1) % NoMstPorts;
             state <= IDLE;
           end
@@ -80,6 +88,7 @@ module axi_read_demux_master #(
   typedef enum logic {IDLE, SEND_R} state_t;
   state_t state;
   logic [7:0] data_count;
+  logic [31:0] cycle_count;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -88,12 +97,18 @@ module axi_read_demux_master #(
       r_valid_o <= 0;
       r_o <= '0;
       data_count <= MasterId[7:0] * 8'd10;
+      cycle_count <= 0;
     end else begin
+      cycle_count <= cycle_count + 1;
       case (state)
         IDLE: begin
           ar_ready_o <= 1;
           r_valid_o <= 0;
           if (ar_valid_i) begin
+`ifdef AXI_DEMUX_READ_TB_TRACE
+            $display("[Cycle %0d] Master %0d received ar addr %0d",
+                     cycle_count, MasterId, ar_i.addr);
+`endif
             ar_ready_o <= 0;
             state <= SEND_R;
           end
@@ -102,7 +117,11 @@ module axi_read_demux_master #(
           r_valid_o <= 1;
           r_o.data <= data_count;
           r_o.resp <= 2'b00;
-          if (r_ready_i) begin
+          if (r_valid_o && r_ready_i) begin
+`ifdef AXI_DEMUX_READ_TB_TRACE
+            $display("[Cycle %0d] Master %0d sent r data %0d",
+                     cycle_count, MasterId, data_count);
+`endif
             r_valid_o <= 0;
             data_count <= data_count + 1;
             state <= IDLE;

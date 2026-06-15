@@ -15,7 +15,7 @@ else
     ANVIL_FLAGS = -O 2
 endif
 
-ifdef DEBUG
+ifeq ($(DEBUG),1)
 	ANVIL_FLAGS += -verbose -verbose-max
 endif
 
@@ -38,13 +38,13 @@ endif
 debug:
 	python3 debug.py
 
-ifdef DEBUG
+ifeq ($(DEBUG),1)
 $(MODULE_NAME).anvil.sv: debug
 endif
 
 obj_dir/V$(MODULE_NAME): $(MODULE_NAME)_driver.cpp $(MODULE_NAME).anvil.sv
 ifdef LOG
-	verilator --cc --exe --build $(VERILATOR_FLAGS) $^ > /dev/null 2>&1
+	env OBJCACHE= verilator --cc --exe --build $(VERILATOR_FLAGS) $^ > /dev/null 2>&1
 endif
 
 
@@ -59,9 +59,9 @@ endif
 
 obj_dir/V$(MODULE_NAME): $(MODULE_NAME)_driver.cpp $(MODULE_NAME).anvil.sv
 ifdef SILENT
-	verilator --cc --exe --build $(VERILATOR_FLAGS) $^ > /dev/null 2>/dev/null
+	env OBJCACHE= verilator --cc --exe --build $(VERILATOR_FLAGS) $^ > /dev/null 2>/dev/null
 else
-	verilator --cc --exe --build $(VERILATOR_FLAGS) $^
+	env OBJCACHE= verilator --cc --exe --build $(VERILATOR_FLAGS) $^
 endif
 
 $(MODULE_NAME)_driver.cpp: $(TEST_DRIVER)

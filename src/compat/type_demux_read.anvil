@@ -34,7 +34,7 @@ interface demux_r_main (
                             )
 ); #1
 
-interface master_itfc(mux_ep_ar : right mast_ch<ar_pack_t>, demux_ep_r : left mast_r_ch<r_pack_t>) = F mux_ep_ar.rdy; mux_ep_ar.req; #1; rec X . (demux_ep_r.rdy; ^(demux_ep_r.res,*:#1;X)) ; #1
+interface master_itfc(mux_ep_ar : right mast_ch<ar_pack_t>, demux_ep_r : left mast_r_ch<r_pack_t>) = F mux_ep_ar.rdy; mux_ep_ar.req; #2; rec X . (demux_ep_r.rdy; ^(demux_ep_r.res,*:#1;X)) ; #1
 
 interface slave_itfc(slv_ep_ar : left slv_ar_ch<ar_ch> , slv_ep_r : left slv_r_ch<r_pack_t>) =
          F slv_ep_ar.ar_req;slv_ep_ar.gnt ; slv_ep_r.r_res;#1
