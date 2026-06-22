@@ -34,10 +34,10 @@ proc fifo<T : type>(fifo_itfc){
                         set full := 1'd0
                     ) >>
                     offer{
-                        x = recv push_ep.push => (
+                        y = recv push_ep.push => (
                             let full = if(((*write_ptr + 3'd1) == *read_ptr)&&(~(probe pop_ep.pop))) {1'b1} else {1'b0} >>
                             set write_ptr := *write_ptr + 3'd1;
-                            set mem[*write_ptr] := x;
+                            set mem[*write_ptr] := y;
                             set full := full
                         
                         ),
@@ -61,12 +61,11 @@ proc fifo<T : type>(fifo_itfc){
                     set mem[*write_ptr] := x;
                     set write_ptr := *write_ptr + 3'd1
                     ) >>
-
                     offer{
-                        x = recv push_ep.push => (
+                        y = recv push_ep.push => (
                             let full = if(((*write_ptr + 3'd1) == *read_ptr)&&(~(probe pop_ep.pop))) {1'b1} else {1'b0} >>
                             set write_ptr := *write_ptr + 3'd1;
-                            set mem[*write_ptr] := x;
+                            set mem[*write_ptr] := y;
                             set full := full
                         
                         ),

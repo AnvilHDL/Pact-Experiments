@@ -11,28 +11,72 @@ proc arbiter<T : type, T1 : type> (r_rr_arbiter_itfc){
                 send ar_req_ep.req(data) >>
                 let _ = recv ar_req_ep.gnt >>
                 send slv_ep1.gnt(()) >>
-                set prio := 2'd1
+                if (ready slv_ep2.req) {
+                    set prio := 2'd1
+                }
+                else if (ready slv_ep3.req) {
+                    set prio := 2'd2
+                }
+                else if (ready slv_ep4.req) {
+                    set prio := 2'd3
+                }
+                else {
+                    set prio := 2'd0
+                }
           ),
           x = recv slv_ep2.req => (
                 let data = ar_sel_pack_t::{ar_pack = x; select = 2'd1} >>
                 send ar_req_ep.req(data) >>
                 let _ = recv ar_req_ep.gnt >>
                 send slv_ep2.gnt(()) >>
-                set prio := 2'd2
+                if (ready slv_ep3.req) {
+                    set prio := 2'd2
+                }
+                else if (ready slv_ep4.req) {
+                    set prio := 2'd3
+                }
+                else if (ready slv_ep1.req) {
+                    set prio := 2'd0
+                }
+                else {
+                    set prio := 2'd1
+                }
           ),
           x = recv slv_ep3.req => (
                 let data = ar_sel_pack_t::{ar_pack = x; select = 2'd2} >>
                 send ar_req_ep.req(data) >>
                 let _ = recv ar_req_ep.gnt >>
                 send slv_ep3.gnt(()) >>
-                set prio := 2'd3
+                if (ready slv_ep4.req) {
+                    set prio := 2'd3
+                }
+                else if (ready slv_ep1.req) {
+                    set prio := 2'd0
+                }
+                else if (ready slv_ep2.req) {
+                    set prio := 2'd1
+                }
+                else {
+                    set prio := 2'd2
+                }
           ),
           x = recv slv_ep4.req => (
                 let data = ar_sel_pack_t::{ar_pack = x; select = 2'd3} >>
                 send ar_req_ep.req(data) >>
                 let _ = recv ar_req_ep.gnt >>
                 send slv_ep4.gnt(()) >>
-                set prio := 2'd0
+                if (ready slv_ep1.req) {
+                    set prio := 2'd0
+                }
+                else if (ready slv_ep2.req) {
+                    set prio := 2'd1
+                }
+                else if (ready slv_ep3.req) {
+                    set prio := 2'd2
+                }
+                else {
+                    set prio := 2'd3
+                }
           )
         }
     }
@@ -62,56 +106,66 @@ proc mux_ar_main(mux_ar_main){
 }
 
 proc mux_r_main(mux_r_main){
+    reg rentry : select_t;
+    reg rset : logic;
     loop{
         try _ = recv fifo_ep.empty { ()}
         else{
             try _ = recv r_res_ep.rdy {
                 let rentry = recv fifo_ep.pop >>
                 rec X{
-                    xoffer rentry{
+                    let rprio = (if(*rset == 1'd0){rentry} else {*rentry}) >>
+                    xoffer rprio{
                         _ = recv slv_ep1.rdy => (
-                            if (rentry == 2'd0){
+                            if (rprio == 2'd0){
                                 let r = recv r_res_ep.res >>
                                 send slv_ep1.res(r)
                             }
                             else{
-                                dprint "Something went wrong! | rentry = %d\n vs id = 2'd0" (rentry) >>
+                                dprint "Something went wrong! | rprio = %d vs id = 2'd0" (rprio) >>
                                 cycle 1 >>
                                 recurse X
                             }
                         ),
                         _ = recv slv_ep2.rdy => (
-                            if (rentry == 2'd1){
+                            if (rprio == 2'd1){
                                 let r = recv r_res_ep.res >>
                                 send slv_ep2.res(r)
                             }
                             else{
-                                dprint "Something went wrong! | rentry = %d\n vs id = 2'd1" (rentry) >>
+                                dprint "Something went wrong! | rprio = %d vs id = 2'd1" (rprio) >>
                                 cycle 1 >>
                                 recurse X
                             }
                         ),
                         _ = recv slv_ep3.rdy => (
-                            if (rentry == 2'd2){
+                            if (rprio == 2'd2){
                                 let r = recv r_res_ep.res >>
                                 send slv_ep3.res(r)
                             }
                             else{
-                                dprint "Something went wrong! | rentry = %d\n vs id = 2'd2" (rentry) >>
+                                dprint "Something went wrong! | rprio = %d vs id = 2'd2" (rprio) >>
                                 cycle 1 >>
                                 recurse X
                             }
                         ),
                         _ = recv slv_ep4.rdy => (
-                            if (rentry == 2'd3){
+                            if (rprio == 2'd3){
                                 let r = recv r_res_ep.res >>
                                 send slv_ep4.res(r)
                             }
                             else{
-                                dprint "Something went wrong! | rentry = %d\n vs id = 2'd3" (rentry) >>
+                                dprint "Something went wrong! | rprio = %d vs id = 2'd3" (rprio) >>
                                 cycle 1 >>
                                 recurse X
                             }
+                        ),
+                        # => (
+                            (
+                                set rset := 1'd0;
+                                set rentry := rprio
+                            ) >>
+                            recurse X
                         )
                     } 
                 }
@@ -122,44 +176,54 @@ proc mux_r_main(mux_r_main){
 }
 
 proc master_read(master_read_itfc){
-    reg mem : byte[256];
-    reg addr : logic[8];
-    reg cyc : logic[8];
+    reg data : logic[8];
+    reg cyc : logic[32];
     loop{
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
         send mst_ep_ar.rdy(()) >>
         let req = recv mst_ep_ar.req >>
-        dprint "[Cycle %d] Master received ar req with addr %d\n" (*cyc, req.addr) >>
-        set addr := req.addr >>
+        dprint "[Cycle %d] Master received ar req with addr %d" (*cyc, req.addr) >>
+        cycle 1 >>
+        cycle 1 >>
+        let r = r_pack_t::{data = *data; resp = 1'b0} >>
         send mst_ep_r.rdy(()) >>
-        let r = r_pack_t::{data = *mem[*addr]; resp = 1'b1} >>
+        dprint "[Cycle %d] Master sent r res with data %d" (*cyc, r.data) >>
         send mst_ep_r.res(r) >>
-        dprint "[Cycle %d] Master sent r res with data %d\n" (*cyc, r.data) >>
+        set data := *data + 8'd1 >>
         cycle 1
     }
     loop{
-        set cyc := *cyc + 8'd1
+        set cyc := *cyc + 32'd1
     }
 }
 
 proc slave_read<id : int>(slave_read_itfc){
-    reg cyc : logic[8];
-    reg state : logic[8];
+    reg cyc : logic[32];
+    reg next_req : logic[32];
     loop{
+        rec WaitReq {
+            let target = if (*next_req == 32'd0) {32'd3} else {*next_req} >>
+            if (*cyc == target) { () }
+            else {
+                if (target < *cyc) {
+                    let next_target = if (target == 32'd3) {32'd10} else {((target - 32'd2) * 32'd2) + 32'd2} >>
+                    set next_req := next_target
+                }
+                else {
+                    ()
+                } >>
+                cycle 1 >>
+                recurse WaitReq
+            }
+        } >>
         let aid = id[0+:8] >>
-        set state := *state + aid >>
-        let req = ar_pack_t::{addr = *state; prot = 1'b0} >>
+        let req = ar_pack_t::{addr = aid; prot = 1'b0} >>
         send read_req_ep.req(req) >>
-        dprint "[Cycle %d] Slave %d read req selected with addr %d\n" (*cyc, id, req.addr) >>
         let _ = recv read_req_ep.gnt >>
-        dprint "[Cycle %d] Slave %d read req granted\n" (*cyc, id) >>
+        dprint "[Cycle %d] Slave %d read req selected with addr %d" (*cyc, id[0+:2], req.addr) >>
         rec X {
             send read_res_ep.rdy(()) >>
             try r = recv read_res_ep.res{
-                dprint "[Cycle %d] Slave %d read response received with data %d\n" (*cyc, id, r.data)
+                dprint "[Cycle %d] Slave %d read response received with data %d" (*cyc, id[0+:2], r.data)
             }
             else{
                 cycle 1 >>
@@ -169,7 +233,7 @@ proc slave_read<id : int>(slave_read_itfc){
         cycle 1
     }
     loop{
-        set cyc := *cyc + 8'd1
+        set cyc := *cyc + 32'd1
     }
 }
 
@@ -177,10 +241,10 @@ proc test_mux_read(){
 
     pool p : mux_read_transaction_pool;
 
-    spawn slave_read<1>[p.islv1];
-    spawn slave_read<2>[p.islv2];
-    spawn slave_read<3>[p.islv3];
-    spawn slave_read<4>[p.islv4];
+    spawn slave_read<0>[p.islv1];
+    spawn slave_read<1>[p.islv2];
+    spawn slave_read<2>[p.islv3];
+    spawn slave_read<3>[p.islv4];
     spawn master_read[p.imst];
     spawn arbiter<ar_pack_t, ar_sel_pack_t>[p.iarb];
     spawn mux_ar_main[p.imux_ar];
@@ -188,7 +252,6 @@ proc test_mux_read(){
     spawn fifo<select_t>[p.ififo];
 
     loop{
-        cycle 20 >>
-        dfinish
+        cycle 1
     }
 }
