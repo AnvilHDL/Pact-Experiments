@@ -29,7 +29,8 @@ interface demux_r_main (
                                                       mst_ep1.rdy : ((#mst_ep1.res;#slv_ep.r_res) + (#1;X)),
                                                       mst_ep2.rdy: ((#mst_ep2.res;#slv_ep.r_res) + (#1;X)),
                                                       mst_ep3.rdy: ((#mst_ep3.res;#slv_ep.r_res) + (#1;X)),
-                                                      mst_ep4.rdy: ((#mst_ep4.res;#slv_ep.r_res) + (#1;X))
+                                                      mst_ep4.rdy: ((#mst_ep4.res;#slv_ep.r_res) + (#1;X)),
+                                                      * : #1;X
                                                       )
                             )
 ); #1
