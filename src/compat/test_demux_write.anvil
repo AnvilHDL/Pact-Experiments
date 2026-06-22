@@ -71,6 +71,8 @@ proc demux_aw_main(demux_aw_main){
 
 proc demux_w_main(demux_w_main){
     reg cyc : logic[8];
+    reg wentry : select_t;
+    reg wset : logic;
     loop{
         offer{
             _ = recv w_fifo_ep.empty =>(),
@@ -79,30 +81,66 @@ proc demux_w_main(demux_w_main){
                 try x = recv slv_ep.req {
                     let wentry = recv w_fifo_ep.pop >>
                     send b_fifo_ep.push(wentry) >>
-                    if (wentry == 2'd0){
-                        let _ = recv mst_ep1.rdy >>
-                        send mst_ep1.req(x) >>
-                        send slv_ep.gnt(())
+                    rec X  {
+                        let wprio = if(*wset) {*wentry} else {wentry} >>
+                        xoffer wprio{
+                            _ = recv mst_ep1.rdy => (
+                                if (wprio == 2'd0){
+                                    send mst_ep1.req(x) >>
+                                    send slv_ep.gnt(())
+                                }
+                                else{
+                                    dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd0" (*cyc, wentry) >>
+                                    cycle 1 >>
+                                    recurse X
+                                }
+                            ),
+                            _ = recv mst_ep2.rdy => (
+                                if (wprio == 2'd1){
+                                    send mst_ep2.req(x) >>
+                                    send slv_ep.gnt(())
+                                }
+                                else{
+                                    dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd1" (*cyc, wentry) >>
+                                    cycle 1 >>
+                                    recurse X
+                                }
+                            ),
+                            _ = recv mst_ep3.rdy => (
+                                if (wprio == 2'd2){
+                                    send mst_ep3.req(x) >>
+                                    send slv_ep.gnt(())
+                                }
+                                else{
+                                    dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd2" (*cyc, wentry) >>
+                                    cycle 1 >>
+                                    recurse X
+                                }
+                            ),
+                            _ = recv mst_ep4.rdy => (
+                                if (wprio == 2'd3){
+                                    send mst_ep4.req(x) >>
+                                    send slv_ep.gnt(())
+                                }
+                                else{
+                                    dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd3" (*cyc, wentry) >>
+                                    cycle 1 >>
+                                    recurse X
+                                }
+                            ),
+                            # => (
+                                (
+                                    set wset := 1'b1;
+                                    set wentry := wprio
+                                ) >>
+                                recurse X
+                            )
+                        }
                     }
-                    else if (wentry == 2'd1){
-                        let _ = recv mst_ep2.rdy >>
-                        send mst_ep2.req(x) >>
-                        send slv_ep.gnt(())
-                    }
-                    else if (wentry == 2'd2){
-                        let _ = recv mst_ep3.rdy >>
-                        send mst_ep3.req(x) >>
-                        send slv_ep.gnt(())
-                    }
-                    else{
-                        let _ = recv mst_ep4.rdy >>
-                        send mst_ep4.req(x) >>
-                        send slv_ep.gnt(())
-                    }
-                } 
+                }
             )
         } >> 
-        cycle 1
+        set wset := 1'b0
     }
     loop{
         set cyc := *cyc + 8'd1
@@ -110,29 +148,67 @@ proc demux_w_main(demux_w_main){
 }
 
 proc demux_b_main(demux_b_main){
+    reg bentry : select_t;
+    reg bset : logic;
     loop{
         try _ = recv b_fifo_ep.empty { () }
         else{
             let bentry = recv b_fifo_ep.pop >>
-            if (bentry == 2'd0){
-                let _ = recv mst_ep1.rdy >>
-                let b = recv mst_ep1.res >>
-                send slv_ep.res(b)
-            }
-            else if (bentry == 2'd1){
-                let _ = recv mst_ep2.rdy >>
-                let b = recv mst_ep2.res >>
-                send slv_ep.res(b)
-            }
-            else if (bentry == 2'd2){
-                let _ = recv mst_ep3.rdy >>
-                let b = recv mst_ep3.res >>
-                send slv_ep.res(b)
-            }
-            else{
-                let _ = recv mst_ep4.rdy >>
-                let b = recv mst_ep4.res >>
-                send slv_ep.res(b)
+            rec X {
+                let bprio = if(*bset) {*bentry} else {bentry} >>
+                xoffer bprio{
+                    _ = recv mst_ep1.rdy => (
+                        if (bprio == 2'd0){
+                            let b = recv mst_ep1.res >>
+                            send slv_ep.res(b)
+                        }
+                        else{
+                            dprint "Something went wrong! | bentry = %d vs id = 2'd0" (bentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    ),
+                    _ = recv mst_ep2.rdy => (
+                        if (bprio == 2'd1){
+                            let b = recv mst_ep2.res >>
+                            send slv_ep.res(b)
+                        }
+                        else{
+                            dprint "Something went wrong! | bentry = %d vs id = 2'd1" (bentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    ),
+                    _ = recv mst_ep3.rdy => (
+                        if (bprio == 2'd2){
+                            let b = recv mst_ep3.res >>
+                            send slv_ep.res(b)
+                        }
+                        else{
+                            dprint "Something went wrong! | bentry = %d vs id = 2'd2" (bentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    ),
+                    _ = recv mst_ep4.rdy => (
+                        if (bprio == 2'd3){
+                            let b = recv mst_ep4.res >>
+                            send slv_ep.res(b)
+                        }
+                        else{
+                            dprint "Something went wrong! | bentry = %d\n vs id = 2'd3" (bentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    ),
+                    # =>(
+                        (
+                            set bset := 1'b1;
+                            set bentry := bentry
+                        ) >>
+                        recurse X
+                    )
+                }
             }
         } >>
         cycle 1
@@ -150,13 +226,13 @@ proc master<id : int>(master_itfc){
         set addr := aw.addr >>
         cycle 1 >> 
         let aw_cyc = *cyc - 8'd2 >>
-        dprint "[Cycle %d] Master %d received aw addr %d\n" (aw_cyc, id, aw.addr) >>
+        dprint "[Cycle %d] Master %d received aw addr %d" (aw_cyc, id[0+:2], aw.addr) >>
         rec X {
             send demux_ep_w.rdy(()) >>
             try w = recv demux_ep_w.req {
                 set mem[*addr] := w.data >>
                 let w_cyc = *cyc - 8'd1 >>
-                dprint "[Cycle %d] Master %d received w data %d\n" (w_cyc, id, w.data)
+                dprint "[Cycle %d] Master %d received w data %d" (w_cyc, id[0+:2], w.data)
             }
             else{
                 cycle 1 >>
@@ -168,7 +244,7 @@ proc master<id : int>(master_itfc){
         send demux_ep_b.res(b_pack_t::{resp = 1'b0}) >>
         cycle 1 >>
         let b_cyc = *cyc - 8'd1 >>
-        dprint "[Cycle %d] Master %d sent b response\n" (b_cyc, id) >>
+        dprint "[Cycle %d] Master %d sent b response" (b_cyc, id[0+:2]) >>
         ()
     }
     loop{
@@ -194,15 +270,15 @@ proc slave(slave_itfc){
         let curr_addr = if (curr_sel == 2'd0) {8'd0} else if (curr_sel == 2'd1) {8'd64} else if (curr_sel == 2'd2) {8'd128} else {8'd192} >>
         let aw = aw_pack_t::{addr = curr_addr; prot = 1'b0} >>
         let req = aw_ch::{aw_pack = aw; select = curr_sel} >>
-        dprint "[Cycle %d] Slave write aw addr %d selected master %d\n" (*cyc, aw.addr, req.select) >>
+        dprint "[Cycle %d] Slave write aw addr %d selected master %d" (*cyc, aw.addr, req.select) >>
         send slv_ep_aw.req(req) >>
         let _ = recv slv_ep_aw.gnt >>
         let w = w_pack_t::{data = *data; strb = 1'b1} >>
         send slv_ep_w.req(w) >>
         let _ = recv slv_ep_w.gnt >>
-        dprint "[Cycle %d] Slave write data %d granted\n" (*cyc, w.data) >>
+        dprint "[Cycle %d] Slave write data %d granted" (*cyc, w.data) >>
         let b = recv slv_ep_b.res >>
-        dprint "[Cycle %d] Slave received b response %d\n" (*cyc, b.resp) >>
+        dprint "[Cycle %d] Slave received b response %d" (*cyc, b.resp) >>
         set data := *data + 8'd1 >>
         set sel := *sel + 2'd1 >>
         if (target == 16'd3) {
