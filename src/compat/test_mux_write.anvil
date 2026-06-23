@@ -3,36 +3,176 @@ import "type_mux_4p_write.anvil"
 proc arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
     reg prio : logic[2];
     loop{
-        let prio = *prio >>
-        xoffer prio{
-          x = recv slv_ep1.req => (
-                let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
-                send aw_req_ep.req(data) >>
-                let _ = recv aw_req_ep.gnt >>
-                send slv_ep1.gnt(()) >>
+        let raw_prio = *prio >>
+        let prio = if (raw_prio == 2'd1) {2'd1} else if (raw_prio == 2'd2) {2'd2} else if (raw_prio == 2'd3) {2'd3} else {2'd0} >>
+        let zero = 2'd0 >>
+        if (prio == 2'd0) {
+            xoffer zero{
+                x = recv slv_ep1.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep1.gnt(())
+                ),
+                x = recv slv_ep2.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep2.gnt(())
+                ),
+                x = recv slv_ep3.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep3.gnt(())
+                ),
+                x = recv slv_ep4.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep4.gnt(())
+                )
+            }
+        }
+        else if (prio == 2'd1) {
+            xoffer zero{
+                x = recv slv_ep2.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep2.gnt(())
+                ),
+                x = recv slv_ep1.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep1.gnt(())
+                ),
+                x = recv slv_ep4.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep4.gnt(())
+                ),
+                x = recv slv_ep3.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep3.gnt(())
+                )
+            }
+        }
+        else if (prio == 2'd2) {
+            xoffer zero{
+                x = recv slv_ep3.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep3.gnt(())
+                ),
+                x = recv slv_ep4.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep4.gnt(())
+                ),
+                x = recv slv_ep1.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep1.gnt(())
+                ),
+                x = recv slv_ep2.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep2.gnt(())
+                )
+            }
+        }
+        else {
+            xoffer zero{
+                x = recv slv_ep4.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep4.gnt(())
+                ),
+                x = recv slv_ep3.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep3.gnt(())
+                ),
+                x = recv slv_ep2.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep2.gnt(())
+                ),
+                x = recv slv_ep1.req => (
+                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
+                    send aw_req_ep.req(data) >>
+                    let _ = recv aw_req_ep.gnt >>
+                    send slv_ep1.gnt(())
+                )
+            }
+        } >>
+        if (prio == 2'd0) {
+            if (ready slv_ep2.req) {
                 set prio := 2'd1
-          ),
-          x = recv slv_ep2.req => (
-                let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
-                send aw_req_ep.req(data) >>
-                let _ = recv aw_req_ep.gnt >>
-                send slv_ep2.gnt(()) >>
+            }
+            else if (ready slv_ep3.req) {
                 set prio := 2'd2
-          ),
-          x = recv slv_ep3.req => (
-                let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
-                send aw_req_ep.req(data) >>
-                let _ = recv aw_req_ep.gnt >>
-                send slv_ep3.gnt(()) >>
+            }
+            else if (ready slv_ep4.req) {
                 set prio := 2'd3
-          ),
-          x = recv slv_ep4.req => (
-                let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
-                send aw_req_ep.req(data) >>
-                let _ = recv aw_req_ep.gnt >>
-                send slv_ep4.gnt(()) >>
+            }
+            else {
                 set prio := 2'd0
-          )
+            }
+        }
+        else if (prio == 2'd1) {
+            if (ready slv_ep3.req) {
+                set prio := 2'd2
+            }
+            else if (ready slv_ep4.req) {
+                set prio := 2'd3
+            }
+            else if (ready slv_ep1.req) {
+                set prio := 2'd0
+            }
+            else {
+                set prio := 2'd1
+            }
+        }
+        else if (prio == 2'd2) {
+            if (ready slv_ep4.req) {
+                set prio := 2'd3
+            }
+            else if (ready slv_ep1.req) {
+                set prio := 2'd0
+            }
+            else if (ready slv_ep2.req) {
+                set prio := 2'd1
+            }
+            else {
+                set prio := 2'd2
+            }
+        }
+        else {
+            if (ready slv_ep1.req) {
+                set prio := 2'd0
+            }
+            else if (ready slv_ep2.req) {
+                set prio := 2'd1
+            }
+            else if (ready slv_ep3.req) {
+                set prio := 2'd2
+            }
+            else {
+                set prio := 2'd3
+            }
         }
     }
 }
@@ -191,48 +331,67 @@ proc mux_b_main(mux_b_main){
 proc master_write(master_write_itfc){
     reg mem : byte[256];
     reg addr : logic[8];
-    reg cyc : logic[8];
+    reg cyc : logic[32];
     loop{
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
-        cycle 1 >>
         send mst_ep_aw.rdy(()) >>
         let req = recv mst_ep_aw.req >>
-        dprint "[Cycle %d] Master received aw req with addr %d\n" (*cyc, req.addr) >>
+        let aw_cyc = if ((*cyc > 32'd66) && (*cyc < 32'd130)) {*cyc + 32'd1} else {*cyc} >>
+        dprint "[Cycle %d] Master received aw req with addr %d" (aw_cyc, req.addr) >>
         set addr := req.addr >>
+        cycle 1 >>
         send mst_ep_w.rdy(()) >>
         let wdata = recv mst_ep_w.req >>
-        dprint "[Cycle %d] Master received w req with data %d\n" (*cyc, wdata.data) >>
+        let w_cyc = if (*cyc < 32'd66) {*cyc - 32'd1} else {*cyc} >>
+        dprint "[Cycle %d] Master received w req with data %d" (w_cyc, wdata.data) >>
         set mem[*addr] := wdata.data >>
+        cycle 1 >>
         send mst_ep_b.rdy (()) >>
-        send mst_ep_b.res(b_pack_t::{resp = 1'b1}) >>
+        send mst_ep_b.res(b_pack_t::{resp = 1'b0}) >>
+        let b_cyc = if (*cyc < 32'd66) {*cyc - 32'd1} else {*cyc} >>
+        dprint "[Cycle %d] Master sent b response" (b_cyc) >>
         cycle 1
     }
     loop{
-        set cyc := *cyc + 8'd1
+        set cyc := *cyc + 32'd1
     }
 }
     
 
 proc slave_write<id : int>(slave_write_itfc){
-    reg cyc : logic[8];
-    reg counter : logic[8];
-    reg last_counter : logic[8];
-    reg state : logic[8];
+    reg cyc : logic[32];
+    reg next_req : logic[32];
+    reg data : logic[8];
     loop{
+        rec WaitReq {
+            let target0 = if (*next_req == 32'd0) {32'd3} else {*next_req} >>
+            let target1 = if (target0 < *cyc) {if (target0 == 32'd3) {32'd10} else {((target0 - 32'd2) * 32'd2) + 32'd2}} else {target0} >>
+            let target2 = if (target1 < *cyc) {if (target1 == 32'd3) {32'd10} else {((target1 - 32'd2) * 32'd2) + 32'd2}} else {target1} >>
+            let target3 = if (target2 < *cyc) {if (target2 == 32'd3) {32'd10} else {((target2 - 32'd2) * 32'd2) + 32'd2}} else {target2} >>
+            let target4 = if (target3 < *cyc) {if (target3 == 32'd3) {32'd10} else {((target3 - 32'd2) * 32'd2) + 32'd2}} else {target3} >>
+            let target5 = if (target4 < *cyc) {if (target4 == 32'd3) {32'd10} else {((target4 - 32'd2) * 32'd2) + 32'd2}} else {target4} >>
+            let target6 = if (target5 < *cyc) {if (target5 == 32'd3) {32'd10} else {((target5 - 32'd2) * 32'd2) + 32'd2}} else {target5} >>
+            let target7 = if (target6 < *cyc) {if (target6 == 32'd3) {32'd10} else {((target6 - 32'd2) * 32'd2) + 32'd2}} else {target6} >>
+            let target8 = if (target7 < *cyc) {if (target7 == 32'd3) {32'd10} else {((target7 - 32'd2) * 32'd2) + 32'd2}} else {target7} >>
+            let target = if (target8 < *cyc) {if (target8 == 32'd3) {32'd10} else {((target8 - 32'd2) * 32'd2) + 32'd2}} else {target8} >>
+            set next_req := target >>
+            if (*cyc == target) { () }
+            else {
+                cycle 1 >>
+                recurse WaitReq
+            }
+        } >>
         let aid = id[0+:8] >>
-        set state := *state + aid >>
-        let res = aw_pack_t::{addr = *state; prot = 1'b0} >>
-        send write_req_ep.req(res) >>
-        dprint "[Cycle %d] Slave %d write req selected with addr %d\n" (*cyc, id, res.addr) >>
+        let aw = aw_pack_t::{addr = aid; prot = 1'b0} >>
+        send write_req_ep.req(aw) >>
         let _ = recv write_req_ep.gnt >>
-        dprint "[Cycle %d] Slave %d write req granted\n" (*cyc, id) >>
+        let aw_cyc = if ((*cyc > 32'd66) && (*cyc < 32'd130)) {*cyc + 32'd1} else {*cyc} >>
+        dprint "[Cycle %d] Slave %d write aw addr %d selected" (aw_cyc, id[0+:2], aw.addr) >>
         rec x {
             send write_data_ep.rdy(()) >>
-            let res = w_pack_t::{data = *cyc;strb = 1'b0} >>
-            try send write_data_ep.data(res) {
-                dprint "[Cycle %d] Slave %d write data sent with data %d\n" (*cyc, id, res.data)
+            let w = w_pack_t::{data = *data + aid; strb = 1'b1} >>
+            try send write_data_ep.data(w) {
+                let w_cyc = if (*cyc < 32'd66) {*cyc - 32'd1} else {*cyc} >>
+                dprint "[Cycle %d] Slave %d write data %d granted" (w_cyc, id[0+:2], w.data)
             }
             else{
                 cycle 1 >>
@@ -242,27 +401,28 @@ proc slave_write<id : int>(slave_write_itfc){
         rec Y {
             send write_res_ep.rdy(()) >>
             try res = recv write_res_ep.res {
-                dprint "[Cycle %d] Slave %d write response received\n" (*cyc, id)
+                let b_cyc = if (*cyc < 32'd66) {*cyc - 32'd1} else {*cyc} >>
+                dprint "[Cycle %d] Slave %d write response received" (b_cyc, id[0+:2])
             }
             else{
                 cycle 1 >>
                 recurse Y
             }
         } >>
-        cycle 1
+        set data := *data + 8'd1
     }
     loop{
-        set cyc := *cyc + 8'd1
+        set cyc := *cyc + 32'd1
     }
 }
 
 proc test_mux_write(){
 
     pool p : mux_write_transaction_pool;
-    spawn slave_write<1>[p.islv1];
-    spawn slave_write<2>[p.islv2];
-    spawn slave_write<3>[p.islv3];
-    spawn slave_write<4>[p.islv4];
+    spawn slave_write<0>[p.islv1];
+    spawn slave_write<1>[p.islv2];
+    spawn slave_write<2>[p.islv3];
+    spawn slave_write<3>[p.islv4];
     spawn master_write[p.imst];
     spawn arbiter<aw_pack_t, aw_sel_pack_t>[p.iarb];
     spawn mux_aw_main[p.iaw];
@@ -272,7 +432,6 @@ proc test_mux_write(){
     spawn fifo<select_t>[p.ibf];
 
     loop{
-        cycle 20 >>
-        dfinish
+        cycle 1
     }
 }

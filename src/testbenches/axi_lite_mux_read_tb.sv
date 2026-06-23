@@ -41,13 +41,21 @@ module axi_read_slave #(
         SEND_AR: begin
           ar_valid_o <= 1;
           ar_o.addr <= {SlaveId[7:0]};
-          if (ar_ready_i) begin
+          if (ar_valid_o && ar_ready_i) begin
+`ifdef AXI_MUX_READ_TB_TRACE
+            $display("[Cycle %0d] Slave %0d read req selected with addr %0d",
+                     cycle_count, SlaveId, SlaveId[7:0]);
+`endif
             ar_valid_o <= 0;
             state <= WAIT_R;
           end
         end
         WAIT_R: begin
           if (r_valid_i) begin
+`ifdef AXI_MUX_READ_TB_TRACE
+            $display("[Cycle %0d] Slave %0d read response received with data %0d",
+                     cycle_count, SlaveId, r_i.data);
+`endif
             state <= IDLE;
           end
         end
@@ -74,6 +82,7 @@ module axi_read_master #(
   typedef enum logic {IDLE, SEND_R} state_t;
   state_t state;
   logic [7:0] data_count;
+  logic [31:0] cycle_count;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -82,12 +91,18 @@ module axi_read_master #(
       r_valid_o <= 0;
       r_o <= '0;
       data_count <= 0;
+      cycle_count <= 0;
     end else begin
+      cycle_count <= cycle_count + 1;
       case (state)
         IDLE: begin
           ar_ready_o <= 1;
           r_valid_o <= 0;
-          if (ar_valid_i) begin
+          if (ar_ready_o && ar_valid_i) begin
+`ifdef AXI_MUX_READ_TB_TRACE
+            $display("[Cycle %0d] Master received ar req with addr %0d",
+                     cycle_count, ar_i.addr);
+`endif
             ar_ready_o <= 0;
             state <= SEND_R;
           end
@@ -96,7 +111,11 @@ module axi_read_master #(
           r_valid_o <= 1;
           r_o.data <= data_count;
           r_o.resp <= 2'b00;
-          if (r_ready_i) begin
+          if (r_valid_o && r_ready_i) begin
+`ifdef AXI_MUX_READ_TB_TRACE
+            $display("[Cycle %0d] Master sent r res with data %0d",
+                     cycle_count, data_count);
+`endif
             r_valid_o <= 0;
             data_count <= data_count + 1;
             state <= IDLE;
