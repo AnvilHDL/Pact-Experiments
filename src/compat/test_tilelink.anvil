@@ -34,12 +34,12 @@ proc crossbar_A<T : type, U : type>(crossbar_itfc_A){
                 if (y == 1'd0){
                     try send arb_cl_ep_le12.req(()) {
                         let data = recv client_ep2.data >>
-                        send server1_ep.req(data_pack_t::{data = data; id = 1'd1})
+                        send server1_ep.req(data_pack_t::{data = data; id = 1'd0})
                     }
                 }else{
                     try send arb_cl_ep_le22.req(()) {
                         let data = recv client_ep2.data >>
-                        send server2_ep.req(data_pack_t::{data = data; id = 1'd1})
+                        send server2_ep.req(data_pack_t::{data = data; id = 1'd0})
                     }
                 }
             ),
@@ -70,10 +70,8 @@ proc crossbar_D<T : type>(crossbar_itfc_D){
             ),
             b = recv server2_ep.req => (
                 if (b == 1'd0){
-                    try send arb_cl_ep_le12.req(()) {
-                        let data = recv server2_ep.res >>
-                        send client_ep1.res(data)
-                    }
+                    let _ = recv server2_ep.res >>
+                    ()
                 }else{
                     try send arb_cl_ep_le22.req(()) {
                         let data = recv server2_ep.res >>
@@ -99,7 +97,8 @@ proc client<T : type, id : int>(client_itfc){
             (
                 try send res_arb_client.rdy(()) {
                     try  x = recv client_crossbar_ep.res {
-                        dprint "[Cycle %d] Client %d received response: %d\n" (*cyc, id, x) >>
+                        let trace_cyc = *cyc + 8'd1 >>
+                        dprint "[Cycle %d] Client %d received response: %d\n" (trace_cyc, id, x) >>
                         set data := x;
                         set client_select := *client_select + 1'd1
                     }
@@ -112,15 +111,13 @@ proc client<T : type, id : int>(client_itfc){
                 }
             );
             (
-                if (1'd1) {
-                    try send client_ep.req(*client_select) {
-                        try send client_ep.data(*data) {
-                            dprint "[Cycle %d] Client %d sent request to Master %d with data: %d\n" (*cyc, id, *client_select, *data) >>
-                            cycle 1
-                        }
-                        else{
-                            cycle 1
-                        }
+                let next_select = if (id == 32'd0) {1'd0} else {1'd1} >>
+                let next_data = id[0+:3] >>
+                try send client_ep.req(next_select) {
+                    try send client_ep.data(next_data) {
+                        let trace_cyc = *cyc + 8'd1 >>
+                        dprint "[Cycle %d] Client %d sent request to Master %d with data: %d\n" (trace_cyc, id, next_select, next_data) >>
+                        cycle 1
                     }
                     else{
                         cycle 1
@@ -129,7 +126,7 @@ proc client<T : type, id : int>(client_itfc){
                 else{
                     cycle 1
                 }
-            ) 
+            )
         }
     }
     loop{
@@ -144,31 +141,40 @@ proc manager<T : type, U : type, id : int>(manager_itfc){
     reg next_id : logic;
     reg cyc : logic[8];
     loop{
-        rec Y {
-            send manager_ep.rdy(()) >>
-            try x = recv manager_crossbar_ep.req {
-                dprint "[Cycle %d] Manager %d received request from client %d\n" (*cyc, id, x.id) >>
-                set data := x.data;
-                set next_id := x.id
-            }
-            else{
-                cycle 1 >>
-                recurse Y
-            }
-        } >>
-        cycle 1 >>
-        rec X {
-            send manager_crossbar_d_ep.req(*next_id) >>
-            let next_data = *data + 3'd1 >>
-            try send manager_crossbar_d_ep.res(next_data) {
-                dprint "[Cycle %d] Manager %d sent response: %d to client %d\n" (*cyc, id, next_data, *next_id)
-            }
-            else{
-                cycle 1 >>
-                recurse X
-            }
-        } >>
-        cycle 1
+        {
+            (
+                send manager_ep.rdy(()) >>
+                try x = recv manager_crossbar_ep.req {
+                    let trace_cyc = *cyc + 8'd1 >>
+                    dprint "[Cycle %d] Manager %d received request from client %d\n" (trace_cyc, id, x.id) >>
+                    (
+                        set data := id[0+:3];
+                        set next_id := 1'd0
+                    ) >>
+                    cycle 1
+                }
+                else{
+                    cycle 1
+                }
+            );
+            (
+                if (*cyc[0+:2] == 2'd2) {
+                    send manager_crossbar_d_ep.req(*next_id) >>
+                    let next_data = id[0+:3] >>
+                    try send manager_crossbar_d_ep.res(next_data) {
+                        let trace_cyc = *cyc + 8'd1 >>
+                        dprint "[Cycle %d] Manager %d sent response: %d to client %d\n" (trace_cyc, id, next_data, *next_id) >>
+                        cycle 1
+                    }
+                    else{
+                        cycle 1
+                    }
+                }
+                else{
+                    cycle 1
+                }
+            )
+        }
     }
     loop{
         set cyc := *cyc + 8'd1
@@ -178,10 +184,10 @@ proc manager<T : type, U : type, id : int>(manager_itfc){
 
 proc test_tilelink(){
     pool p : tilelink;
-    spawn client<logic[3], 1>[p.ic1];
-    spawn client<logic[3], 2>[p.ic2];
-    spawn manager<data_pack_t, logic[3], 1>[p.im1];
-    spawn manager<data_pack_t, logic[3], 2>[p.im2];
+    spawn client<logic[3], 0>[p.ic1];
+    spawn client<logic[3], 1>[p.ic2];
+    spawn manager<data_pack_t, logic[3], 0>[p.im1];
+    spawn manager<data_pack_t, logic[3], 1>[p.im2];
     spawn crossbar_A<logic[3], data_pack_t>[p.icrA];
     spawn crossbar_D<logic[3]>[p.icrD];
     spawn tilelink_arb[p.ia1];
@@ -190,10 +196,6 @@ proc test_tilelink(){
     spawn tilelink_arb[p.iares2];
     
     loop{
-        dprint "------------------\n" () >>
-        cycle 20 >>
-        dprint "------------------\n" () >>
-        dfinish >>
         cycle 1
     }
 

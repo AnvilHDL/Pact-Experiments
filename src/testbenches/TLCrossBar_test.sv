@@ -71,6 +71,7 @@ assign c_bits_data = 8'b0;
 assign c_bits_corrupt = 1'b0;
 assign b_ready = 1'b0;
 
+
 always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
         cycle_count <= 0;
@@ -86,6 +87,12 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         a_bits_corrupt <= 1'b0;
     end else begin
         cycle_count <= cycle_count + 1;
+        if (d_valid && d_ready) begin
+`ifdef TILELINK_CROSSBAR_TB_TRACE
+            $display("[Cycle %0d] Client %0d received response: %0d",
+                     cycle_count, id, d_bits_data);
+`endif
+        end
         case (state)
             IDLE: begin
                 a_valid <= 0;
@@ -100,7 +107,11 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
                 end
             end
             WAITING: begin
-                if (a_ready) begin
+                if (a_valid && a_ready) begin
+`ifdef TILELINK_CROSSBAR_TB_TRACE
+                    $display("[Cycle %0d] Client %0d sent request to Master %0d with data: %0d",
+                             cycle_count, id, a_bits_address[0], a_bits_data);
+`endif
                     a_valid <= 0;
                     state <= IDLE;
                 end
@@ -202,6 +213,10 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         
         // Accept incoming A channel requests
         if (a_valid && a_ready) begin
+`ifdef TILELINK_CROSSBAR_TB_TRACE
+            $display("[Cycle %0d] Manager %0d received request from client %0d",
+                     cycle_count, id, a_bits_source);
+`endif
             pending_source <= a_bits_source;
             state <= RESPONDING;
         end
@@ -215,7 +230,11 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
                 d_bits_opcode <= 3'b001; // AccessAckData
                 d_bits_source <= pending_source;
                 d_bits_data <= {6'b0, id};
-                if (d_ready) begin
+                if (d_valid && d_ready) begin
+`ifdef TILELINK_CROSSBAR_TB_TRACE
+                    $display("[Cycle %0d] Manager %0d sent response: %0d to client %0d",
+                             cycle_count, id, d_bits_data, d_bits_source);
+`endif
                     d_valid <= 0;
                     state <= IDLE;
                 end

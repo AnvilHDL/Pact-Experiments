@@ -49,6 +49,8 @@ interface crossbar_itfc_D(server1_ep : right server_r_ch<T>, server2_ep : right 
                             (^(arb_cl_ep_le12.req : #server2_ep.res;#client_ep1.res , *)) 
                                                                     + 
                             (^(arb_cl_ep_le22.req : #server2_ep.res;#client_ep2.res , *)) 
+                                                                    +
+                            (#server2_ep.res)
                         ),
         *
      ) 
@@ -61,7 +63,8 @@ interface client_itfc(client_ep : left client_ch<T>, res_arb_client : right arbi
    (^(res_arb_client.rdy : ^(client_crossbar_ep.res : #1, * : #1), * : #1)) || (^(client_ep.req: ^(client_ep.data : #1, * : #1), * : #1) + (#1))
 
 interface manager_itfc(manager_ep : right arbiter_server_ch, manager_crossbar_ep : left server_ch<T>, manager_crossbar_d_ep : left server_r_ch<U>) =
-    rec Y. (manager_ep.rdy; ^(manager_crossbar_ep.req : #1,*:#1;Y));#1;rec X . ( manager_crossbar_d_ep.req; ^(manager_crossbar_d_ep.res, *: #1;X)); #1
+    (manager_ep.rdy; ^(manager_crossbar_ep.req : #1, * : #1)) ||
+    ((manager_crossbar_d_ep.req; ^(manager_crossbar_d_ep.res : #1, * : #1)) + (#1))
 
 pool tilelink{
     client_ep_le1 -- client_ep_ri1 : client_ch<logic[3]>,

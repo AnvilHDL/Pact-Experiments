@@ -41,7 +41,7 @@ def result_handler(out_log,file_name):
     return Result.Error
 
 
-def run_compat(file):
+def run_compat(file,mode):
     file_base = os.path.basename(file)
     print("Running compatibility check on file: " + file_base)
     compat_temp_log = os.path.join(BASE_DIR, "compat_temp.txt")
@@ -49,7 +49,7 @@ def run_compat(file):
 
     with open(compat_temp_log, "w") as log_file:
         subprocess.run(
-            ["./run_anvil", "-d", "2", relative_file],
+            ["./run_anvil", "-d", str(mode), relative_file],
             cwd=BASE_DIR,
             stdout=log_file,
             stderr=subprocess.STDOUT,
@@ -64,6 +64,15 @@ def get_type_files():
     return [f for f in files if f.startswith("type_")]
 
 if __name__ == "__main__":
+    if len(os.sys.argv) < 2:
+        print("Usage: python run_compat.py <mode>")
+        print("Mode can be 2 3 4")
+        exit(1)
+    else:
+        mode = os.sys.argv[1]
+        if mode not in ["2", "3", "4"]:
+            print("Invalid mode. Mode can be 2 3 4")
+            exit(1)
     type_files = get_type_files()
     os.system("rm -rf " + ERROR_DIR)
     compat_count = 0
@@ -72,7 +81,7 @@ if __name__ == "__main__":
     for file in type_files:
 
         print("==================================================================================")
-        result = run_compat(os.path.join(TEST_CASES_DIR, file))
+        result = run_compat(os.path.join(TEST_CASES_DIR, file), mode)
         match result:
             case Result.Compatible:
                 compat_count += 1
