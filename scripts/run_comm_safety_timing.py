@@ -5,8 +5,26 @@ import shlex
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
+
+
+# sby's own exit-code convention (see sby_core.py): the overall run status is
+# encoded in the low bits regardless of the `expect` setting.
+SBY_RETCODE_STATUS = {
+    0: "PASS",
+    1: "PASS",
+    2: "FAIL",
+    4: "UNKNOWN",
+    8: "TIMEOUT",
+    16: "ERROR",
+    32: "CANCELLED",
+}
+
+
+def sby_status_from_retcode(rc):
+    return SBY_RETCODE_STATUS.get(rc, f"FAIL({rc})")
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,7 +50,7 @@ SHORT_CASES = [
 BIG_CASES = [
     Case("axi_demux_write", "big", "formal/comm_safety/axi_demux_write.sby", "type_demux_write.anvil"),
     Case("axi_mux_read", "big", "formal/comm_safety/axi_mux_read.sby", "type_mux_read_simplified.anvil"),
-    Case("axi_mux_write", "big", "formal/comm_safety/axi_mux_write.sby", "type_mux_write_simplified.anvil"),
+    Case("axi_mux_write", "big", "formal/comm_safety/axi_mux_write.sby", "type_mux_4p_write.anvil"),
     Case("ace", "big", "formal/comm_safety/ace.sby", "type_ace.anvil"),
     Case("tilelink", "big", "formal/comm_safety/tilelink.sby", "type_tilelink.anvil"),
 ]
@@ -41,7 +59,7 @@ BIG_CASES = [
 def parse_args():
     parser = argparse.ArgumentParser(description="Time communication-safety SBY and Anvil checks.")
     parser.add_argument("--phase", choices=["short", "big", "all"], default="short")
-    parser.add_argument("--mode", choices=["2", "3", "4"], default="4")
+    parser.add_argument("--mode", choices=["2", "3", "4"], default="2")
     parser.add_argument("--results-dir", default=str(DEFAULT_RESULTS))
     parser.add_argument("--case", dest="case_names", action="append", help="Run one named case; repeatable")
     parser.add_argument("--skip-yosys", action="store_true")
@@ -53,6 +71,21 @@ def parse_args():
         "--setup-only",
         action="store_true",
         help="Only set up SBY workdirs for frontend/debug checks. Default runs the full model checker.",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=None,
+        help="Wall-clock seconds to allow each individual sby/ebmc/anvil subprocess before killing it "
+        "(each of the up-to-3 steps per case gets its own budget, not a shared one). "
+        "Default: none (run to completion).",
+    )
+    parser.add_argument(
+        "--jobs",
+        type=int,
+        default=1,
+        help="Number of cases to run concurrently (each case's own sby/ebmc/anvil steps still run "
+        "sequentially within that case). Default: 1 (sequential, original behavior).",
     )
     return parser.parse_args()
 
@@ -157,38 +190,45 @@ def ebmc_args_from_sby(case, bound_override=None, solver="yices"):
     return command
 
 
-def run_logged(command, log_path):
+def run_logged(command, log_path, timeout_seconds=None):
     start = time.perf_counter()
     with open(log_path, "w") as log_file:
         log_file.write("$ " + " ".join(command) + "\n")
         log_file.flush()
-        proc = subprocess.run(
-            command,
-            cwd=ROOT,
-            stdout=log_file,
-            stderr=subprocess.STDOUT,
-            check=False,
-        )
-    return proc.returncode, time.perf_counter() - start
+        try:
+            proc = subprocess.run(
+                command,
+                cwd=ROOT,
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                check=False,
+                timeout=timeout_seconds,
+            )
+            rc = proc.returncode
+        except subprocess.TimeoutExpired:
+            rc = None
+            log_file.write(f"\n# TIMED OUT after {timeout_seconds}s (external timeout)\n")
+    return rc, time.perf_counter() - start
 
 
-def run_sby(case, results_dir, setup_only=False):
+def run_sby(case, results_dir, setup_only=False, timeout_seconds=None):
     log_path = results_dir / f"{case.name}.log"
     workdir = results_dir / f"sby_{case.name}"
     command = ["sby", "-f"]
     if setup_only:
         command.append("--setup")
     command.extend(["-d", str(workdir), str(ROOT / case.sby)])
-    rc, elapsed = run_logged(command, log_path)
+    rc, elapsed = run_logged(command, log_path, timeout_seconds=timeout_seconds)
+    status = "EXTERNAL_TIMEOUT" if rc is None else sby_status_from_retcode(rc)
     return {
         "yosys_mode": "setup_only" if setup_only else "model_check",
-        "yosys_status": "PASS" if rc == 0 else f"FAIL({rc})",
+        "yosys_status": status,
         "yosys_seconds": f"{elapsed:.6f}",
         "yosys_log": str(log_path.relative_to(ROOT)),
     }
 
 
-def run_ebmc(case, results_dir, bound_override=None, solver="yices"):
+def run_ebmc(case, results_dir, bound_override=None, solver="yices", timeout_seconds=None):
     log_path = results_dir / f"{case.name}.ebmc.log"
     try:
         command = ebmc_args_from_sby(case, bound_override=bound_override, solver=solver)
@@ -199,9 +239,10 @@ def run_ebmc(case, results_dir, bound_override=None, solver="yices"):
             "ebmc_seconds": "0.000000",
             "ebmc_log": str(log_path.relative_to(ROOT)),
         }
-    rc, elapsed = run_logged(command, log_path)
+    rc, elapsed = run_logged(command, log_path, timeout_seconds=timeout_seconds)
+    status = "EXTERNAL_TIMEOUT" if rc is None else ("PASS" if rc == 0 else f"FAIL({rc})")
     return {
-        "ebmc_status": "PASS" if rc == 0 else f"FAIL({rc})",
+        "ebmc_status": status,
         "ebmc_seconds": f"{elapsed:.6f}",
         "ebmc_log": str(log_path.relative_to(ROOT)),
     }
@@ -215,9 +256,13 @@ def read_single_anvil_csv(path):
     return rows[0].get("result", "Error"), rows[0].get("elapsed_seconds", "")
 
 
-def run_anvil(case, mode, results_dir):
+def run_anvil(case, mode, results_dir, timeout_seconds=None):
     log_path = results_dir / f"{case.name}.anvil.log"
     csv_path = results_dir / f"{case.name}.anvil.csv"
+    # run_compat.py only writes this CSV once, after its whole run completes -
+    # remove any stale file first so a killed/timed-out subprocess can't be
+    # mistaken for a fresh result below.
+    csv_path.unlink(missing_ok=True)
     command = [
         sys.executable,
         "run_compat.py",
@@ -227,7 +272,13 @@ def run_anvil(case, mode, results_dir):
         "--csv",
         str(csv_path),
     ]
-    rc, elapsed = run_logged(command, log_path)
+    rc, elapsed = run_logged(command, log_path, timeout_seconds=timeout_seconds)
+    if rc is None:
+        return {
+            "anvil_status": "EXTERNAL_TIMEOUT",
+            "anvil_seconds": f"{elapsed:.6f}",
+            "anvil_log": str(log_path.relative_to(ROOT)),
+        }
     if csv_path.exists():
         result, compat_elapsed = read_single_anvil_csv(csv_path)
     else:
@@ -238,6 +289,44 @@ def run_anvil(case, mode, results_dir):
         "anvil_seconds": compat_elapsed or f"{elapsed:.6f}",
         "anvil_log": str(log_path.relative_to(ROOT)),
     }
+
+
+def run_case(case, args, results_dir):
+    print(f"[{case.name}] starting", flush=True)
+    row = {
+        "case": case.name,
+        "phase": case.phase,
+        "sby": case.sby,
+        "anvil_type": case.anvil_type,
+    }
+    if args.skip_yosys:
+        row.update({"yosys_mode": "skipped", "yosys_status": "SKIPPED", "yosys_seconds": "", "yosys_log": ""})
+        row.update({"ebmc_status": "SKIPPED", "ebmc_seconds": "", "ebmc_log": ""})
+    else:
+        if args.checker in ("sby", "both"):
+            print(f"[{case.name}] running {'SBY setup only' if args.setup_only else 'full SBY model check'}", flush=True)
+            row.update(run_sby(case, results_dir, setup_only=args.setup_only, timeout_seconds=args.timeout))
+        else:
+            row.update({"yosys_mode": "not_selected", "yosys_status": "SKIPPED", "yosys_seconds": "", "yosys_log": ""})
+
+        if args.checker in ("ebmc", "both") and not args.setup_only:
+            print(f"[{case.name}] running EBMC proof mode", flush=True)
+            row.update(run_ebmc(case, results_dir, bound_override=args.ebmc_bound, solver=args.ebmc_solver, timeout_seconds=args.timeout))
+        else:
+            row.update({"ebmc_status": "SKIPPED", "ebmc_seconds": "", "ebmc_log": ""})
+
+    if args.skip_anvil:
+        row.update({"anvil_status": "SKIPPED", "anvil_seconds": "", "anvil_log": ""})
+    else:
+        row.update(run_anvil(case, args.mode, results_dir, timeout_seconds=args.timeout))
+
+    print(
+        f"[{case.name}] done: yosys={row['yosys_status']} {row['yosys_seconds']}s "
+        f"ebmc={row['ebmc_status']} {row['ebmc_seconds']}s "
+        f"anvil={row['anvil_status']} {row['anvil_seconds']}s",
+        flush=True,
+    )
+    return row
 
 
 def main():
@@ -252,41 +341,18 @@ def main():
         print("No cases selected.", file=sys.stderr)
         return 1
 
-    rows = []
-    for case in cases:
-        print(f"[{case.name}] starting")
-        row = {
-            "case": case.name,
-            "phase": case.phase,
-            "sby": case.sby,
-            "anvil_type": case.anvil_type,
-        }
-        if args.skip_yosys:
-            row.update({"yosys_mode": "skipped", "yosys_status": "SKIPPED", "yosys_seconds": "", "yosys_log": ""})
-        else:
-            if args.checker in ("sby", "both"):
-                print(f"[{case.name}] running {'SBY setup only' if args.setup_only else 'full SBY model check'}")
-                row.update(run_sby(case, results_dir, setup_only=args.setup_only))
-            else:
-                row.update({"yosys_mode": "not_selected", "yosys_status": "SKIPPED", "yosys_seconds": "", "yosys_log": ""})
+    rows_by_case = {}
+    if args.jobs <= 1:
+        for case in cases:
+            rows_by_case[case.name] = run_case(case, args, results_dir)
+    else:
+        with ThreadPoolExecutor(max_workers=args.jobs) as pool:
+            futures = {pool.submit(run_case, case, args, results_dir): case for case in cases}
+            for future in as_completed(futures):
+                case = futures[future]
+                rows_by_case[case.name] = future.result()
 
-            if args.checker in ("ebmc", "both") and not args.setup_only:
-                print(f"[{case.name}] running EBMC proof mode")
-                row.update(run_ebmc(case, results_dir, bound_override=args.ebmc_bound, solver=args.ebmc_solver))
-            else:
-                row.update({"ebmc_status": "SKIPPED", "ebmc_seconds": "", "ebmc_log": ""})
-
-        if args.skip_anvil:
-            row.update({"anvil_status": "SKIPPED", "anvil_seconds": "", "anvil_log": ""})
-        else:
-            row.update(run_anvil(case, args.mode, results_dir))
-
-        rows.append(row)
-        print(
-            f"[{case.name}] yosys={row['yosys_status']} {row['yosys_seconds']}s "
-            f"ebmc={row['ebmc_status']} {row['ebmc_seconds']}s "
-            f"anvil={row['anvil_status']} {row['anvil_seconds']}s"
-        )
+    rows = [rows_by_case[case.name] for case in cases]
 
     timing_csv = results_dir / "timing.csv"
     with open(timing_csv, "w", newline="") as csv_file:

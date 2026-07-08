@@ -3,6 +3,7 @@ import argparse
 import csv
 import shutil
 import subprocess
+import tempfile
 import time
 from enum import Enum
 
@@ -48,19 +49,27 @@ def result_handler(out_log,file_name):
 def run_compat(file, mode):
     file_base = os.path.basename(file)
     print("Running compatibility check on file: " + file_base)
-    compat_temp_log = os.path.join(BASE_DIR, "compat_temp.txt")
     relative_file = os.path.relpath(file, BASE_DIR)
 
-    with open(compat_temp_log, "w") as log_file:
-        subprocess.run(
-            ["./run_anvil", "-d", str(mode), relative_file],
-            cwd=BASE_DIR,
-            stdout=log_file,
-            stderr=subprocess.STDOUT,
-            check=False,
-        )
+    # Unique per invocation (not a fixed "compat_temp.txt") so concurrent
+    # run_compat.py processes - e.g. under scripts/run_comm_safety_timing.py
+    # --jobs N - don't race on the same log file.
+    fd, compat_temp_log = tempfile.mkstemp(prefix="compat_", suffix=".txt", dir=BASE_DIR)
+    os.close(fd)
+    try:
+        with open(compat_temp_log, "w") as log_file:
+            subprocess.run(
+                ["./run_anvil", "-d", str(mode), relative_file],
+                cwd=BASE_DIR,
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
 
-    return result_handler(compat_temp_log, file)
+        return result_handler(compat_temp_log, file)
+    finally:
+        if os.path.exists(compat_temp_log):
+            os.remove(compat_temp_log)
 
 
 def get_type_files(only=None):

@@ -1,7 +1,6 @@
 [options]
-mode bmc
-depth 180
-timeout 300
+mode prove
+depth 400
 expect pass
 
 [engines]

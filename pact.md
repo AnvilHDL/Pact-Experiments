@@ -55,24 +55,24 @@ src/compat/
 
 ## Direct Anvil Compat Runs
 
-Use `run_compat.py` for type/compat timing across Anvil files.
+Use `run_compat.py` for type/compat timing across Anvil files. Mode is the compiler's `-debug-choice`: `2` = `generalized_type_debug`, `3` = `generalized_type_v2_debug`, `4` = `open_compatibility_v2_debug` - these are different compatibility-checking algorithms, not different strictness levels of the same one, and can disagree on the same file (`type_fifo.anvil` reports `Compatible` under mode 2 but `Incompatible` under mode 4). Use mode `2` unless you specifically need one of the others.
 
 Default comparison mode:
 
 ```sh
-python3 run_compat.py 4
+python3 run_compat.py 2
 ```
 
 Run selected files only:
 
 ```sh
-python3 run_compat.py 4 --only type_fifo.anvil,type_stream_fifo.anvil,type_arbiter.anvil
+python3 run_compat.py 2 --only type_fifo.anvil,type_stream_fifo.anvil,type_arbiter.anvil
 ```
 
 Write a timing CSV:
 
 ```sh
-python3 run_compat.py 4 --csv formal/comm_safety/results/anvil_compat.csv
+python3 run_compat.py 2 --csv formal/comm_safety/results/anvil_compat.csv
 ```
 
 Direct single-test Anvil type/session check:
@@ -96,30 +96,32 @@ The communication-safety work is under:
 formal/comm_safety/
 ```
 
+All `.sby` files use `mode prove` (SymbiYosys k-induction, unbounded proof attempt) with no hardcoded timeout - only the depth used as the induction step bound stays in the file. `mode prove` produces two independent results per case: `basecase` (equivalent to BMC up to `depth`) and `induction` (does the property inductively hold for all time, not just up to depth). A basecase PASS with induction FAIL/UNKNOWN means the property is true within the tested depth but not provable by plain k-induction without extra helper invariants - that is expected and reported as-is (`yosys_status=UNKNOWN`), not treated as a real failure or something to fix by adding invariants.
+
 The timing driver runs model checking and Anvil compat timing in one command.
 
 Short phase:
 
 ```sh
-python3 scripts/run_comm_safety_timing.py --phase short --mode 4
+python3 scripts/run_comm_safety_timing.py --phase short --mode 2
 ```
 
 Big phase:
 
 ```sh
-python3 scripts/run_comm_safety_timing.py --phase big --mode 4
+python3 scripts/run_comm_safety_timing.py --phase big --mode 2
 ```
 
 All cases:
 
 ```sh
-python3 scripts/run_comm_safety_timing.py --phase all --mode 4
+python3 scripts/run_comm_safety_timing.py --phase all --mode 2
 ```
 
 Run only selected cases:
 
 ```sh
-python3 scripts/run_comm_safety_timing.py --case fifo --case axi_demux_read --mode 4
+python3 scripts/run_comm_safety_timing.py --case fifo --case axi_demux_read --mode 2
 ```
 
 Use EBMC instead of SymbiYosys, or both:
@@ -135,6 +137,14 @@ Set up SBY workdirs without running the full checker:
 python3 scripts/run_comm_safety_timing.py --phase short --setup-only
 ```
 
+Run cases in parallel (one OS process/thread per case; each case's own sby/ebmc/anvil steps still run sequentially within that case) with a per-subprocess wall-clock timeout:
+
+```sh
+python3 scripts/run_comm_safety_timing.py --phase all --mode 2 --jobs 10 --timeout 3600
+```
+
+`--jobs` defaults to 1 (sequential, original behavior) - raise it to run that many cases concurrently; there are 10 total cases (5 short + 5 big), so `--jobs 10` runs every selected case at once. `--timeout` (seconds) is applied independently to each of a case's sby/ebmc/anvil subprocess calls (not shared across a case) - a killed subprocess is reported as `EXTERNAL_TIMEOUT` in `timing.csv`, and this is distinct from SBY's own internal `TIMEOUT` status (rc=8) if SBY times out on its own before the external timeout fires. Without `--timeout`, every case runs to completion with no cap - pick a `--timeout` up front rather than guessing, since `mode prove`'s induction step can run for a very long time on larger cases (e.g. `type_arbiter.anvil`'s own Anvil-side mode-4 compat check alone was observed to exceed 90s with no output).
+
 Direct SBY run for one case:
 
 ```sh
@@ -145,6 +155,8 @@ Outputs:
 
 ```text
 formal/comm_safety/results/<case>.log
+formal/comm_safety/results/<case>.anvil.log
+formal/comm_safety/results/<case>.anvil.csv
 formal/comm_safety/results/timing.csv
 formal/comm_safety/results/sby_<case>/
 ```
@@ -217,6 +229,47 @@ Width and structure notes for the current perf setup are in:
 
 ```text
 synthesis/yosys_perf/WIDTH_FINDINGS.md
+```
+
+## State-Space Estimate (SV only)
+
+Naive state-space estimate (`2**seq_cells`, memory bits tracked and reported separately, excluded from the exponent) for the SV side of the same full-test scope used for model checking (each case's own `.sby` top module and file list - DUT plus its driver/harness wiring, not just the isolated core component `collect_yosys_perf.py` measures).
+
+```sh
+python3 scripts/collect_state_space.py
+python3 scripts/collect_state_space.py --case fifo --case arbiter
+```
+
+These full-test tops have no data outputs (only `clk_i`/`rst_ni`), so a normal `synth -flatten` recipe would delete the whole design as unreachable dead logic. The script uses a lighter recipe instead (`hierarchy` → `flatten` → `setattr -set keep 1 w:*` → `proc` → `opt_clean` → `stat -json`) that forces every wire observable before running just enough passes to turn always-blocks into real `$dff`/`$mem` cells, without synth's full reachability-based optimization.
+
+Outputs:
+
+```text
+formal/comm_safety/results/state_space/state_space.csv
+formal/comm_safety/results/state_space/logs/<case>/sv.log
+```
+
+Known gaps: `axi_mux_read`/`axi_mux_write` are missing `common_cells/src/cf_math_pkg.sv` from their `.sby` file lists (same bug fixed for the model-checking `.sby`s themselves - see below); `ace`'s SV testbench has an unhandled `$finish` blocking synthesis. Not yet fixed in this script's own file-list handling.
+
+## Lines of Code / Assertion / Signature-Size Comparison
+
+Compares implementation size and (Anvil-only) session-type signature size against SV lines-of-code and the comm-safety formal harness/assertion size for that case.
+
+```sh
+python3 scripts/collect_code_size.py
+python3 scripts/collect_code_size.py --case fifo --case tilelink
+```
+
+Per case, collects:
+- Anvil: lines of code of the full `test_<case>.anvil` implementation, plus the line/character length of the DUT's own `interface(...) = <session type>` declaration (read from `type_<case>.anvil`, since `test_*.anvil` has no `interface` declarations of its own - only `proc` bodies implementing interfaces declared elsewhere).
+- SV: lines of code of the DUT file only (`src/testbenches/`, not the `axi/`/`ace/`/`tilelink/` submodule copies), plus the line count and `assert`/`assume` count of that case's `module comm_<case>_formal ... endmodule` block in `formal/comm_safety/sv/{comm_safety_common,comm_safety_tb_wrappers}.sv` (the formal verification harness/assertion code, not the DUT itself).
+
+No SV "type signature" is collected - SV has no session-type equivalent, so that column is Anvil-only by design.
+
+Outputs:
+
+```text
+formal/comm_safety/results/code_size.csv
 ```
 
 ## Phase Split
