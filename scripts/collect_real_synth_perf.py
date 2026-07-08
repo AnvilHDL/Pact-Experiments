@@ -459,18 +459,51 @@ def comparison_row(case_name: str, anvil_agg: dict | None, sv_agg: dict | None) 
     return row
 
 
-def add_aggregates_and_comparisons(all_rows: list[dict], case_names: list[str]) -> list[dict]:
+def apply_sv_subtract(case: dict, sv_aggregate: dict, sv_aggregates_by_case: dict[str, dict]) -> None:
+    """Subtract other cases' own standalone SV aggregate SUM_FIELDS (cells,
+    area, power - not slack, which isn't meaningful to subtract) from this
+    case's flattened SV aggregate, count times each (in place). Mirrors
+    collect_yosys_perf.py's apply_sv_subtract - see WIDTH_FINDINGS.md's
+    "FIFO/Arbiter Exclusion Methodology" for the rationale.
+    """
+    if sv_aggregate.get("status") != "PASS":
+        return
+    for entry in case.get("sv_subtract", []):
+        other = sv_aggregates_by_case.get(entry["case"])
+        if other is None or other.get("status") != "PASS":
+            sv_aggregate["status_detail"] += f";sv_subtract unavailable for {entry['case']}"
+            continue
+        count = entry.get("count", 1)
+        for field in SUM_FIELDS:
+            value, other_value = sv_aggregate.get(field), other.get(field)
+            if value in ("", None) or other_value in ("", None):
+                continue
+            sv_aggregate[field] = max(float(value) - count * float(other_value), 0)
+
+
+def add_aggregates_and_comparisons(all_rows: list[dict], cases: list[dict]) -> list[dict]:
     result = list(all_rows)
-    for case_name in case_names:
+    per_case_aggregates: dict[str, dict] = {}
+    for case in cases:
+        case_name = case["name"]
         case_rows = [r for r in all_rows if r["case"] == case_name and r["row_type"] == "module"]
         aggregates = {}
         for variant in ("anvil", "sv"):
             variant_rows = [r for r in case_rows if r["variant"] == variant]
             if not variant_rows:
                 continue
-            agg = aggregate_row(case_name, variant, variant_rows)
-            aggregates[variant] = agg
-            result.append(agg)
+            aggregates[variant] = aggregate_row(case_name, variant, variant_rows)
+        per_case_aggregates[case_name] = aggregates
+
+    sv_aggregates_by_case = {
+        name: aggregates["sv"] for name, aggregates in per_case_aggregates.items() if "sv" in aggregates
+    }
+    for case in cases:
+        case_name = case["name"]
+        aggregates = per_case_aggregates[case_name]
+        if "sv" in aggregates and case.get("sv_subtract"):
+            apply_sv_subtract(case, aggregates["sv"], sv_aggregates_by_case)
+        result.extend(aggregates.values())
         comp = comparison_row(case_name, aggregates.get("anvil"), aggregates.get("sv"))
         if comp is not None:
             result.append(comp)
@@ -555,7 +588,7 @@ def main() -> int:
         if config.variant in ("sv", "both"):
             all_rows.extend(rows_for_sv_case(config, case, defaults))
 
-    all_rows = add_aggregates_and_comparisons(all_rows, [c["name"] for c in selected_cases])
+    all_rows = add_aggregates_and_comparisons(all_rows, selected_cases)
     write_summary(all_rows, config.results_dir)
     return 0
 

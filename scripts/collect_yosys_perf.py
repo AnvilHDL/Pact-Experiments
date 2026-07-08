@@ -622,6 +622,35 @@ def aggregate_rows(case: dict, variant: str, rows: list[dict]) -> dict:
     return aggregate
 
 
+def apply_sv_subtract(case: dict, sv_aggregate: dict, sv_aggregates_by_case: dict[str, dict]) -> None:
+    """Subtract other cases' own standalone SV aggregate cell counts from this
+    case's flattened SV aggregate, count times each (in place).
+
+    Exists because an AXI mux/demux case's anvil_core_patterns no longer
+    include the FIFO/arbiter submodules it embeds (those are separately
+    measured as their own manifest cases already) - but unlike the Anvil
+    side, the SV top is always synthesized as one flattened module that still
+    includes its instantiated fifo_v3/spill_register/rr_arb_tree submodules
+    (no hierarchy-preserving synth path was found to work for this design
+    size). This is a same-corner-case-widths estimate, not a real
+    hierarchical re-measurement - see OVERHEAD_FINDINGS.md.
+    """
+    if sv_aggregate.get("status") != "PASS":
+        return
+    for entry in case.get("sv_subtract", []):
+        other = sv_aggregates_by_case.get(entry["case"])
+        if other is None or other.get("status") != "PASS":
+            sv_aggregate["status_detail"] += f";sv_subtract unavailable for {entry['case']}"
+            continue
+        count = entry.get("count", 1)
+        for field in METRIC_FIELDS:
+            value = sv_aggregate.get(field)
+            other_value = other.get(field)
+            if value in ("", None) or other_value in ("", None):
+                continue
+            sv_aggregate[field] = max(int(float(value)) - count * int(float(other_value)), 0)
+
+
 def comparison_row(case: dict, aggregate_rows_by_variant: dict[str, dict]) -> dict | None:
     anvil = aggregate_rows_by_variant.get("anvil")
     sv = aggregate_rows_by_variant.get("sv")
@@ -766,6 +795,7 @@ def main() -> int:
 
     config.results_dir.mkdir(parents=True, exist_ok=True)
     all_rows = []
+    per_case_rows: dict[str, list[dict]] = {}
 
     for case in selected_cases:
         print(f"[{case['name']}] collecting {config.variant}", flush=True)
@@ -774,12 +804,26 @@ def main() -> int:
             case_rows.extend(rows_for_anvil_case(case, defaults, config))
         if config.variant in ("sv", "both"):
             case_rows.extend(rows_for_sv_case(case, defaults, config))
+        per_case_rows[case["name"]] = case_rows
 
+    # sv_subtract needs OTHER cases' SV aggregates, possibly from a different
+    # case in this same run - so subtraction + comparison happen in a second
+    # pass, once every case's own aggregate has been computed.
+    sv_aggregates_by_case = {
+        name: row
+        for name, rows in per_case_rows.items()
+        for row in rows
+        if row["row_type"] == "aggregate" and row["variant"] == "sv"
+    }
+    for case in selected_cases:
+        case_rows = per_case_rows[case["name"]]
         aggregates = {
             row["variant"]: row
             for row in case_rows
             if row["row_type"] == "aggregate" and row["variant"] in ("anvil", "sv")
         }
+        if "sv" in aggregates and case.get("sv_subtract"):
+            apply_sv_subtract(case, aggregates["sv"], sv_aggregates_by_case)
         comp = comparison_row(case, aggregates)
         if comp is not None:
             case_rows.append(comp)
