@@ -1,0 +1,23 @@
+[options]
+mode bmc
+depth 100
+timeout 300
+expect pass
+
+[engines]
+smtbmc yices
+
+[script]
+plugin -i slang
+read_slang --single-unit --top comm_tilelink_formal -D FORMAL_COMM_SAFETY tilelink/debug_output/TLArbiter.sv tilelink/debug_output/TLArbiter_2.sv tilelink/debug_output/TLArbiter_4.sv tilelink/debug_output/TLArbiter_6.sv tilelink/debug_output/TLArbiter_8.sv tilelink/debug_output/TLCrossBar.sv tilelink/tilelink/TLCrossBar_test.sv formal/comm_safety/sv/comm_safety_tb_wrappers.sv
+prep -top comm_tilelink_formal
+
+[files]
+tilelink/debug_output/TLArbiter.sv tilelink/debug_output/TLArbiter.sv
+tilelink/debug_output/TLArbiter_2.sv tilelink/debug_output/TLArbiter_2.sv
+tilelink/debug_output/TLArbiter_4.sv tilelink/debug_output/TLArbiter_4.sv
+tilelink/debug_output/TLArbiter_6.sv tilelink/debug_output/TLArbiter_6.sv
+tilelink/debug_output/TLArbiter_8.sv tilelink/debug_output/TLArbiter_8.sv
+tilelink/debug_output/TLCrossBar.sv tilelink/debug_output/TLCrossBar.sv
+tilelink/tilelink/TLCrossBar_test.sv tilelink/tilelink/TLCrossBar_test.sv
+formal/comm_safety/sv/comm_safety_tb_wrappers.sv formal/comm_safety/sv/comm_safety_tb_wrappers.sv

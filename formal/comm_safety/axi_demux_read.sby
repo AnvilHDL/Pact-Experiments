@@ -1,0 +1,24 @@
+[options]
+mode bmc
+depth 48
+timeout 300
+expect pass
+
+[engines]
+smtbmc yices
+
+[script]
+plugin -i slang
+read_slang --single-unit --top comm_axi_demux_read_formal -D FORMAL_COMM_SAFETY -D COMMON_CELLS_ASSERTS_OFF -Icommon_cells/include -Iaxi/include axi/src/axi_pkg.sv common_cells/src/spill_register_flushable.sv common_cells/src/spill_register.sv common_cells/src/fifo_v3.sv axi/src/axi_lite_demux_read.sv axi/src/axi_lite_demux_read_tb.sv formal/comm_safety/sv/comm_safety_tb_wrappers.sv
+prep -top comm_axi_demux_read_formal
+
+[files]
+common_cells/include common_cells/include
+axi/include axi/include
+axi/src/axi_pkg.sv axi/src/axi_pkg.sv
+common_cells/src/spill_register_flushable.sv common_cells/src/spill_register_flushable.sv
+common_cells/src/spill_register.sv common_cells/src/spill_register.sv
+common_cells/src/fifo_v3.sv common_cells/src/fifo_v3.sv
+axi/src/axi_lite_demux_read.sv axi/src/axi_lite_demux_read.sv
+axi/src/axi_lite_demux_read_tb.sv axi/src/axi_lite_demux_read_tb.sv
+formal/comm_safety/sv/comm_safety_tb_wrappers.sv formal/comm_safety/sv/comm_safety_tb_wrappers.sv

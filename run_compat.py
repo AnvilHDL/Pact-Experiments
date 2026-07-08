@@ -1,5 +1,9 @@
 import os
+import argparse
+import csv
+import shutil
 import subprocess
+import time
 from enum import Enum
 
 class Result(Enum):
@@ -41,7 +45,7 @@ def result_handler(out_log,file_name):
     return Result.Error
 
 
-def run_compat(file,mode):
+def run_compat(file, mode):
     file_base = os.path.basename(file)
     print("Running compatibility check on file: " + file_base)
     compat_temp_log = os.path.join(BASE_DIR, "compat_temp.txt")
@@ -59,29 +63,76 @@ def run_compat(file,mode):
     return result_handler(compat_temp_log, file)
 
 
-def get_type_files():
+def get_type_files(only=None):
     files = os.listdir(TEST_CASES_DIR)
-    return [f for f in files if f.startswith("type_")]
+    if only is None:
+        return [f for f in files if f.startswith("type_")]
+
+    selected = []
+    for raw_name in only:
+        name = raw_name.strip()
+        if not name:
+            continue
+        if not name.endswith(".anvil"):
+            name = name + ".anvil"
+
+        candidates = [name]
+        if not name.startswith(("type_", "test_")):
+            candidates.append("type_" + name)
+
+        found = None
+        for candidate in candidates:
+            if candidate in files:
+                found = candidate
+                break
+        if found is None:
+            found = candidates[0]
+        selected.append(found)
+
+    return selected
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run Anvil compatibility checks.")
+    parser.add_argument("mode", help="Compatibility mode: 2, 3, or 4")
+    parser.add_argument(
+        "--only",
+        help="Comma-separated list of compat files to run, e.g. type_fifo.anvil,type_stream_fifo.anvil",
+    )
+    parser.add_argument("--csv", help="Write per-file timing/result rows to this CSV path")
+    return parser.parse_args()
+
+
+def write_csv(path, rows):
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    with open(path, "w", newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=["file", "result", "elapsed_seconds"])
+        writer.writeheader()
+        writer.writerows(rows)
 
 if __name__ == "__main__":
-    if len(os.sys.argv) < 2:
+    args = parse_args()
+    if not args.mode:
         print("Usage: python run_compat.py <mode>")
         print("Mode can be 2 3 4")
         exit(1)
-    else:
-        mode = os.sys.argv[1]
-        if mode not in ["2", "3", "4"]:
-            print("Invalid mode. Mode can be 2 3 4")
-            exit(1)
-    type_files = get_type_files()
-    os.system("rm -rf " + ERROR_DIR)
+    mode = args.mode
+    if mode not in ["2", "3", "4"]:
+        print("Invalid mode. Mode can be 2 3 4")
+        exit(1)
+    only = args.only.split(",") if args.only else None
+    type_files = get_type_files(only)
+    shutil.rmtree(ERROR_DIR, ignore_errors=True)
     compat_count = 0
     incompat_count = 0
     error_count = 0
+    csv_rows = []
     for file in type_files:
 
         print("==================================================================================")
+        start_time = time.perf_counter()
         result = run_compat(os.path.join(TEST_CASES_DIR, file), mode)
+        elapsed = time.perf_counter() - start_time
         match result:
             case Result.Compatible:
                 compat_count += 1
@@ -91,6 +142,11 @@ if __name__ == "__main__":
                 error_count += 1
         print("Result for " + file + ": " + str(result))
         print("==================================================================================")
+        csv_rows.append({
+            "file": file,
+            "result": str(result),
+            "elapsed_seconds": f"{elapsed:.6f}",
+        })
 
     print("==================================================================================")
     print("Summary:")
@@ -98,4 +154,5 @@ if __name__ == "__main__":
     print("Incompatible: " + str(incompat_count))
     print("Error: " + str(error_count))
     print("==================================================================================")
-
+    if args.csv:
+        write_csv(args.csv, csv_rows)

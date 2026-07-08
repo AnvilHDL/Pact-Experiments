@@ -18,3 +18,16 @@ tools/
 scripts/env-cva6.sh
 *.blif
 *.txt
+*.csv
+__pycache__/
+*.json
+*.ys
+*.smt2
+*.smtc
+*.vcd
+*.fst
+*.gtkw
+*.yw
+*.sqlite
+*.db
+/formal/comm_safety/results/

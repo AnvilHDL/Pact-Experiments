@@ -1,0 +1,18 @@
+[options]
+mode bmc
+depth 16
+timeout 300
+expect pass
+
+[engines]
+smtbmc yices
+
+[script]
+plugin -i slang
+read_slang --single-unit --top comm_spill_formal -D FORMAL_COMM_SAFETY -D COMMON_CELLS_ASSERTS_OFF -Icommon_cells/include common_cells/src/spill_register_flushable.sv formal/comm_safety/sv/comm_safety_common.sv
+prep -top comm_spill_formal
+
+[files]
+common_cells/include common_cells/include
+common_cells/src/spill_register_flushable.sv common_cells/src/spill_register_flushable.sv
+formal/comm_safety/sv/comm_safety_common.sv formal/comm_safety/sv/comm_safety_common.sv
