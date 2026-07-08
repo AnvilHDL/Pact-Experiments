@@ -41,78 +41,156 @@ proc stream_fifo<T : type>(stream_fifo_if){
     }
 }
 
-proc test_stream_fifo(){
-    chan push_le -- push_ri : push_ch<byte>;
-    chan pop_le -- pop_ri : pop_ch<byte>;
-    spawn stream_fifo<byte>(push_le, pop_le);
-    reg cyc : byte;
+proc stream_fifo_master<T : type>(master_itfc){
+    reg cyc : logic[8];
 
-     
     loop{
-        send push_ri.push(8'd1) >>
-        cycle 1 >>
-        send push_ri.push(8'd2) >>
-        cycle 1 >>
-        send push_ri.push(8'd3) >>
-        cycle 1 >>
-        send push_ri.push(8'd4) >>
-        cycle 1 >>
-        send push_ri.push(8'd5) >>
-        cycle 1 >>
-        send push_ri.push(8'd6) >>
-        cycle 1 >>
-        send push_ri.push(8'd7) >>
-        cycle 1 >>
-        send push_ri.push(8'd8) >>
-        dprint "[Cycle %d] Finished pushing 8 elements into the FIFO | Trying Overflows \n" (*cyc) >>
-        cycle 1 >>
-        try send push_ri.push(8'd9) {
-            dprint "[Cycle %d] Should not have been able to push into the FIFO, but push succeeded \n" (*cyc)
-        }
-        else {
-            dprint "[Cycle %d] Overflow correctly handled, push was not successful \n" (*cyc)
-        }>>
-        dprint "[Cycle %d] Trying Simultaneous Push and Pop \n" (*cyc) >>
-        cycle 1 >>
-        let x1 = recv pop_ri.pop >>
-        send push_ri.push(8'd9) >> 
-        dprint "[Cycle %d] Popped value: %d | Pushed value: 9 | Emptying FIFO \n" (*cyc, x1) >>
-        cycle 1 >>
-        let x2 = recv pop_ri.pop >>
-        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x2) >>
-        cycle 1 >>
-        let x3 = recv pop_ri.pop >>
-        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x3) >>
-        cycle 1 >>
-        let x4 = recv pop_ri.pop >>
-        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x4) >>
-        cycle 1 >>
-        let x5 = recv pop_ri.pop >>
-        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x5) >>
-        cycle 1 >>
-        let x6 = recv pop_ri.pop >>
-        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x6) >>
-        cycle 1 >>
-        let x7 = recv pop_ri.pop >>
-        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x7) >>
-        cycle 1 >>
-        let x8 = recv pop_ri.pop >>
-        dprint "[Cycle %d] Popped value: %d \n" (*cyc, x8) >>
-        cycle 1 >>
-        let x9 = recv pop_ri.pop >>
-        dprint "[Cycle %d] Popped value: %d | Fifo is empty | trying underflow\n" (*cyc, x9) >>
-        cycle 1 >>
-        try x10 = recv pop_ri.pop {
-            dprint "[Cycle %d] Should not have received any value, but got %d \n" (*cyc, x10)
-        }
-        else {
-            dprint "[Cycle %d] Underflow correctly handled, no value received \n" (*cyc)
-        }>>
-        cycle 1 >>
-        dfinish >>
+        cycle 2 >>
+        send fifo_ep.push(8'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 4 >>
+        send fifo_ep.push(8'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 1
     }
     loop{
         set cyc := *cyc + 8'd1
+    }
+}
+
+proc stream_fifo_slave<T : type>(slave_itfc){
+    loop{
+        cycle 3 >>
+        let p0 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd3, p0) >>
+        cycle 8 >>
+        let p1 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd10, p1) >>
+        cycle 4 >>
+        let p2 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd14, p2) >>
+        cycle 4 >>
+        let p3 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd18, p3) >>
+        cycle 4 >>
+        let p4 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd22, p4) >>
+        cycle 4 >>
+        let p5 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd26, p5) >>
+        cycle 4 >>
+        let p6 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd30, p6) >>
+        cycle 4 >>
+        let p7 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd34, p7) >>
+        cycle 4 >>
+        let p8 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd38, p8) >>
+        cycle 4 >>
+        let p9 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd42, p9) >>
+        cycle 4 >>
+        let p10 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd46, p10) >>
+        cycle 4 >>
+        let p11 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd50, p11) >>
+        cycle 4 >>
+        let p12 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd54, p12) >>
+        cycle 4 >>
+        let p13 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd58, p13) >>
+        cycle 4 >>
+        let p14 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd62, p14) >>
+        cycle 4 >>
+        let p15 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd66, p15) >>
+        cycle 4 >>
+        let p16 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd70, p16) >>
+        cycle 4 >>
+        let p17 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd74, p17) >>
+        cycle 4 >>
+        let p18 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd78, p18) >>
+        cycle 4 >>
+        let p19 = recv fifo_ep.pop >>
+        dprint "[Cycle %d] Popped %d\n" (8'd82, p19) >>
+        cycle 1
+    }
+}
+
+proc test_stream_fifo(){
+    pool p : fifo_pool;
+
+    spawn stream_fifo<byte>[p.ififo];
+    spawn stream_fifo_master<byte>[p.imaster];
+    spawn stream_fifo_slave<byte>[p.islave];
+
+    loop{
+        cycle 84 >>
+        dfinish >>
+        cycle 1
     }
 }

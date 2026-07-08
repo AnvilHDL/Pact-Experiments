@@ -259,4 +259,22 @@ slave slv (
     .pop_i(pop_i)
 );
 
+`ifdef STREAM_FIFO_TB_TRACE
+logic [31:0] trace_cycle;
+
+always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+        trace_cycle <= 0;
+    end else begin
+        if (push_i && full_o) begin
+            $display("[Cycle %0d] Pushed %0d", trace_cycle, data_i);
+        end
+        if (pop_i && empty_o) begin
+            $display("[Cycle %0d] Popped %0d", trace_cycle, data_o);
+        end
+        trace_cycle <= trace_cycle + 1;
+    end
+end
+`endif
+
 endmodule

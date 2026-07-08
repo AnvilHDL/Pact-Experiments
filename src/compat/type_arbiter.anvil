@@ -7,23 +7,23 @@ interface rr_arbiter_itfc(slv_ep1 : right arbiter_slave_ch<Tp>, slv_ep2 : right 
    * : #1
    )
 
-interface slave_interface(slv_ep : right arbiter_slave_ch<Tp>) = F slv_ep.req ; slv_ep.gnt;#1
+interface slave_interface(slv_ep : left arbiter_slave_ch<Tp>) = F slv_ep.req ; slv_ep.gnt;#1
 
-interface master_interface(mst_ep : left arbiter_master_ch<Tp>) = F ^(mst_ep.req, *) ; #1
+interface master_interface(mst_ep : right arbiter_master_ch<Tp>) = F ^(mst_ep.req, *) ; #1
 
 pool arbiter_pool{
-    slv_ep1 -- slv_ep_ri1 : arbiter_slave_ch<Tp>,
-    slv_ep2 -- slv_ep_ri2 : arbiter_slave_ch<Tp>,
-    slv_ep3 -- slv_ep_ri3 : arbiter_slave_ch<Tp>,
-    slv_ep4 -- slv_ep_ri4 : arbiter_slave_ch<Tp>,
-    mst_ep -- mst_ep_ro : arbiter_master_ch<Tp>;
+    slv_ep1 -- slv_ep_ri1 : arbiter_slave_ch<logic>,
+    slv_ep2 -- slv_ep_ri2 : arbiter_slave_ch<logic>,
+    slv_ep3 -- slv_ep_ri3 : arbiter_slave_ch<logic>,
+    slv_ep4 -- slv_ep_ri4 : arbiter_slave_ch<logic>,
+    mst_ep -- mst_ep_ro : arbiter_master_ch<logic>;
 
-    islv1 : slave_interface(slv_ep_ri1),
-    islv2 : slave_interface(slv_ep_ri2),
-    islv3 : slave_interface(slv_ep_ri3),
-    islv4 : slave_interface(slv_ep_ri4),
+    islv1 : slave_interface(slv_ep1),
+    islv2 : slave_interface(slv_ep2),
+    islv3 : slave_interface(slv_ep3),
+    islv4 : slave_interface(slv_ep4),
     imst : master_interface(mst_ep_ro),
-    iarb : rr_arbiter_itfc(slv_ep_ri1, slv_ep_ri2, slv_ep_ri3, slv_ep_ri4, mst_ep_ro)
+    iarb : rr_arbiter_itfc(slv_ep_ri1, slv_ep_ri2, slv_ep_ri3, slv_ep_ri4, mst_ep)
 }
 
 chan arbiter_slave_ch <T : type> {

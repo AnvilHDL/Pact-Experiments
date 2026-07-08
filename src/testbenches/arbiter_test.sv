@@ -546,4 +546,20 @@ master_arb mst (
     .gnt_i(gnt_i)
 );
 
+`ifdef ARBITER_TB_TRACE
+logic [31:0] trace_cycle;
+
+always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+        trace_cycle <= 0;
+    end else begin
+        if (req_o && gnt_i) begin
+            $display("[Cycle %0d] Master granted slave %0d data %0d",
+                     trace_cycle, idx_o, data_o);
+        end
+        trace_cycle <= trace_cycle + 1;
+    end
+end
+`endif
+
 endmodule

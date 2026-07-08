@@ -259,4 +259,22 @@ slave_spill slv (
     .ready_i(ready_i)
 );
 
+`ifdef SPILL_REG_TB_TRACE
+logic [31:0] trace_cycle;
+
+always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+        trace_cycle <= 0;
+    end else begin
+        if (valid_i && ready_o) begin
+            $display("[Cycle %0d] Enqueued data %0d", trace_cycle, data_i);
+        end
+        if (valid_o && ready_i) begin
+            $display("[Cycle %0d] Received data %0d", trace_cycle, data_o);
+        end
+        trace_cycle <= trace_cycle + 1;
+    end
+end
+`endif
+
 endmodule

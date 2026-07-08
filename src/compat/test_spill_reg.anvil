@@ -92,64 +92,95 @@ proc spill_reg <T: type> (spill_register_itfc){
     loop{
         set cyc := *cyc + 8'd1
     }
-    loop{
-        dprint "[Cycle %d] Spill Register: A (%d) Full %b, B (%d) Full %b" (*cyc, *a, *afull, *b, *bfull) >>
-        cycle 1
-    }
 }
 
 
-proc test_spill_reg(){
-    chan req_le -- req_ri : reg_req<logic[8]>;
-    chan res_le -- res_ri : reg_res<logic[8]>;
-    spawn spill_reg<logic[8]>(req_ri, res_le);
+proc spill_master<T : type>(master_itfc){
     reg cyc : logic[8];
 
     loop{
-        send req_le.req(8'd1) >>
-        dprint "[Cycle %d]  Enqueued data 1 to spill register" (*cyc) >>
-        cycle 1 >>
-
-
-        let res = recv res_ri.data >>
-        dprint "[Cycle %d] Received data %d from spill register" (*cyc, res) >>
-        send res_ri.spill(()) >>
-        dprint "[Cycle %d] Spilled data %d from spill register" (*cyc, res) >>
-        cycle 1 >>
-
-
-        send req_le.req(8'd2) >>
-        dprint "[Cycle %d]  Enqueued data 2 to spill register" (*cyc) >>
-        cycle 1 >>
-
-
-
-        send req_le.req(8'd3) >>
-        dprint "[Cycle %d]  Enqueued data 3 to spill register" (*cyc) >>
-        cycle 4 >>
-
-        let d = recv res_ri.data >>
-        dprint "[Cycle %d] Received data %d from spill register" (*cyc, d) >>
-        send res_ri.spill(()) >>
-        dprint "[Cycle %d] Spilled data %d from spill register" (*cyc, d) >>
-        cycle 1 >>
-
-        let d2 = recv res_ri.data >>
-        dprint "[Cycle %d] Received data %d from spill register" (*cyc, d2) >>
-        send res_ri.spill(()) >>
-        dprint "[Cycle %d] Spilled data %d from spill register" (*cyc, d2) >>
-        cycle 3 >>
-
-        dprint "[Cycle %d] Test complete" (*cyc) >>
-        cycle 1 >>
-        dfinish >>
+        cycle 2 >>
+        send reg_ep.req(8'd0) >>
+        dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
+        cycle 2 >>
+        send reg_ep.req(8'd1) >>
+        dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
+        cycle 7 >>
+        send reg_ep.req(8'd0) >>
+        dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
+        cycle 12 >>
+        send reg_ep.req(8'd1) >>
+        dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
+        cycle 12 >>
+        send reg_ep.req(8'd0) >>
+        dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
+        cycle 12 >>
+        send reg_ep.req(8'd1) >>
+        dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
+        cycle 12 >>
+        send reg_ep.req(8'd0) >>
+        dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
+        cycle 12 >>
+        send reg_ep.req(8'd1) >>
+        dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
+        cycle 12 >>
+        send reg_ep.req(8'd0) >>
+        dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
         cycle 1
     }
     loop{
         set cyc := *cyc + 8'd1
     }
+}
+
+proc spill_slave<T : type>(slave_itfc){
+    reg cyc : logic[8];
+
     loop{
-        cycle 20 >>
+        cycle 10 >>
+        let r0 = recv reg_ep.data >>
+        dprint "[Cycle %d] Received data %d\n" (*cyc, r0) >>
+        send reg_ep.spill(()) >>
+        cycle 12 >>
+        let r1 = recv reg_ep.data >>
+        dprint "[Cycle %d] Received data %d\n" (*cyc, r1) >>
+        send reg_ep.spill(()) >>
+        cycle 12 >>
+        let r2 = recv reg_ep.data >>
+        dprint "[Cycle %d] Received data %d\n" (*cyc, r2) >>
+        send reg_ep.spill(()) >>
+        cycle 12 >>
+        let r3 = recv reg_ep.data >>
+        dprint "[Cycle %d] Received data %d\n" (*cyc, r3) >>
+        send reg_ep.spill(()) >>
+        cycle 12 >>
+        let r4 = recv reg_ep.data >>
+        dprint "[Cycle %d] Received data %d\n" (*cyc, r4) >>
+        send reg_ep.spill(()) >>
+        cycle 12 >>
+        let r5 = recv reg_ep.data >>
+        dprint "[Cycle %d] Received data %d\n" (*cyc, r5) >>
+        send reg_ep.spill(()) >>
+        cycle 12 >>
+        let r6 = recv reg_ep.data >>
+        dprint "[Cycle %d] Received data %d\n" (*cyc, r6) >>
+        send reg_ep.spill(()) >>
+        cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc test_spill_reg(){
+    pool p : spill_reg_pool;
+
+    spawn spill_reg<logic[8]>[p.ispillreg];
+    spawn spill_master<logic[8]>[p.imaster];
+    spawn spill_slave<logic[8]>[p.islave];
+
+    loop{
+        cycle 84 >>
         dfinish >>
         cycle 1
     }

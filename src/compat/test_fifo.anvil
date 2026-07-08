@@ -23,7 +23,6 @@ proc fifo<T : type>(fifo_itfc){
             } 
         }
         else if(*read_ptr == *write_ptr){
-         dprint "[Cycle %d] FIFO is empty\n" (*cyc) >>
          μ X {
             try x = recv push_ep.push {
                 try send pop_ep.empty(()){()} >>
@@ -55,45 +54,410 @@ proc fifo<T : type>(fifo_itfc){
     loop{
         set cyc := *cyc + 8'd1
     }
+}
+
+proc fifo_master(master_itfc){
+    reg cyc : logic[8];
     loop{
-        dprint "[Cycle %d] FIFO State: read_ptr = %d, write_ptr = %d, full = %b\n" (*cyc, *read_ptr, *write_ptr, *full) >>
-        cycle 1
+        cycle 2 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd0)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd1)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd0)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd1)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd0)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd1)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd0)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd1)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd0)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd1)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd0)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd1)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd0)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd1)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd0)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd1)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
+        cycle 5 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd0)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
+        cycle 7 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd1)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
+        cycle 7 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd0)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
+        cycle 7 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd1)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
+        cycle 7 >>
+        rec X {
+            try _ = recv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                send fifo_ep.push(2'd0)
+            }
+        } >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
+        cycle 10
+    }
+    loop{
+        set cyc := *cyc + 8'd1
     }
 }
 
+proc fifo_slave(slave_itfc){
+    loop{
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd3, x)
+            }
+        } >>
+        cycle 6 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd8, x)
+            }
+        } >>
+        cycle 6 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd15, x)
+            }
+        } >>
+        cycle 7 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd22, x)
+            }
+        } >>
+        cycle 8 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd29, x)
+            }
+        } >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd33, x)
+            }
+        } >>
+        cycle 3 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd36, x)
+            }
+        } >>
+        cycle 7 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd43, x)
+            }
+        } >>
+        cycle 7 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd50, x)
+            }
+        } >>
+        cycle 7 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd57, x)
+            }
+        } >>
+        cycle 7 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd64, x)
+            }
+        } >>
+        cycle 7 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd71, x)
+            }
+        } >>
+        cycle 7 >>
+        rec X {
+            try _ = recv fifo_ep.empty {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                let x = recv fifo_ep.pop >>
+                dprint "[Cycle %d] Popped %d\n" (8'd78, x)
+            }
+        } >>
+        cycle 10
 
+    }
+}
 
 proc test_fifo(){
-    chan ins_le -- ins_ri : fifo_insert_ch<select_t>;
-    chan deq_le -- deq_ri : fifo_dequeue_ch<select_t>;
-    spawn fifo<select_t>(ins_ri, deq_ri);
-    reg cyc : logic[8];
+    pool p : fifo_pool;
+
+    spawn fifo<select_t>[p.ififo];
+    spawn fifo_master[p.imaster];
+    spawn fifo_slave[p.islave];
+
     loop{
-        send ins_le.push(2'b00) >>
-        dprint "[Cycle %d] Pushed 00\n" (*cyc) >>
-        cycle 1 >>
-        send ins_le.push(2'b01) >>
-        dprint "[Cycle %d] Pushed 01\n" (*cyc) >>
-        cycle 1 >>
-        send ins_le.push(2'b10) >>
-        dprint "[Cycle %d] Pushed 10\n" (*cyc) >>
-        cycle 1 >>
-        send ins_le.push(2'b11) >>
-        dprint "[Cycle %d] Pushed 11\n" (*cyc) >>
-        cycle 1 >>
+        cycle 84 >>
         dfinish >>
         cycle 1
-    }
-
-    loop{
-        let x = recv deq_le.pop >>
-        dprint "[Cycle %d] Popped %b\n" (*cyc, x) >>
-        cycle 1
-
-    }
-
-    loop{
-        set cyc := *cyc + 8'd1
     }
 
 }

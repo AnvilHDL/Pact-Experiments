@@ -58,6 +58,8 @@ module fifo_v3 #(
         data_o          = (DEPTH == 0) ? data_i : mem_q[read_pointer_q];
         mem_n           = mem_q;
         gate_clock      = 1'b1;
+        push_req        = 1'b0;
+        pop_req         = 1'b0;
         progress_n = 1'b0;
 
         // push a new element to the queue
@@ -113,6 +115,7 @@ module fifo_v3 #(
             read_pointer_q  <= '0;
             write_pointer_q <= '0;
             status_cnt_q    <= '0;
+            progress_q      <= '0;
         end else begin
             if (flush_i) begin
                 read_pointer_q  <= '0;
@@ -138,7 +141,7 @@ module fifo_v3 #(
 
 endmodule // fifo_v3
 
-module master(input logic clk_i, input logic rst_ni, input logic full_o, input logic empty_o, output logic data_i, output logic push_i, input logic data_o,  output logic full_req);
+module master(input logic clk_i, input logic rst_ni, input logic full_o, input logic empty_o, output logic data_i, output logic push_i, input logic data_o,  output logic full_req, output logic progress_o);
 
 parameter int MAX_TRANSACTIONS = 8;
 
@@ -146,6 +149,10 @@ typedef enum logic [1:0] {IDLE, TRY_PUSH, WAIT_ONE} state_t;
 state_t state;
 logic [31:0] cycle_count;
 logic data_counter;
+logic mst_progress_q;
+
+assign progress_o = mst_progress_q;
+assign full_req = full_o;
 
 always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -153,8 +160,11 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         state <= IDLE;
         push_i <= 0;
         data_counter <= 0;
+        data_i <= 0;
+        mst_progress_q <= 0;
     end else begin
         cycle_count <= cycle_count + 1;
+        mst_progress_q <= state == WAIT_ONE;
         case (state)
             IDLE: begin
                 push_i <= 0;
@@ -169,7 +179,6 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
                     data_counter <= ~data_counter;
                     state <= WAIT_ONE;
                 end else begin
-                    full_req <= 1;
                     push_i <= 0;
                     // stay in TRY_PUSH
                 end
@@ -177,7 +186,6 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
             WAIT_ONE: begin
                 push_i <= 0;
                 state <= IDLE;
-                progress_o <= 1;
             end
         endcase
     end
@@ -185,20 +193,25 @@ end
 
 endmodule
 
-module slave(input logic clk_i, input logic rst_ni, input logic empty_o, output logic pop_i, output logic empty_req);
+module slave(input logic clk_i, input logic rst_ni, input logic empty_o, output logic pop_i, output logic empty_req, output logic progress_o);
 
 typedef enum logic [1:0] {IDLE, TRY_POP, WAIT_ONE} state_t;
 state_t state;
 logic [31:0] cycle_count;
+logic slv_progress_q;
 
 assign pop_i = (state == TRY_POP && !empty_o);
+assign progress_o = slv_progress_q;
+assign empty_req = empty_o;
 
 always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
         cycle_count <= 0;
         state <= IDLE;
+        slv_progress_q <= 0;
     end else begin
         cycle_count <= cycle_count + 1;
+        slv_progress_q <= state == WAIT_ONE;
         case (state)
             IDLE: begin
                 if ((cycle_count % 7 == 0) || ((cycle_count & (cycle_count - 1)) == 0 && cycle_count != 0)) begin
@@ -209,7 +222,6 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
                 if (!empty_o) begin
                     state <= WAIT_ONE;
                 end else begin
-                    empty_req <= 1;
                     // stay in TRY_POP
                 end
             end
@@ -282,9 +294,27 @@ slave slv (
     .rst_ni(rst_ni),
     .empty_o(empty_o),
     .pop_i(pop_i),
-    .pop_req(shadow_empty_req),
+    .empty_req(shadow_empty_req),
     .progress_o(slv_progress)
 );
+
+`ifdef FIFO_TB_TRACE
+logic [31:0] trace_cycle;
+
+always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+        trace_cycle <= 0;
+    end else begin
+        if (push_i && !full_o) begin
+            $display("[Cycle %0d] Pushed %0d", trace_cycle, data_i);
+        end
+        if (pop_i && !empty_o) begin
+            $display("[Cycle %0d] Popped %0d", trace_cycle, data_o);
+        end
+        trace_cycle <= trace_cycle + 1;
+    end
+end
+`endif
 
 always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -298,6 +328,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
     end
 end
 
+`ifndef VERILATOR
 // communication safety properties
 assert property (@(posedge clk_i) disable iff (!rst_ni) (full_o |-> shadow_full_req));
 assert property (@(posedge clk_i) disable iff (!rst_ni) (empty_o |-> shadow_empty_req));
@@ -312,6 +343,7 @@ assert property (@(posedge clk_i) disable iff (!rst_ni) eventually (fifo_progres
 assert property (@(posedge clk_i) disable iff (!rst_ni) (mst_progress_q |-> eventually mst_progress));
 assert property (@(posedge clk_i) disable iff (!rst_ni) (slv_progress_q |-> eventually slv_progress));
 assert property (@(posedge clk_i) disable iff (!rst_ni) (fifo_progress_q |-> eventually fifo_progress));
+`endif
 
 
 

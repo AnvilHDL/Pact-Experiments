@@ -1,12 +1,12 @@
 interface stream_fifo_if (push_ep : left push_ch<T>, pop_ep : left pop_ch<T>) = ((&(push_ep.push: #1,pop_ep.pop:#1)) + (pop_ep.pop;^(push_ep.push: #1,*: #1)) + (push_ep.push; #1)) 
 
-interface master_itfc(fifo_ep : left push_ch<T>) = F fifo_ep.push ; #1
+interface master_itfc(fifo_ep : right push_ch<T>) = F fifo_ep.push ; #1
 
-interface slave_itfc(fifo_ep : left pop_ch<T>) = F fifo_ep.pop ; #1
+interface slave_itfc(fifo_ep : right pop_ch<T>) = F fifo_ep.pop ; #1
 
 pool fifo_pool {
-    fifo_push_ep -- fifo_push_ep2 : push_ch<T>,
-    fifo_pop_ep -- fifo_pop_ep2 : pop_ch<T>;
+    fifo_push_ep -- fifo_push_ep2 : push_ch<byte>,
+    fifo_pop_ep -- fifo_pop_ep2 : pop_ch<byte>;
     ififo : stream_fifo_if(fifo_push_ep2, fifo_pop_ep2),
     imaster : master_itfc(fifo_push_ep),
     islave : slave_itfc(fifo_pop_ep)
