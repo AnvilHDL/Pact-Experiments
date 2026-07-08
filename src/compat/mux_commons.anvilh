@@ -23,7 +23,7 @@ proc fifo<T : type>(fifo_itfc){
     reg read_ptr : logic[3];
     reg write_ptr : logic[3];
     reg full : logic;
-    reg cyc : logic[8];
+    // reg cyc : logic[8]; // debug/bookkeeping only
     loop{
         if(*full){
             rec X {
@@ -96,7 +96,7 @@ proc fifo<T : type>(fifo_itfc){
         }
 
     }
-    loop{
-        set cyc := *cyc + 8'd1
-    }
+    // loop{
+    //     set cyc := *cyc + 8'd1
+    // }
 }

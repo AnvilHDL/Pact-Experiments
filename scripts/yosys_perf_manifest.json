@@ -1,0 +1,203 @@
+{
+  "defaults": {
+    "defines": [
+      "COMMON_CELLS_ASSERTS_OFF"
+    ],
+    "include_dirs": [
+      "common_cells/include",
+      "axi/include",
+      "ace/include"
+    ],
+    "anvil_ignore_patterns": [
+      "^test_.*",
+      ".*_master.*",
+      ".*_slave.*",
+      "^master.*",
+      "^slave.*",
+      "^client_.*",
+      "^manager_.*",
+      "^cache_client_.*",
+      "^mem_controller$"
+    ],
+    "sv_ignore_patterns": [
+      "^tb_.*",
+      "^tl_master$",
+      "^tl_slave$",
+      ".*_master.*",
+      ".*_slave.*",
+      "^master.*",
+      "^slave.*"
+    ]
+  },
+  "cases": [
+    {
+      "name": "fifo",
+      "phase": "short",
+      "anvil_test": "test_fifo.anvil",
+      "anvil_core_patterns": ["^fifo_0$"],
+      "sv_top": "perf_fifo_sv",
+      "sv_files": [
+        "common_cells/src/fifo_v3.sv",
+        "axi/src/axi_pkg.sv",
+        "synthesis/yosys_perf/perf_sv_wrappers.sv"
+      ]
+    },
+    {
+      "name": "stream_fifo",
+      "phase": "short",
+      "anvil_test": "test_stream_fifo.anvil",
+      "anvil_core_patterns": ["^stream_fifo_0$"],
+      "sv_top": "perf_stream_fifo_sv",
+      "sv_files": [
+        "common_cells/src/passthrough_stream_fifo.sv",
+        "axi/src/axi_pkg.sv",
+        "synthesis/yosys_perf/perf_sv_wrappers.sv"
+      ]
+    },
+    {
+      "name": "spill_register",
+      "phase": "short",
+      "anvil_test": "test_spill_reg.anvil",
+      "anvil_core_patterns": ["^spill_reg_0$"],
+      "sv_top": "perf_spill_register_sv",
+      "sv_files": [
+        "common_cells/src/spill_register_flushable.sv",
+        "common_cells/src/spill_register.sv",
+        "axi/src/axi_pkg.sv",
+        "synthesis/yosys_perf/perf_sv_wrappers.sv"
+      ]
+    },
+    {
+      "name": "arbiter",
+      "phase": "short",
+      "anvil_test": "test_arbiter.anvil",
+      "anvil_core_patterns": ["^arbiter_0$"],
+      "sv_top": "perf_arbiter_sv",
+      "sv_files": [
+        "common_cells/src/cf_math_pkg.sv",
+        "common_cells/src/lzc.sv",
+        "common_cells/src/rr_arb_tree.sv",
+        "axi/src/axi_pkg.sv",
+        "synthesis/yosys_perf/perf_sv_wrappers.sv"
+      ]
+    },
+    {
+      "name": "axi_demux_read",
+      "phase": "short",
+      "anvil_test": "test_demux_read.anvil",
+      "anvil_core_patterns": [
+        "^demux_ar_main$",
+        "^demux_r_main$",
+        "^fifo_.*"
+      ],
+      "sv_top": "perf_axi_demux_read_sv",
+      "sv_files": [
+        "common_cells/src/spill_register_flushable.sv",
+        "common_cells/src/spill_register.sv",
+        "common_cells/src/fifo_v3.sv",
+        "axi/src/axi_lite_demux_read.sv",
+        "axi/src/axi_pkg.sv",
+        "synthesis/yosys_perf/perf_sv_wrappers.sv"
+      ]
+    },
+    {
+      "name": "axi_demux_write",
+      "phase": "big",
+      "anvil_test": "test_demux_write.anvil",
+      "anvil_core_patterns": [
+        "^demux_aw_main$",
+        "^demux_w_main$",
+        "^demux_b_main$",
+        "^fifo_.*"
+      ],
+      "sv_top": "perf_axi_demux_write_sv",
+      "sv_files": [
+        "common_cells/src/spill_register_flushable.sv",
+        "common_cells/src/spill_register.sv",
+        "common_cells/src/fifo_v3.sv",
+        "axi/src/axi_lite_demux_write.sv",
+        "axi/src/axi_pkg.sv",
+        "synthesis/yosys_perf/perf_sv_wrappers.sv"
+      ]
+    },
+    {
+      "name": "axi_mux_read",
+      "phase": "big",
+      "anvil_test": "test_mux_read.anvil",
+      "anvil_core_patterns": [
+        "^mux_ar_main$",
+        "^mux_r_main$",
+        "^arbiter_.*",
+        "^fifo_.*"
+      ],
+      "sv_top": "perf_axi_mux_read_sv",
+      "sv_files": [
+        "common_cells/src/cf_math_pkg.sv",
+        "common_cells/src/lzc.sv",
+        "common_cells/src/rr_arb_tree.sv",
+        "common_cells/src/spill_register_flushable.sv",
+        "common_cells/src/spill_register.sv",
+        "common_cells/src/fifo_v3.sv",
+        "axi/src/axi_lite_mux_read.sv",
+        "axi/src/axi_pkg.sv",
+        "synthesis/yosys_perf/perf_sv_wrappers.sv"
+      ]
+    },
+    {
+      "name": "axi_mux_write",
+      "phase": "big",
+      "anvil_test": "test_mux_write.anvil",
+      "anvil_core_patterns": [
+        "^mux_aw_main$",
+        "^mux_w_main$",
+        "^mux_b_main$",
+        "^arbiter_.*",
+        "^fifo_.*"
+      ],
+      "sv_top": "perf_axi_mux_write_sv",
+      "sv_files": [
+        "common_cells/src/cf_math_pkg.sv",
+        "common_cells/src/lzc.sv",
+        "common_cells/src/rr_arb_tree.sv",
+        "common_cells/src/spill_register_flushable.sv",
+        "common_cells/src/spill_register.sv",
+        "common_cells/src/fifo_v3.sv",
+        "axi/src/axi_lite_mux_write.sv",
+        "axi/src/axi_pkg.sv",
+        "synthesis/yosys_perf/perf_sv_wrappers.sv"
+      ]
+    },
+    {
+      "name": "ace",
+      "phase": "big",
+      "anvil_test": "test_ace.anvil",
+      "anvil_core_patterns": ["^ace_main$"],
+      "sv_top": "perf_ace_sv",
+      "sv_files": [
+        "ace/src/snoop_pkg.sv",
+        "ace/src/ccu_fsm.sv",
+        "axi/src/axi_pkg.sv",
+        "synthesis/yosys_perf/perf_sv_wrappers.sv"
+      ]
+    },
+    {
+      "name": "tilelink",
+      "phase": "big",
+      "anvil_test": "test_tilelink.anvil",
+      "anvil_core_patterns": [
+        "^tilelink_arb$",
+        "^crossbar_A_.*",
+        "^crossbar_D_.*"
+      ],
+      "sv_top": "TLCrossBar",
+      "sv_files": [
+        "tilelink/debug_output/TLArbiter.sv",
+        "tilelink/debug_output/TLArbiter_2.sv",
+        "tilelink/debug_output/TLArbiter_4.sv",
+        "tilelink/debug_output/TLArbiter_6.sv",
+        "tilelink/debug_output/TLArbiter_8.sv",
+        "tilelink/debug_output/TLCrossBar.sv"
+      ]
+    }
+  ]
+}

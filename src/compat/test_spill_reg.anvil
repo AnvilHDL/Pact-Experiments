@@ -5,7 +5,7 @@ proc spill_reg <T: type> (spill_register_itfc){
     reg b : T;
     reg afull : logic;
     reg bfull : logic;
-    reg cyc : logic[8];
+    // reg cyc : logic[8]; // debug/bookkeeping only
     loop{
         if (~ (*afull || *bfull)){
             let in_data = recv inp_ep.req >>
@@ -89,9 +89,9 @@ proc spill_reg <T: type> (spill_register_itfc){
 
         }        
     }
-    loop{
-        set cyc := *cyc + 8'd1
-    }
+    // loop{
+    //     set cyc := *cyc + 8'd1
+    // }
 }
 
 

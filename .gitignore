@@ -21,6 +21,7 @@ scripts/env-cva6.sh
 *.csv
 __pycache__/
 *.json
+!scripts/yosys_perf_manifest.json
 *.ys
 *.smt2
 *.smtc
@@ -31,3 +32,6 @@ __pycache__/
 *.sqlite
 *.db
 /formal/comm_safety/results/
+/synthesis_reports/yosys_perf_results/
+/synthesis_reports/real_synth_perf_results/
+/synthesis/

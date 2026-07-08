@@ -67,17 +67,17 @@ interface manager_itfc(manager_ep : right arbiter_server_ch, manager_crossbar_ep
     ((manager_crossbar_d_ep.req; ^(manager_crossbar_d_ep.res : #1, * : #1)) + (#1))
 
 pool tilelink{
-    client_ep_le1 -- client_ep_ri1 : client_ch<logic[3]>,
-    client_ep_le2 -- client_ep_ri2 : client_ch<logic[3]>,
-    client_res_ep_le1 -- client_res_ep_ri1 : client_r_ch<logic[3]>,
-    client_res_ep_le2 -- client_res_ep_ri2 : client_r_ch<logic[3]>,
+    client_ep_le1 -- client_ep_ri1 : client_ch<logic[8]>,
+    client_ep_le2 -- client_ep_ri2 : client_ch<logic[8]>,
+    client_res_ep_le1 -- client_res_ep_ri1 : client_r_ch<logic[8]>,
+    client_res_ep_le2 -- client_res_ep_ri2 : client_r_ch<logic[8]>,
 
 
     server_ep_le1 -- server_ep_ri1 : server_ch<data_pack_t>,
     server_ep_le2 -- server_ep_ri2 : server_ch<data_pack_t>,
 
-    server_res_ep_le1 -- server_res_ep_ri1 : server_r_ch<logic[3]>,
-    server_res_ep_le2 -- server_res_ep_ri2 : server_r_ch<logic[3]>,
+    server_res_ep_le1 -- server_res_ep_ri1 : server_r_ch<logic[8]>,
+    server_res_ep_le2 -- server_res_ep_ri2 : server_r_ch<logic[8]>,
 
 
     manager_ep_le1 -- manager_ep_ri1 : arbiter_server_ch,
@@ -156,6 +156,6 @@ chan server_r_ch <T : type> {
 }
 
 struct data_pack_t {
-    data : logic[3],
+    data : logic[8],
     id  : logic
 }

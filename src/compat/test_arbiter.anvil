@@ -1,7 +1,7 @@
 import "type_arbiter.anvil"
 proc arbiter<Tp : type>(rr_arbiter_itfc){
     reg prio : logic[2];
-    reg cyc : logic[8];
+    // reg cyc : logic[8]; // debug/bookkeeping only
     loop{
         let prio = *prio >>
         xoffer prio {

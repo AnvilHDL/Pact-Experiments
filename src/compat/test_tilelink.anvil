@@ -90,7 +90,7 @@ proc crossbar_D<T : type>(crossbar_itfc_D){
 
 proc client<T : type, id : int>(client_itfc){
     reg client_select : logic;
-    reg data : logic[3];
+    reg data : logic[8];
     reg cyc : logic[8];
     loop{
         {
@@ -112,7 +112,7 @@ proc client<T : type, id : int>(client_itfc){
             );
             (
                 let next_select = if (id == 32'd0) {1'd0} else {1'd1} >>
-                let next_data = id[0+:3] >>
+                let next_data = id[0+:8] >>
                 try send client_ep.req(next_select) {
                     try send client_ep.data(next_data) {
                         let trace_cyc = *cyc + 8'd1 >>
@@ -137,7 +137,7 @@ proc client<T : type, id : int>(client_itfc){
 
 
 proc manager<T : type, U : type, id : int>(manager_itfc){
-    reg data : logic[3];
+    reg data : logic[8];
     reg next_id : logic;
     reg cyc : logic[8];
     loop{
@@ -148,7 +148,7 @@ proc manager<T : type, U : type, id : int>(manager_itfc){
                     let trace_cyc = *cyc + 8'd1 >>
                     dprint "[Cycle %d] Manager %d received request from client %d\n" (trace_cyc, id, x.id) >>
                     (
-                        set data := id[0+:3];
+                        set data := id[0+:8];
                         set next_id := 1'd0
                     ) >>
                     cycle 1
@@ -160,7 +160,7 @@ proc manager<T : type, U : type, id : int>(manager_itfc){
             (
                 if (*cyc[0+:2] == 2'd2) {
                     send manager_crossbar_d_ep.req(*next_id) >>
-                    let next_data = id[0+:3] >>
+                    let next_data = id[0+:8] >>
                     try send manager_crossbar_d_ep.res(next_data) {
                         let trace_cyc = *cyc + 8'd1 >>
                         dprint "[Cycle %d] Manager %d sent response: %d to client %d\n" (trace_cyc, id, next_data, *next_id) >>
@@ -184,12 +184,12 @@ proc manager<T : type, U : type, id : int>(manager_itfc){
 
 proc test_tilelink(){
     pool p : tilelink;
-    spawn client<logic[3], 0>[p.ic1];
-    spawn client<logic[3], 1>[p.ic2];
-    spawn manager<data_pack_t, logic[3], 0>[p.im1];
-    spawn manager<data_pack_t, logic[3], 1>[p.im2];
-    spawn crossbar_A<logic[3], data_pack_t>[p.icrA];
-    spawn crossbar_D<logic[3]>[p.icrD];
+    spawn client<logic[8], 0>[p.ic1];
+    spawn client<logic[8], 1>[p.ic2];
+    spawn manager<data_pack_t, logic[8], 0>[p.im1];
+    spawn manager<data_pack_t, logic[8], 1>[p.im2];
+    spawn crossbar_A<logic[8], data_pack_t>[p.icrA];
+    spawn crossbar_D<logic[8]>[p.icrD];
     spawn tilelink_arb[p.ia1];
     spawn tilelink_arb[p.ia2];
     spawn tilelink_arb[p.iares1];
