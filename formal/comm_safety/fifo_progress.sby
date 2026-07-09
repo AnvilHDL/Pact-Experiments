@@ -1,0 +1,15 @@
+[options]
+mode prove
+depth 200
+expect pass
+
+[engines]
+smtbmc yices
+
+[script]
+plugin -i slang
+read_slang --single-unit --top tb_fifo src/testbenches/fifo_test.sv
+prep -top tb_fifo
+
+[files]
+src/testbenches/fifo_test.sv src/testbenches/fifo_test.sv

@@ -9,12 +9,13 @@ import sys
 import time
 from collections import Counter
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "scripts" / "yosys_perf_manifest.json"
-DEFAULT_RESULTS = ROOT / "synthesis_reports" / "yosys_perf_results"
+DEFAULT_RESULTS_BASE = ROOT / "synthesis_reports" / "yosys_perf_results"
 ANVIL_DIR = ROOT / "src" / "compat"
 RESET_ONLY_FF_RE = re.compile(
     r"(?P<head>always_ff @\(posedge clk_i or negedge rst_ni\) begin : [^\n]+\n)"
@@ -86,7 +87,12 @@ def parse_args() -> RunConfig:
     parser.add_argument("--variant", choices=["anvil", "sv", "both"], default="both")
     parser.add_argument("--include-neighbors", action="store_true")
     parser.add_argument("--strict", action="store_true")
-    parser.add_argument("--results-dir", default=str(DEFAULT_RESULTS))
+    parser.add_argument(
+        "--results-dir",
+        default=None,
+        help=f"Default: a new timestamped directory under {DEFAULT_RESULTS_BASE.relative_to(ROOT)}/ "
+        "(never overwrites a previous run's results)",
+    )
     parser.add_argument("--manifest", default=str(DEFAULT_MANIFEST))
     parser.add_argument("--keep-generated", action="store_true")
     parser.add_argument(
@@ -97,9 +103,12 @@ def parse_args() -> RunConfig:
     )
     args = parser.parse_args()
 
-    results_dir = Path(args.results_dir)
-    if not results_dir.is_absolute():
-        results_dir = ROOT / results_dir
+    if args.results_dir is None:
+        results_dir = DEFAULT_RESULTS_BASE / datetime.now().strftime("%Y%m%d_%H%M%S")
+    else:
+        results_dir = Path(args.results_dir)
+        if not results_dir.is_absolute():
+            results_dir = ROOT / results_dir
     manifest_path = Path(args.manifest)
     if not manifest_path.is_absolute():
         manifest_path = ROOT / manifest_path
@@ -794,6 +803,7 @@ def main() -> int:
             return 1
 
     config.results_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Results directory: {config.results_dir.relative_to(ROOT)}", flush=True)
     all_rows = []
     per_case_rows: dict[str, list[dict]] = {}
 

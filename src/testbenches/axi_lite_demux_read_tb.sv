@@ -87,7 +87,7 @@ module axi_read_demux_master #(
 
   typedef enum logic {IDLE, SEND_R} state_t;
   state_t state;
-  logic [7:0] data_count;
+  logic [31:0] data_count;
   logic [31:0] cycle_count;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -96,7 +96,7 @@ module axi_read_demux_master #(
       ar_ready_o <= 0;
       r_valid_o <= 0;
       r_o <= '0;
-      data_count <= MasterId[7:0] * 8'd10;
+      data_count <= MasterId[31:0] * 32'd10;
       cycle_count <= 0;
     end else begin
       cycle_count <= cycle_count + 1;

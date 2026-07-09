@@ -100,31 +100,31 @@ proc spill_master<T : type>(master_itfc){
 
     loop{
         cycle 2 >>
-        send reg_ep.req(8'd0) >>
+        send reg_ep.req(32'd0) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
         cycle 2 >>
-        send reg_ep.req(8'd1) >>
+        send reg_ep.req(32'd1) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
         cycle 7 >>
-        send reg_ep.req(8'd0) >>
+        send reg_ep.req(32'd0) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
         cycle 12 >>
-        send reg_ep.req(8'd1) >>
+        send reg_ep.req(32'd1) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
         cycle 12 >>
-        send reg_ep.req(8'd0) >>
+        send reg_ep.req(32'd0) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
         cycle 12 >>
-        send reg_ep.req(8'd1) >>
+        send reg_ep.req(32'd1) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
         cycle 12 >>
-        send reg_ep.req(8'd0) >>
+        send reg_ep.req(32'd0) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
         cycle 12 >>
-        send reg_ep.req(8'd1) >>
+        send reg_ep.req(32'd1) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
         cycle 12 >>
-        send reg_ep.req(8'd0) >>
+        send reg_ep.req(32'd0) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
         cycle 1
     }
@@ -175,9 +175,9 @@ proc spill_slave<T : type>(slave_itfc){
 proc test_spill_reg(){
     pool p : spill_reg_pool;
 
-    spawn spill_reg<logic[8]>[p.ispillreg];
-    spawn spill_master<logic[8]>[p.imaster];
-    spawn spill_slave<logic[8]>[p.islave];
+    spawn spill_reg<logic[32]>[p.ispillreg];
+    spawn spill_master<logic[32]>[p.imaster];
+    spawn spill_slave<logic[32]>[p.islave];
 
     loop{
         cycle 84 >>

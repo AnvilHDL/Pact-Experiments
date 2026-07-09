@@ -337,7 +337,7 @@ proc master_write(master_write_itfc){
         let req = recv mst_ep_aw.req >>
         let aw_cyc = if ((*cyc > 32'd66) && (*cyc < 32'd130)) {*cyc + 32'd1} else {*cyc} >>
         dprint "[Cycle %d] Master received aw req with addr %d" (aw_cyc, req.addr) >>
-        set addr := req.addr >>
+        set addr := req.addr[0+:8] >>
         cycle 1 >>
         send mst_ep_w.rdy(()) >>
         let wdata = recv mst_ep_w.req >>
@@ -360,7 +360,7 @@ proc master_write(master_write_itfc){
 proc slave_write<id : int>(slave_write_itfc){
     reg cyc : logic[32];
     reg next_req : logic[32];
-    reg data : logic[8];
+    reg data : logic[32];
     loop{
         rec WaitReq {
             let target0 = if (*next_req == 32'd0) {32'd3} else {*next_req} >>
@@ -380,7 +380,7 @@ proc slave_write<id : int>(slave_write_itfc){
                 recurse WaitReq
             }
         } >>
-        let aid = id[0+:8] >>
+        let aid = id[0+:32] >>
         let aw = aw_pack_t::{addr = aid; prot = 1'b0} >>
         send write_req_ep.req(aw) >>
         let _ = recv write_req_ep.gnt >>
@@ -409,7 +409,7 @@ proc slave_write<id : int>(slave_write_itfc){
                 recurse Y
             }
         } >>
-        set data := *data + 8'd1
+        set data := *data + 32'd1
     }
     loop{
         set cyc := *cyc + 32'd1

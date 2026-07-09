@@ -6,22 +6,22 @@ proc arbiter<Tp : type>(rr_arbiter_itfc){
         let prio = *prio >>
         xoffer prio {
             _ = recv slv_ep1.req => (
-                send mst_ep.req(1'd1) >>
+                send mst_ep.req(32'd1) >>
                 send slv_ep1.gnt(()) >>
                 set prio := 2'd1
             ),
             _ = recv slv_ep2.req => (
-                send mst_ep.req(1'd1) >>
+                send mst_ep.req(32'd1) >>
                 send slv_ep2.gnt(()) >>
                 set prio := 2'd2
             ),
             _ = recv slv_ep3.req => (
-                send mst_ep.req(1'd1) >>
+                send mst_ep.req(32'd1) >>
                 send slv_ep3.gnt(()) >>
                 set prio := 2'd3
             ),
             _ = recv slv_ep4.req => (
-                send mst_ep.req(1'd1) >>
+                send mst_ep.req(32'd1) >>
                 send slv_ep4.gnt(()) >>
                 set prio := 2'd0
             ),
@@ -36,9 +36,9 @@ proc arbiter_slave<Tp : type, id : int, data : int>(slave_interface){
     reg cyc : logic[8];
 
     loop{
-        send slv_ep.req(data[0+:1]) >>
+        send slv_ep.req(data[0+:32]) >>
         let _ = recv slv_ep.gnt >>
-        dprint "[Cycle %d] Master granted slave %d data %d\n" (*cyc, id[0+:2], data[0+:1]) >>
+        dprint "[Cycle %d] Master granted slave %d data %d\n" (*cyc, id[0+:2], data[0+:32]) >>
         cycle 1
     }
     loop{
@@ -109,12 +109,12 @@ proc arbiter_master<Tp : type>(master_interface){
 proc test_arbiter(){
     pool p : arbiter_pool;
 
-    spawn arbiter_slave<logic, 0, 0>[p.islv1];
-    spawn arbiter_slave<logic, 1, 1>[p.islv2];
-    spawn arbiter_slave<logic, 2, 0>[p.islv3];
-    spawn arbiter_slave<logic, 3, 1>[p.islv4];
-    spawn arbiter_master<logic>[p.imst];
-    spawn arbiter<logic>[p.iarb];
+    spawn arbiter_slave<logic[32], 0, 0>[p.islv1];
+    spawn arbiter_slave<logic[32], 1, 1>[p.islv2];
+    spawn arbiter_slave<logic[32], 2, 0>[p.islv3];
+    spawn arbiter_slave<logic[32], 3, 1>[p.islv4];
+    spawn arbiter_master<logic[32]>[p.imst];
+    spawn arbiter<logic[32]>[p.iarb];
 
     loop{
         cycle 84 >>

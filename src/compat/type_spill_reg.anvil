@@ -9,8 +9,8 @@ interface master_itfc(reg_ep : left reg_req<T>) = F reg_ep.req; #1
 interface slave_itfc(reg_ep : right reg_res<T>) = F reg_ep.data ; (#reg_ep.spill + ()) ; #1
 
 pool spill_reg_pool {
-    reg_inp_ep -- reg_inp_ep2 : reg_req<logic[8]>,
-    reg_out_ep -- reg_out_ep2 : reg_res<logic[8]>;
+    reg_inp_ep -- reg_inp_ep2 : reg_req<logic[32]>,
+    reg_out_ep -- reg_out_ep2 : reg_res<logic[32]>;
     ispillreg : spill_register_itfc(reg_inp_ep2, reg_out_ep2),
     imaster : master_itfc(reg_inp_ep),
     islave : slave_itfc(reg_out_ep)

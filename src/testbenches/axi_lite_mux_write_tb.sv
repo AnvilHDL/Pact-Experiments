@@ -24,7 +24,7 @@ module axi_write_slave #(
   typedef enum logic [1:0] {IDLE, SEND_AW, SEND_W, WAIT_B} state_t;
   state_t state;
   logic [31:0] cycle_count;
-  logic [7:0] data_count;
+  logic [31:0] data_count;
 
   assign b_ready_o = 1'b1;
 

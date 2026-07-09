@@ -29,12 +29,30 @@ import subprocess
 import sys
 import time
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "scripts" / "yosys_perf_manifest.json"
-DEFAULT_RESULTS = ROOT / "synthesis_reports" / "real_synth_perf_results"
-DEFAULT_GENERATED = ROOT / "synthesis_reports" / "yosys_perf_results" / "generated"
+DEFAULT_RESULTS_BASE = ROOT / "synthesis_reports" / "real_synth_perf_results"
+YOSYS_PERF_RESULTS_BASE = ROOT / "synthesis_reports" / "yosys_perf_results"
+RUN_DIR_RE = re.compile(r"^\d{8}_\d{6}$")
+
+
+def newest_yosys_perf_generated_dir():
+    """The `generated/` subfolder of the most recently created timestamped
+    run under synthesis_reports/yosys_perf_results/ - collect_yosys_perf.py
+    writes a new one of these by default each run, so this script's default
+    input tracks it without the caller re-pointing --generated-dir by hand.
+    Falls back to the flat (pre-timestamping) generated/ layout if no
+    timestamped run directory exists yet.
+    """
+    if YOSYS_PERF_RESULTS_BASE.is_dir():
+        run_dirs = [p for p in YOSYS_PERF_RESULTS_BASE.iterdir() if p.is_dir() and RUN_DIR_RE.match(p.name)]
+        if run_dirs:
+            newest = max(run_dirs, key=lambda p: p.name)
+            return newest / "generated"
+    return YOSYS_PERF_RESULTS_BASE / "generated"
 DEFAULT_PDK_LIB = Path(
     "/home/aditya/.volare/volare/sky130/versions/"
     "c6d73a35f524070e85faff4a6a9eef49553ebc2b/sky130A/libs.ref/sky130_fd_sc_hd/lib/"
@@ -91,9 +109,19 @@ def parse_args() -> RunConfig:
     )
     parser.add_argument("--case", dest="case_names", action="append", help="Run one named case; repeatable")
     parser.add_argument("--variant", choices=["anvil", "sv", "both"], default="both")
-    parser.add_argument("--results-dir", default=str(DEFAULT_RESULTS))
+    parser.add_argument(
+        "--results-dir",
+        default=None,
+        help=f"Default: a new timestamped directory under {DEFAULT_RESULTS_BASE.relative_to(ROOT)}/ "
+        "(never overwrites a previous run's results)",
+    )
     parser.add_argument("--manifest", default=str(DEFAULT_MANIFEST))
-    parser.add_argument("--generated-dir", default=str(DEFAULT_GENERATED))
+    parser.add_argument(
+        "--generated-dir",
+        default=None,
+        help="Default: the generated/ subfolder of the most recently created timestamped run under "
+        f"{YOSYS_PERF_RESULTS_BASE.relative_to(ROOT)}/ (auto-tracks collect_yosys_perf.py's latest output)",
+    )
     parser.add_argument("--pdk-lib", default=str(DEFAULT_PDK_LIB))
     parser.add_argument("--sta-image", default=DEFAULT_STA_IMAGE)
     parser.add_argument("--clock-period-ns", type=float, default=DEFAULT_CLOCK_PERIOD_NS)
@@ -101,15 +129,21 @@ def parse_args() -> RunConfig:
     parser.add_argument("--podman-bin", default="podman")
     args = parser.parse_args()
 
-    results_dir = Path(args.results_dir)
-    if not results_dir.is_absolute():
-        results_dir = ROOT / results_dir
+    if args.results_dir is None:
+        results_dir = DEFAULT_RESULTS_BASE / datetime.now().strftime("%Y%m%d_%H%M%S")
+    else:
+        results_dir = Path(args.results_dir)
+        if not results_dir.is_absolute():
+            results_dir = ROOT / results_dir
     manifest_path = Path(args.manifest)
     if not manifest_path.is_absolute():
         manifest_path = ROOT / manifest_path
-    generated_dir = Path(args.generated_dir)
-    if not generated_dir.is_absolute():
-        generated_dir = ROOT / generated_dir
+    if args.generated_dir is None:
+        generated_dir = newest_yosys_perf_generated_dir()
+    else:
+        generated_dir = Path(args.generated_dir)
+        if not generated_dir.is_absolute():
+            generated_dir = ROOT / generated_dir
 
     return RunConfig(
         case_names=set(args.case_names) if args.case_names else None,
@@ -579,6 +613,9 @@ def main() -> int:
     if not selected_cases:
         print("No cases selected.", file=sys.stderr)
         return 1
+
+    print(f"Results directory: {config.results_dir.relative_to(ROOT)}", flush=True)
+    print(f"Reading generated SV from: {config.generated_dir.relative_to(ROOT)}", flush=True)
 
     all_rows = []
     for case in selected_cases:

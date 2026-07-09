@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import argparse
 import csv
+import re
 import shlex
 import subprocess
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 
@@ -28,7 +30,7 @@ def sby_status_from_retcode(rc):
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_RESULTS = ROOT / "formal" / "comm_safety" / "results"
+DEFAULT_RESULTS_BASE = ROOT / "formal" / "comm_safety" / "results"
 
 
 @dataclass(frozen=True)
@@ -37,30 +39,72 @@ class Case:
     phase: str
     sby: str
     anvil_type: str
+    harness_module: str
 
 
 SHORT_CASES = [
-    Case("fifo", "short", "formal/comm_safety/fifo.sby", "type_fifo.anvil"),
-    Case("spill_register", "short", "formal/comm_safety/spill_register.sby", "type_spill_reg.anvil"),
-    Case("stream_fifo", "short", "formal/comm_safety/stream_fifo.sby", "type_stream_fifo.anvil"),
-    Case("arbiter", "short", "formal/comm_safety/arbiter.sby", "type_arbiter.anvil"),
-    Case("axi_demux_read", "short", "formal/comm_safety/axi_demux_read.sby", "type_demux_read.anvil"),
+    Case("fifo", "short", "formal/comm_safety/fifo.sby", "type_fifo.anvil", "comm_fifo_formal"),
+    Case("spill_register", "short", "formal/comm_safety/spill_register.sby", "type_spill_reg.anvil", "comm_spill_formal"),
+    Case("stream_fifo", "short", "formal/comm_safety/stream_fifo.sby", "type_stream_fifo.anvil", "comm_stream_fifo_formal"),
+    Case("arbiter", "short", "formal/comm_safety/arbiter.sby", "type_arbiter.anvil", "comm_arbiter_formal"),
+    Case("axi_demux_read", "short", "formal/comm_safety/axi_demux_read.sby", "type_demux_read.anvil", "comm_axi_demux_read_formal"),
 ]
 
 BIG_CASES = [
-    Case("axi_demux_write", "big", "formal/comm_safety/axi_demux_write.sby", "type_demux_write.anvil"),
-    Case("axi_mux_read", "big", "formal/comm_safety/axi_mux_read.sby", "type_mux_read_simplified.anvil"),
-    Case("axi_mux_write", "big", "formal/comm_safety/axi_mux_write.sby", "type_mux_4p_write.anvil"),
-    Case("ace", "big", "formal/comm_safety/ace.sby", "type_ace.anvil"),
-    Case("tilelink", "big", "formal/comm_safety/tilelink.sby", "type_tilelink.anvil"),
+    Case("axi_demux_write", "big", "formal/comm_safety/axi_demux_write.sby", "type_demux_write.anvil", "comm_axi_demux_write_formal"),
+    Case("axi_mux_read", "big", "formal/comm_safety/axi_mux_read.sby", "type_mux_read_simplified.anvil", "comm_axi_mux_read_formal"),
+    Case("axi_mux_write", "big", "formal/comm_safety/axi_mux_write.sby", "type_mux_4p_write.anvil", "comm_axi_mux_write_formal"),
+    Case("ace", "big", "formal/comm_safety/ace.sby", "type_ace.anvil", "comm_ace_formal"),
+    Case("tilelink", "big", "formal/comm_safety/tilelink.sby", "type_tilelink.anvil", "comm_tilelink_formal"),
 ]
+
+HARNESS_FILES = [
+    ROOT / "formal" / "comm_safety" / "sv" / "comm_safety_common.sv",
+    ROOT / "formal" / "comm_safety" / "sv" / "comm_safety_tb_wrappers.sv",
+]
+
+
+def sby_depth(sby_path):
+    with open(sby_path) as f:
+        for line in f:
+            parts = line.split()
+            if len(parts) == 2 and parts[0] == "depth":
+                return int(parts[1])
+    return None
+
+
+def harness_assertion_counts(module_name):
+    """(lines, asserts, assumes) for a case's `module comm_<case>_formal ...
+    endmodule` block - the actual property/assumption set k-induction proves
+    against, not just a pass/fail summary."""
+    for path in HARNESS_FILES:
+        if not path.exists():
+            continue
+        text = path.read_text(errors="ignore")
+        match = re.search(rf"^module\s+{re.escape(module_name)}\b", text, re.MULTILINE)
+        if match is None:
+            continue
+        start = match.start()
+        end = text.find("\nendmodule", start)
+        if end == -1:
+            continue
+        end += len("\nendmodule")
+        body = text[start:end]
+        active_body = "\n".join(line for line in body.splitlines() if not line.lstrip().startswith("//"))
+        return len(body.splitlines()), len(re.findall(r"\bassert\s*\(", active_body)), len(re.findall(r"\bassume\s*\(", active_body))
+    return None, None, None
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Time communication-safety SBY and Anvil checks.")
     parser.add_argument("--phase", choices=["short", "big", "all"], default="short")
     parser.add_argument("--mode", choices=["2", "3", "4"], default="2")
-    parser.add_argument("--results-dir", default=str(DEFAULT_RESULTS))
+    parser.add_argument(
+        "--results-dir",
+        default=None,
+        help=f"Default: a new timestamped directory under {DEFAULT_RESULTS_BASE.relative_to(ROOT)}/ "
+        "(never overwrites a previous run's results)",
+    )
     parser.add_argument("--case", dest="case_names", action="append", help="Run one named case; repeatable")
     parser.add_argument("--skip-yosys", action="store_true")
     parser.add_argument("--skip-anvil", action="store_true")
@@ -293,11 +337,17 @@ def run_anvil(case, mode, results_dir, timeout_seconds=None):
 
 def run_case(case, args, results_dir):
     print(f"[{case.name}] starting", flush=True)
+    harness_lines, harness_asserts, harness_assumes = harness_assertion_counts(case.harness_module)
     row = {
         "case": case.name,
         "phase": case.phase,
         "sby": case.sby,
         "anvil_type": case.anvil_type,
+        "harness_module": case.harness_module,
+        "kinduction_depth": sby_depth(ROOT / case.sby),
+        "harness_lines": harness_lines,
+        "harness_asserts": harness_asserts,
+        "harness_assumes": harness_assumes,
     }
     if args.skip_yosys:
         row.update({"yosys_mode": "skipped", "yosys_status": "SKIPPED", "yosys_seconds": "", "yosys_log": ""})
@@ -331,10 +381,14 @@ def run_case(case, args, results_dir):
 
 def main():
     args = parse_args()
-    results_dir = Path(args.results_dir)
-    if not results_dir.is_absolute():
-        results_dir = ROOT / results_dir
+    if args.results_dir is None:
+        results_dir = DEFAULT_RESULTS_BASE / datetime.now().strftime("%Y%m%d_%H%M%S")
+    else:
+        results_dir = Path(args.results_dir)
+        if not results_dir.is_absolute():
+            results_dir = ROOT / results_dir
     results_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Results directory: {results_dir.relative_to(ROOT)}", flush=True)
 
     cases = selected_cases(args.phase, args.case_names)
     if not cases:
@@ -364,6 +418,11 @@ def main():
                 "yosys_mode",
                 "yosys_status",
                 "yosys_seconds",
+                "kinduction_depth",
+                "harness_module",
+                "harness_lines",
+                "harness_asserts",
+                "harness_assumes",
                 "anvil_status",
                 "anvil_seconds",
                 "ebmc_status",

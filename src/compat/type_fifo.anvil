@@ -40,4 +40,4 @@ chan fifo_dequeue_ch<Tp : type> {
     left empty : (void@#1)
 }
 
-type select_t = logic[2];
+type select_t = logic[32];

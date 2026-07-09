@@ -118,9 +118,9 @@ type resp_t = logic;
 type strb_t = logic;
 
 type select_t = logic[2];
-type A = logic[8];
-type T = logic[8];
-type byte = logic[8];
+type A = logic[32];
+type T = logic[32];
+type byte = logic[32];
 
 struct aw_pack_t {
     addr : A,

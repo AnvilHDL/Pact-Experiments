@@ -81,7 +81,7 @@ module axi_read_master #(
 
   typedef enum logic {IDLE, SEND_R} state_t;
   state_t state;
-  logic [7:0] data_count;
+  logic [31:0] data_count;
   logic [31:0] cycle_count;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin

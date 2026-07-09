@@ -21,4 +21,4 @@ chan pop_ch <T : type> {
     right pop : (T@#1)
 }
 
-type byte = logic[8];
+type byte = logic[32];

@@ -223,7 +223,7 @@ proc master<id : int>(master_itfc){
     loop{
         send mux_ep_aw.rdy(()) >>
         let aw = recv mux_ep_aw.req >>
-        set addr := aw.addr >>
+        set addr := aw.addr[0+:8] >>
         cycle 1 >> 
         let aw_cyc = *cyc - 8'd2 >>
         dprint "[Cycle %d] Master %d received aw addr %d" (aw_cyc, id[0+:2], aw.addr) >>
@@ -255,7 +255,7 @@ proc master<id : int>(master_itfc){
 proc slave(slave_itfc){
     reg cyc : logic[16];
     reg next_aw : logic[16];
-    reg data : logic[8];
+    reg data : logic[32];
     reg sel : logic[2];
     loop{
         let target = if (*next_aw == 16'd0) {16'd3} else {*next_aw} >>
@@ -267,7 +267,7 @@ proc slave(slave_itfc){
             }
         } >>
         let curr_sel = *sel >>
-        let curr_addr = if (curr_sel == 2'd0) {8'd0} else if (curr_sel == 2'd1) {8'd64} else if (curr_sel == 2'd2) {8'd128} else {8'd192} >>
+        let curr_addr = if (curr_sel == 2'd0) {32'd0} else if (curr_sel == 2'd1) {32'd64} else if (curr_sel == 2'd2) {32'd128} else {32'd192} >>
         let aw = aw_pack_t::{addr = curr_addr; prot = 1'b0} >>
         let req = aw_ch::{aw_pack = aw; select = curr_sel} >>
         dprint "[Cycle %d] Slave write aw addr %d selected master %d" (*cyc, aw.addr, req.select) >>
@@ -279,7 +279,7 @@ proc slave(slave_itfc){
         dprint "[Cycle %d] Slave write data %d granted" (*cyc, w.data) >>
         let b = recv slv_ep_b.res >>
         dprint "[Cycle %d] Slave received b response %d" (*cyc, b.resp) >>
-        set data := *data + 8'd1 >>
+        set data := *data + 32'd1 >>
         set sel := *sel + 2'd1 >>
         if (target == 16'd3) {
             set next_aw := 16'd10

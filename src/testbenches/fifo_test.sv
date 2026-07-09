@@ -316,34 +316,73 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
 end
 `endif
 
+// Without an explicit reset assumption, BMC/k-induction is free to pick a
+// trace where rst_ni is always 1 (reset never asserts) and every register's
+// arbitrary initial value is "valid" from step 0 - defeating the age
+// counters' reset-to-0 guarantee. Force reset low for one real cycle first.
+logic f_past_valid = 1'b0;
+always_ff @(posedge clk_i) begin
+    f_past_valid <= 1'b1;
+    if (!f_past_valid) assume (!rst_ni);
+    else assume (rst_ni);
+end
+
+// Bounded-liveness age counters: cycles since progress_o last fired for
+// each component. `assert(*_age < *_bound)` is a genuinely provable bounded
+// property (progress recurs within *_bound cycles), unlike the unbounded
+// `eventually`/SVA syntax this replaces - yosys-slang's read_slang rejects
+// ALL `assert property (...)` SVA (even plain `|->` implication: "SVA
+// unsupported"), so none of this file's original assertions ever actually
+// ran under the Yosys+slang formal flow. Bound chosen generously; if it's
+// ever hit, that's a real "no progress within Bound cycles" counterexample,
+// not a false positive from an under-sized window.
+localparam int unsigned ProgressBound = 64;
+logic [$clog2(ProgressBound+1)-1:0] mst_progress_age, slv_progress_age, fifo_progress_age;
+
 always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
         mst_progress_q <= 0;
         slv_progress_q <= 0;
         fifo_progress_q <= 0;
+        mst_progress_age <= '0;
+        slv_progress_age <= '0;
+        fifo_progress_age <= '0;
     end else begin
         mst_progress_q <= mst_progress;
         slv_progress_q <= slv_progress;
         fifo_progress_q <= fifo_progress;
+
+        // communication safety: DUT-visible full/empty/push/pop must agree
+        // with the shadow accounting the master/slave/fifo stubs track.
+        // push_req/pop_req are only asserted by the DUT when the push/pop
+        // was actually legal (push_i && !full_o / pop_i && !empty_o) - a
+        // push_i while full_o is a correctly-rejected attempt, not a bug.
+        assert (!full_o || shadow_full_req);
+        assert (!empty_o || shadow_empty_req);
+        assert (!(push_i && !full_o) || shadow_push_req);
+        assert (!(pop_i && !empty_o) || shadow_pop_req);
+
+        // bounded liveness: each component's progress_o must recur within
+        // ProgressBound cycles, not go silent forever.
+        if (mst_progress) mst_progress_age <= '0;
+        else begin
+            mst_progress_age <= mst_progress_age + 1'b1;
+            assert (mst_progress_age < ProgressBound);
+        end
+
+        if (slv_progress) slv_progress_age <= '0;
+        else begin
+            slv_progress_age <= slv_progress_age + 1'b1;
+            assert (slv_progress_age < ProgressBound);
+        end
+
+        if (fifo_progress) fifo_progress_age <= '0;
+        else begin
+            fifo_progress_age <= fifo_progress_age + 1'b1;
+            assert (fifo_progress_age < ProgressBound);
+        end
     end
 end
-
-`ifndef VERILATOR
-// communication safety properties
-assert property (@(posedge clk_i) disable iff (!rst_ni) (full_o |-> shadow_full_req));
-assert property (@(posedge clk_i) disable iff (!rst_ni) (empty_o |-> shadow_empty_req));
-assert property (@(posedge clk_i) disable iff (!rst_ni) (push_i |-> shadow_push_req));
-assert property (@(posedge clk_i) disable iff (!rst_ni) (pop_i |-> shadow_pop_req));
-
-// liveness properties eventually progress_o
-assert property (@(posedge clk_i) disable iff (!rst_ni) eventually (mst_progress));
-assert property (@(posedge clk_i) disable iff (!rst_ni) eventually (slv_progress));
-assert property (@(posedge clk_i) disable iff (!rst_ni) eventually (fifo_progress));
-
-assert property (@(posedge clk_i) disable iff (!rst_ni) (mst_progress_q |-> eventually mst_progress));
-assert property (@(posedge clk_i) disable iff (!rst_ni) (slv_progress_q |-> eventually slv_progress));
-assert property (@(posedge clk_i) disable iff (!rst_ni) (fifo_progress_q |-> eventually fifo_progress));
-`endif
 
 
 

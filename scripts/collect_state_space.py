@@ -24,6 +24,7 @@ import subprocess
 import sys
 import time
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,7 +35,7 @@ ANVIL_DIR = ROOT / "src" / "compat"
 # core-component scope, this script's --top is the outer driver process
 # itself, which does emit these (mainly $finish on a terminal test event).
 SIM_ONLY_RE = re.compile(r"^\s*\$(display|write|strobe|monitor|finish)\b.*?;\s*$", re.MULTILINE)
-DEFAULT_RESULTS = ROOT / "formal" / "comm_safety" / "results" / "state_space"
+DEFAULT_RESULTS_BASE = ROOT / "formal" / "comm_safety" / "results" / "state_space"
 
 
 @dataclass(frozen=True)
@@ -62,7 +63,12 @@ CASES = [
 def parse_args():
     parser = argparse.ArgumentParser(description="Naive state-space (2**seq_cells) for full-test Anvil vs SV.")
     parser.add_argument("--case", dest="case_names", action="append", help="Run one named case; repeatable")
-    parser.add_argument("--results-dir", default=str(DEFAULT_RESULTS))
+    parser.add_argument(
+        "--results-dir",
+        default=None,
+        help=f"Default: a new timestamped directory under {DEFAULT_RESULTS_BASE.relative_to(ROOT)}/ "
+        "(never overwrites a previous run's results)",
+    )
     parser.add_argument("--timeout-seconds", type=int, default=180)
     return parser.parse_args()
 
@@ -249,10 +255,14 @@ def measure(command, cwd, top, log_path, timeout_seconds):
 
 def main():
     args = parse_args()
-    results_dir = Path(args.results_dir)
-    if not results_dir.is_absolute():
-        results_dir = ROOT / results_dir
+    if args.results_dir is None:
+        results_dir = DEFAULT_RESULTS_BASE / datetime.now().strftime("%Y%m%d_%H%M%S")
+    else:
+        results_dir = Path(args.results_dir)
+        if not results_dir.is_absolute():
+            results_dir = ROOT / results_dir
     results_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Results directory: {results_dir.relative_to(ROOT)}", flush=True)
 
     rows = []
     for case in selected_cases(args.case_names):

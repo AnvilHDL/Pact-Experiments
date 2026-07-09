@@ -147,7 +147,7 @@ proc demux_r_main(demux_r_main){
 }
 
 proc master<id : int>(master_itfc){
-    reg count : logic[8];
+    reg count : logic[32];
     reg cyc : logic[8];
     loop{
         send mux_ep_ar.rdy(()) >>
@@ -156,15 +156,15 @@ proc master<id : int>(master_itfc){
         let recv_cyc = *cyc - 8'd1 >>
         dprint "[Cycle %d] Master %d received ar addr %d" (recv_cyc, id, ar.addr) >>
         cycle 1 >>
-        let aid = id[0+:8] >>
-        let rdata = (aid * 8'd10) + *count >>
+        let aid = id[0+:32] >>
+        let rdata = (aid * 32'd10) + *count >>
         let r = r_pack_t::{data = rdata; resp = 1'b0} >>
         send demux_ep_r.rdy(()) >>
         send demux_ep_r.res(r) >>
         cycle 1 >>
         let sent_cyc = *cyc - 8'd1 >>
         dprint "[Cycle %d] Master %d sent r data %d" (sent_cyc, id, r.data) >>
-        set count := *count + 8'd1 >>
+        set count := *count + 32'd1 >>
         ()
     }
     loop{
@@ -177,7 +177,7 @@ proc slave(slave_itfc){
 
     loop{
         cycle 3 >>
-        let ar0 = ar_pack_t::{addr = 8'd0; prot = 1'b0} >>
+        let ar0 = ar_pack_t::{addr = 32'd0; prot = 1'b0} >>
         let req0 = ar_ch::{ar_pack = ar0; select = 2'd0} >>
         dprint "[Cycle %d] Slave read ar addr %d selected master %d" (*cyc, ar0.addr, req0.select) >>
         send slv_ep_ar.ar_req(req0) >>
@@ -186,7 +186,7 @@ proc slave(slave_itfc){
         dprint "[Cycle %d] Slave received r data %d" (*cyc, r0.data) >>
 
         cycle 5 >>
-        let ar1 = ar_pack_t::{addr = 8'd64; prot = 1'b0} >>
+        let ar1 = ar_pack_t::{addr = 32'd64; prot = 1'b0} >>
         let req1 = ar_ch::{ar_pack = ar1; select = 2'd1} >>
         dprint "[Cycle %d] Slave read ar addr %d selected master %d" (*cyc, ar1.addr, req1.select) >>
         send slv_ep_ar.ar_req(req1) >>
@@ -195,7 +195,7 @@ proc slave(slave_itfc){
         dprint "[Cycle %d] Slave received r data %d" (*cyc, r1.data) >>
 
         cycle 6 >>
-        let ar2 = ar_pack_t::{addr = 8'd128; prot = 1'b0} >>
+        let ar2 = ar_pack_t::{addr = 32'd128; prot = 1'b0} >>
         let req2 = ar_ch::{ar_pack = ar2; select = 2'd2} >>
         dprint "[Cycle %d] Slave read ar addr %d selected master %d" (*cyc, ar2.addr, req2.select) >>
         send slv_ep_ar.ar_req(req2) >>
@@ -204,7 +204,7 @@ proc slave(slave_itfc){
         dprint "[Cycle %d] Slave received r data %d" (*cyc, r2.data) >>
 
         cycle 14 >>
-        let ar3 = ar_pack_t::{addr = 8'd192; prot = 1'b0} >>
+        let ar3 = ar_pack_t::{addr = 32'd192; prot = 1'b0} >>
         let req3 = ar_ch::{ar_pack = ar3; select = 2'd3} >>
         dprint "[Cycle %d] Slave read ar addr %d selected master %d" (*cyc, ar3.addr, req3.select) >>
         send slv_ep_ar.ar_req(req3) >>

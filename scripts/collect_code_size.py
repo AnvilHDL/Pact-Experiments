@@ -17,6 +17,7 @@ import argparse
 import csv
 import re
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +27,7 @@ HARNESS_FILES = [
     ROOT / "formal" / "comm_safety" / "sv" / "comm_safety_common.sv",
     ROOT / "formal" / "comm_safety" / "sv" / "comm_safety_tb_wrappers.sv",
 ]
+DEFAULT_RESULTS_BASE = ROOT / "formal" / "comm_safety" / "results"
 
 
 @dataclass(frozen=True)
@@ -102,10 +104,11 @@ def find_harness_module(module_name):
             continue
         end += len("\nendmodule")
         body = text[start:end]
+        active_body = "\n".join(line for line in body.splitlines() if not line.lstrip().startswith("//"))
         return {
             "lines": len(body.splitlines()),
-            "asserts": len(re.findall(r"\bassert\s*\(", body)),
-            "assumes": len(re.findall(r"\bassume\s*\(", body)),
+            "asserts": len(re.findall(r"\bassert\s*\(", active_body)),
+            "assumes": len(re.findall(r"\bassume\s*\(", active_body)),
         }
     return None
 
@@ -113,7 +116,12 @@ def find_harness_module(module_name):
 def parse_args():
     parser = argparse.ArgumentParser(description="Lines-of-code / assertion / signature-size comparison.")
     parser.add_argument("--case", dest="case_names", action="append", help="Run one named case; repeatable")
-    parser.add_argument("--csv", default=str(ROOT / "formal" / "comm_safety" / "results" / "code_size.csv"))
+    parser.add_argument(
+        "--csv",
+        default=None,
+        help=f"Default: code_size.csv in a new timestamped directory under "
+        f"{DEFAULT_RESULTS_BASE.relative_to(ROOT)}/ (never overwrites a previous run's results)",
+    )
     return parser.parse_args()
 
 
@@ -126,10 +134,14 @@ def selected_cases(names):
 
 def main():
     args = parse_args()
-    csv_path = Path(args.csv)
-    if not csv_path.is_absolute():
-        csv_path = ROOT / csv_path
+    if args.csv is None:
+        csv_path = DEFAULT_RESULTS_BASE / datetime.now().strftime("%Y%m%d_%H%M%S") / "code_size.csv"
+    else:
+        csv_path = Path(args.csv)
+        if not csv_path.is_absolute():
+            csv_path = ROOT / csv_path
     csv_path.parent.mkdir(parents=True, exist_ok=True)
+    print(f"Results directory: {csv_path.parent.relative_to(ROOT)}", flush=True)
 
     rows = []
     for case in selected_cases(args.case_names):

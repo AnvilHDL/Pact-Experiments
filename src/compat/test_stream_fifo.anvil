@@ -46,67 +46,67 @@ proc stream_fifo_master<T : type>(master_itfc){
 
     loop{
         cycle 2 >>
-        send fifo_ep.push(8'd0) >>
+        send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 4 >>
-        send fifo_ep.push(8'd1) >>
+        send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
         cycle 4 >>
-        send fifo_ep.push(8'd0) >>
+        send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 4 >>
-        send fifo_ep.push(8'd1) >>
+        send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
         cycle 4 >>
-        send fifo_ep.push(8'd0) >>
+        send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 4 >>
-        send fifo_ep.push(8'd1) >>
+        send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
         cycle 4 >>
-        send fifo_ep.push(8'd0) >>
+        send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 4 >>
-        send fifo_ep.push(8'd1) >>
+        send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
         cycle 4 >>
-        send fifo_ep.push(8'd0) >>
+        send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 4 >>
-        send fifo_ep.push(8'd1) >>
+        send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
         cycle 4 >>
-        send fifo_ep.push(8'd0) >>
+        send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 4 >>
-        send fifo_ep.push(8'd1) >>
+        send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
         cycle 4 >>
-        send fifo_ep.push(8'd0) >>
+        send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 4 >>
-        send fifo_ep.push(8'd1) >>
+        send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
         cycle 4 >>
-        send fifo_ep.push(8'd0) >>
+        send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 4 >>
-        send fifo_ep.push(8'd1) >>
+        send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
         cycle 4 >>
-        send fifo_ep.push(8'd0) >>
+        send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 4 >>
-        send fifo_ep.push(8'd1) >>
+        send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
         cycle 4 >>
-        send fifo_ep.push(8'd0) >>
+        send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 4 >>
-        send fifo_ep.push(8'd1) >>
+        send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
         cycle 4 >>
-        send fifo_ep.push(8'd0) >>
+        send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
         cycle 1
     }

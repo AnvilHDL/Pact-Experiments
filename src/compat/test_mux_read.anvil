@@ -176,7 +176,7 @@ proc mux_r_main(mux_r_main){
 }
 
 proc master_read(master_read_itfc){
-    reg data : logic[8];
+    reg data : logic[32];
     reg cyc : logic[32];
     loop{
         send mst_ep_ar.rdy(()) >>
@@ -188,7 +188,7 @@ proc master_read(master_read_itfc){
         send mst_ep_r.rdy(()) >>
         dprint "[Cycle %d] Master sent r res with data %d" (*cyc, r.data) >>
         send mst_ep_r.res(r) >>
-        set data := *data + 8'd1 >>
+        set data := *data + 32'd1 >>
         cycle 1
     }
     loop{
@@ -215,7 +215,7 @@ proc slave_read<id : int>(slave_read_itfc){
                 recurse WaitReq
             }
         } >>
-        let aid = id[0+:8] >>
+        let aid = id[0+:32] >>
         let req = ar_pack_t::{addr = aid; prot = 1'b0} >>
         send read_req_ep.req(req) >>
         let _ = recv read_req_ep.gnt >>

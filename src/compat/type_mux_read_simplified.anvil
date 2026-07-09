@@ -92,8 +92,8 @@ type prot_t = logic;
 type resp_t = logic;
 
 type select_t = logic[2];
-type A = logic[8];
-type T = logic[8];
+type A = logic[32];
+type T = logic[32];
 
 struct ar_pack_t {
     addr : A,
@@ -135,4 +135,4 @@ chan mst_r_ch<Tp : type> {
     right res : (Tp@#1)
 }
 
-type byte = logic[8];
+type byte = logic[32];
