@@ -77,45 +77,10 @@ row has a specific region of interest, the link deep-links to those lines.
 ## Layout
 
 ```
-originals/                     retained upstream RTL, one directory per component (the deliverable)
-  <component>/<component>.sv     unmodified upstream source
-  <component>/type_<component>.anvil   PACT open-type protocol (only for the 4 components below)
-ANNOTATIONS.md                 per-row open-setting analysis + exact lines + PACT mapping
+originals/            retained upstream RTL, untouched (the deliverable)
+ANNOTATIONS.md        per-row open-setting analysis + exact lines + PACT mapping
+didactic_reference/   the 4 earlier runnable simplified demos (superseded, illustrative)
 ```
-
-`originals/` has one subdirectory per retained file (8 subdirectories for the 12
-table rows — several rows share a file, see the Summary table above):
-`adbg_axi_biu/`, `axi_test/`, `axi_demux/`, `axis_fifo/`, `axi_xbar/`, `wbuart/`,
-`ccu_fsm/`, `axi_mux/`. Each holds the untouched upstream source as fetched (commit
-pinned in the Source links table above).
-
-### PACT `.anvil` types
-
-Four of the eight components additionally carry a hand-authored `type_<component>.anvil`
-protocol file, written in the same interface/chan/pool syntax as `src/compat/type_*.anvil`
-elsewhere in this repo (see `pact.md` for the language). These were picked as the
-largest/most structurally distinct examples — one clean `FILED` pairwise bug, one
-multi-row file with two different bug shapes, and the two multi-party/open coherence
-rows — rather than doing all twelve mechanically:
-
-| Component | Rows typed | What the type encodes |
-|-----------|-----------|------------------------|
-| `adbg_axi_biu/type_adbg_axi_biu.anvil` | 1 | closed-pairwise: manager gates `w!` on having observed `aw?`, inconsistent with a legal subordinate that may wait for `w?` before granting `aw` |
-| `axi_test/type_axi_test.anvil` | 2, 5 | driver's assumed `aw`-before-`w` acceptance order (row 2); per-ID outstanding-write monitor, no `aw!` reuse before matching `b?` (row 5) |
-| `ccu_fsm/type_ccu_fsm.anvil` | 9, 10 | ID-less snoop channel needs FIFO response order (row 9); writeback-vs-snoop race on the same line (row 10) |
-| `axi_mux/type_axi_mux.anvil` | 11, 12 | response reorder/drop across subordinates (row 11); same-ID in-order delivery as the source of a wait cycle (row 12) |
-
-The other four (`axi_demux`, `axis_fifo`, `axi_xbar`, `wbuart`) are source-only for
-now — each is documented in `ANNOTATIONS.md` but has no `.anvil` file yet.
-
-### File count per example
-
-Every `originals/<component>/` directory holds exactly the upstream source file(s) —
-1 file in all 8 cases (no component here spans multiple upstream files the way row 9's
-full dependency set (`ace_intf.sv`, `snoop_intf.sv`, `ace_pkg.sv`, `snoop_pkg.sv`) might
-suggest; only `ccu_fsm.sv` itself is retained, per the Summary table). The 4 components
-above additionally carry one `.anvil` type file, so those directories have 2 files;
-the remaining 4 have 1.
 
 ## Caveats worth stating in the paper
 
