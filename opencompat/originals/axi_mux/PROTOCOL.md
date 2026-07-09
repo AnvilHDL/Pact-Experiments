@@ -1,136 +1,153 @@
-# `axi_mux` — full cycle-by-cycle protocol
+# `axi_mux` — full cycle-by-cycle protocol (port-wire view)
 
-`NoSlvPorts` AXI4 subordinate-facing ports in, one AXI4 manager-facing port
-out (naming is from the module's own comment: "multiplexes the AXI4 slave
-ports down to one master port" — so "slave ports" here are the ports other
-masters attach to, and "master port" is the single upstream/downstream link
-to the real subordinate device). Every inbound ID is widened by
-`MstIdxBits=$clog2(NoSlvPorts)` bits, prepended with the originating port
-index, so responses can be routed back unambiguously — this is what makes
-same-slave-port IDs distinguishable from each other on the shared master
-port. `NoSlvPorts==1` degenerates to five independent spill registers with no
-arbitration at all (lines 72-148); everything below is the `NoSlvPorts>1`
-case (`gen_mux`, line 151+).
+`NoSlvPorts` AXI4 subordinate-facing ports in (`slv_reqs_i[k]`/
+`slv_resps_o[k]` — each a full `aw_valid`/`ready`, `w_valid`/`ready`,
+`b_valid`/`ready`, `ar_valid`/`ready`, `r_valid`/`ready` set, with `id`
+fields on `aw`/`ar`/`b`/`r`), one AXI4 manager-facing port out
+(`mst_req_o`/`mst_resp_i`, same signal shape, but with wider `id` fields).
+Every `aw_id`/`ar_id` value entering from port `k` has `k` prepended to it
+before appearing on `mst_req_o.aw.id`/`.ar.id`; every `mst_resp_i.b.id`/
+`.r.id` has its top bits stripped back off to decide which port `k` it is
+routed back to. Below is only the `NoSlvPorts>1` case — with exactly one
+port, everything is wired straight through with no arbitration at all.
 
-## ID prepend stage (`axi_id_prepend`, one instance per slave port, lines 211-259)
+An internal `State` (which of the `NoSlvPorts` ports currently "owns" the
+write-data channel) governs the W channel; it is named generically here
+because only its effect on the wires — which port's `w_valid`/`w_ready` are
+live — is externally observable, not any implementation detail of how that
+ownership is tracked.
 
-Purely combinational relabeling per port `i`: every AW/AR beat entering port
-`i` gets `switch_id_t'(i)` prepended to its `id` field before being handed to
-the shared arbiters; every B/R beat coming back out has that same prefix
-stripped (implicitly, by construction — this sub-module is instantiated but
-not itself detailed here) before being returned to port `i`'s narrower
-`slv_*_chan_t`. This stage does not buffer or stall beyond whatever
-`axi_id_prepend` itself does; it is not further traced here since it's a
-relabeling shim, not where the row 11/12 hazards live.
+## AW channel wires
 
-## AW channel (lines 261-347) — the arbitration + AW/W decoupling core
+- **Every cycle**, each port `k` with `slv_reqs_i[k].aw_valid=1` is a
+  candidate. At most one port's `aw_ready` is ever driven high on a given
+  cycle — the module picks one candidate (round-robin across cycles: a
+  port that was picked but not yet closed keeps being picked over others
+  until its `aw_valid`/`aw_ready` actually close together; a port that
+  loses one cycle is reconsidered fairly against the others on later
+  cycles). No two ports ever see `aw_ready=1` on the same cycle.
+- **The moment a port `k` is picked** (whether or not `mst_req_o.aw_ready`
+  is high yet) — this is a wire-visible commitment even before `k`'s own
+  `aw_ready` fires: from that cycle's decision onward, the identity of
+  which port owns the *next* slot on the W channel is fixed to `k`. This
+  can happen strictly before `slv_resps_o[k].aw_ready` itself is ever
+  observed 1, if `mst_req_o.aw_ready` (the far side accepting) is not yet
+  high — the port-selection decision and the actual handshake closing on
+  port `k`'s own `aw_ready` wire are two different cycles in that case.
+- **`mst_req_o.aw_valid`** is driven 1 from the cycle a port is picked,
+  holding that port's (index-prepended) address payload unchanged, until
+  `mst_resp_i.aw_ready=1` closes it — at which point, same cycle,
+  `slv_resps_o[k].aw_ready` (the picked port's own ready) also pulses 1.
 
-- **`i_aw_arbiter`** (`rr_arb_tree`, `LockIn=1`): every cycle, combinationally
-  looks at `slv_aw_valids[NoSlvPorts]` (one bit per port with an AW beat
-  presented) and picks one (round-robin, and because `LockIn=1`, if it picked
-  port `k` last cycle and port `k` is *still* asserting `req_i[k]` but was not
-  granted yet, it keeps re-picking `k` rather than moving on — a won
-  arbitration is not abandoned mid-transaction). Drives `gnt_o[k]=1` for the
-  won port and `req_o=1`/`data_o=mst_aw_chan` (that port's already-ID-prepended
-  beat) — but `gnt_o[k]` here is the arbiter's *internal* grant signal, not
-  yet `slv_aw_readies[k]`; the actual outward `aw_ready` to the losing/winning
-  port is `slv_aw_readies`, driven by this same `gnt_o` output directly wired
-  through (line 275) — so a port only sees `aw_ready=1` once it has won
-  arbitration AND the downstream logic below accepts it (`gnt_i=aw_ready` from
-  line 277, fed back into the arbiter, gates whether the win is actually
-  consumed this cycle).
-- **AW control block** (lines 284-313), the actual per-cycle FSM, with one
-  bit of state, `lock_aw_valid_q`:
-  - **Not locked** (`lock_aw_valid_q=0`, the common case): if the `w_fifo`
-    (below) is not full and the arbiter currently has a winner
-    (`aw_valid=1`), drive `mst_aw_valid=1` and `w_fifo_push=1` (push this
-    winner's low `MstIdxBits` — i.e. which original port it came from — into
-    the W-routing FIFO) THIS SAME CYCLE, regardless of whether the downstream
-    spill register accepts it yet. If `mst_aw_ready` (the downstream accepts)
-    is high this same cycle, immediately signal `aw_ready=1` back to the
-    arbiter (closing the AW handshake with the winning port in one cycle).
-    If `mst_aw_ready` is low this cycle, don't close the handshake yet —
-    instead latch `lock_aw_valid_d=1` (go locked next cycle) so the *same*
-    already-pushed decision is held.
-  - **Locked** (`lock_aw_valid_q=1`): keep driving `mst_aw_valid=1` with the
-    same latched beat every cycle (the arbiter is not re-consulted while
-    locked) until `mst_aw_ready=1`, at which point `aw_ready=1` fires (closing
-    the handshake with the winning port, now possibly several cycles after
-    the win) and `lock_aw_valid_d=0` (unlock).
-  - **Key point**: `w_fifo_push` only ever fires in the *not-locked* branch,
-    the very first cycle a given arbitration winner is seen — so the
-    write-side routing decision (which original port's W beats come next) is
-    committed to the FIFO exactly once per won arbitration, independent of
-    how many additional cycles it then takes for `mst_aw_ready` to actually
-    close that AW handshake downstream.
-- **`w_fifo`** (`fifo_v3`, depth `MaxWTrans`): a queue of `switch_id_t`
-  (which original slave port each pushed AW belongs to, in push order — i.e.
-  in AW-arbitration-win order, not AW-handshake-completion order, since the
-  push happens before the handshake necessarily closes per the point above).
-  This is the mechanism the module's own comment (line 176-177) calls "This
-  FF removes AW to W dependency": the W side (below) does not need to wait
-  for a given AW's handshake to fully complete before knowing which port's W
-  beats to route next — it only needs the FIFO to be non-empty.
-- **AW output spill register**: buffers `mst_aw_chan`/`mst_aw_valid` one more
-  cycle (bypassed if `SpillAw=0`) before presenting to `mst_req_o.aw`.
+## W channel wires — ownership handed off from the AW pick, not from the AW close
 
-## W channel (lines 349-381)
+- **From the cycle a port `k` is picked on AW** (see above — this can be
+  before `slv_resps_o[k].aw_ready` itself fires), port `k` becomes the
+  *only* port whose W channel is live: `mst_req_o.w_valid` is driven
+  directly from `slv_reqs_i[k].w_valid`, `slv_resps_o[k].w_ready` directly
+  from `mst_resp_i.w_ready`, and every other port's `w_ready` is held at 0
+  regardless of that port's own `w_valid`. So a port whose W beats are
+  ready to go can start moving through this channel even while that same
+  port's own `aw_ready` has not yet been observed — the two channels are
+  decoupled on the wire from the moment of the arbitration pick onward, not
+  from the moment AW itself closes.
+- **This ownership persists across possibly many W beats**: it is not
+  released back to "pick a new port" until a beat closes
+  (`w_valid&&w_ready` together) on the owning port's W channel with
+  `w.last=1` on that beat. Until then, every other port's `w_ready` stays 0
+  even if that port's own `aw_valid` was already accepted (queued) in the
+  meantime — at most one port's W beats are ever visible on
+  `mst_req_o.w_valid`/`w.data` at a time, in the order those ports were
+  picked on AW, one full burst (ending in `w.last`) before the next.
+- **If no port has yet been picked and is still owed its W burst**,
+  `mst_req_o.w_valid=0` and no port's `w_ready` is asserted at all — the
+  W channel is simply idle.
 
-Every cycle: if `w_fifo` is non-empty, read (peek, not pop) its front entry
-`w_fifo_data` (the oldest still-unrouted port index), mux
-`mst_w_chan=slv_w_chans[w_fifo_data]` and connect that one port's W
-handshake straight through: `mst_w_valid=slv_w_valids[w_fifo_data]`,
-`slv_w_readies[w_fifo_data]=mst_w_ready`. **All other slave ports' `w_ready`
-stay deasserted this cycle** — only the port at the head of `w_fifo` can ever
-drive a W beat through, one full burst at a time. Pop the FIFO
-(`w_fifo_pop=1`) exactly on the cycle a beat closes (`valid&&ready`) AND that
-beat's `w.last=1` — i.e. the FIFO only advances to the next port once the
-current port's entire W burst (however many beats, ending in `last`) has
-been fully drained. If `w_fifo` is empty, `mst_w_valid=0` and no port's
-`w_ready` is asserted — W is entirely idle regardless of what any slave port
-is offering. Output spill register as with AW.
+## B channel wires
 
-## B channel (lines 383-404)
+- **`mst_resp_i.b_valid`/`b.id`/`b.resp`** are broadcast identically toward
+  every port's `slv_resps_o[k].b_valid` input logic, but only the one port
+  `k` whose index is encoded in `b.id`'s top bits ever actually sees
+  `slv_resps_o[k].b_valid=1` — every other port's `b_valid` is held 0 that
+  cycle. `mst_req_o.b_ready` is driven from whichever single port `k`
+  matches that cycle's `b.id` — i.e. `b_ready` toward the far side depends
+  on the `b.id`-selected port's own `b_ready`, not on any other port's.
+  Only one B beat is visible on this whole channel at a time (a beat holds
+  until the addressed port's `b_ready` closes it).
 
-Purely combinational fan-out based on the ID: `slv_b_chans` broadcasts the
-(spill-registered) `mst_b_chan` to all ports identically; `switch_b_id`
-extracts the prepended index bits from that beat's `id`; only
-`slv_b_valids[switch_b_id]` is asserted (one-hot, driven by which port the ID
-says it belongs to) — `slv_b_readies[switch_b_id]` gates the spill register's
-own `ready_i`, so a B beat sits in the spill register until the specific
-port it's addressed to asserts its `b_ready`. Only one B beat is in flight
-through this whole channel at a time (the spill register holds at most one).
+## AR / R channel wires
 
-## AR / R channels (lines 406-463)
+- **AR**: identical shape to AW's own selection wires (one port picked per
+  cycle among those asserting `ar_valid`, at most one `ar_ready` high per
+  cycle, round-robin-fair across cycles) — but with **no companion data
+  channel to decouple**, since AR has no R-side ownership handoff the way
+  AW hands off W ownership: the picked port's `ar_valid`/address are simply
+  held until `mst_req_o.ar_ready` fires, same-cycle closing that one port's
+  own `ar_ready`.
+- **R**: exactly the same shape as B — `mst_resp_i.r_valid`/`r.id`/`r.data`/
+  `r.last` broadcast, only the `r.id`-selected port ever sees `r_valid=1`,
+  that same port's own `r_ready` is the only one that can close it. One R
+  beat visible at a time; a multi-beat burst is delivered to whichever port
+  its `id` selects, beat by beat, for as many beats as `r.last` takes to
+  appear.
 
-Structurally identical to AW/AW-routing but *without* the FIFO decoupling —
-because AR has no follow-on data-phase channel the way AW has W, there is no
-`ar_fifo` equivalent. `i_ar_arbiter` (same `rr_arb_tree`, `LockIn=1`)
-round-robins AR winners directly into the AR spill register: same
-lock-on-stall shape is handled *inside* the spill register itself (a spill
-register inherently holds a beat until accepted), so there is no separate
-`lock_ar_valid` bit needed here the way there is for AW+w_fifo — the arbiter
-simply re-arbitrates each cycle among ports whose AR is still valid (with
-`LockIn` preferring to keep the same in-progress winner). R channel is the
-exact mirror of B: broadcast + one-hot ready-select by `switch_r_id`, one
-beat in flight through the shared R spill register at a time.
+## Row 11 — response reorder/drop, and why it is open
 
-## Net per-cycle shape, summarized
+**What this module's own wires commit to**: B and R beats are routed purely
+by the index bits already embedded in `b.id`/`r.id` — this module does not
+itself reorder anything relative to what arrives on `mst_resp_i`; it is a
+transparent, same-cycle demultiplexer keyed on those bits. It also never
+drops a beat on its own initiative: every `mst_resp_i.b_valid`/`r_valid`
+beat is presented to exactly the one port its `id` selects and held there
+until that port's own `ready` closes it.
 
-- Any number of slave ports can have AW/AR beats pending simultaneously;
-  the round-robin arbiters pick at most one AW winner and (independently)
-  at most one AR winner per cycle to advance toward the master port.
-- Once an AW winner is chosen, its routing index is committed to `w_fifo`
-  immediately (same cycle, before the AW handshake even necessarily closes),
-  decoupling "who won AW arbitration" from "whose W beats are currently
-  allowed through" — but only one port's W beats are ever active at a time,
-  strictly in `w_fifo` push order, one full burst (`w.last`-terminated)
-  before the next.
-- B and R responses are demultiplexed purely by the ID's prepended index
-  bits, broadcast to all ports but handshake-gated to exactly the one whose
-  index matches — one B beat and one R beat in flight through the shared
-  channel at a time (bounded by the single shared spill register each), even
-  though many transactions from different ports may be simultaneously
-  outstanding upstream of the mux (bounded by `MaxWTrans` for writes via the
-  `w_fifo` depth; unbounded/subordinate-dependent for reads, since there's no
-  equivalent tracking FIFO on the AR/R side).
+**Where the openness comes from**: whether a manager-side observer ever
+actually sees a beat "reordered" or "dropped" is not decided by this
+module's wires alone — it is decided by what the attached subordinate (on
+`mst_req_o`/`mst_resp_i`) does with the `id`-prepended requests this module
+forwards. If that subordinate returns `b_id`/`r_id` values that do not
+correspond to any request this module actually forwarded with that id-prefix
+(or silently never returns a response for some accepted request), the
+mismatch shows up as this module apparently "losing" or "misrouting" a
+beat, even though its own routing logic is a faithful function of whatever
+`id` arrives. The correctness of the whole path is therefore a property of
+this mux **together with** whichever subordinate is attached — a
+well-behaved subordinate that always eventually answers every accepted
+request exactly once, with the same `id` it was given, composes safely;
+one that does not exposes exactly this row's hazard, and no change to this
+module's own wire behavior can locally rule that out.
+
+## Row 12 — same-ID in-order delivery causing a wait cycle, and why it is open
+
+**What this module's own wires commit to**: for two ports whose B (or R)
+beats are simultaneously pending with the *same* prepended `id` region —
+which cannot actually happen here directly, since this module prepends a
+distinct port index to every `id`, so two different ports' beats can never
+collide on `b.id`/`r.id` at this module's own boundary. The in-order
+constraint this row is about therefore is not something this module's wires
+enforce between its own ports; it is a constraint the module *assumes* the
+attached subordinate already upholds for whatever original (pre-prepend)
+`id` values reach it from a single port, and the module's own B/R
+broadcast-and-select wires simply pass that ordering through unchanged
+(same-`id` beats from `mst_resp_i` are presented to the selected port in
+the order they arrive on `mst_resp_i`, with no reordering buffer of any
+kind on this side).
+
+**Where the openness comes from**: the hazard is upstream of this module's
+own boundary — in whatever produced the traffic on the port that shares an
+`id` across multiple outstanding transactions to the same subordinate. If a
+fast-completing transaction's B/R beat is, from the subordinate's own
+internal view, held back behind a same-`id` transaction that is slow to
+complete, and that slow transaction's own completion depends (through some
+resource shared with the requester, e.g. limited buffering or credit) on
+the fast transaction's beat having already been drained — a dependency this
+module's own wires have no visibility into — the ordering rule the
+subordinate upholds can itself become the reason nothing on the shared W
+or R channel ever moves again. This module's wires do not create that
+dependency, but they also do nothing to break it: they simply present
+whatever order the subordinate produces, unchanged, to the one port that
+`id` selects. Whether the overall system deadlocks is therefore a property
+of this mux **together with** the specific subordinate and requester
+behavior on the other two boundaries, not of this module's own port-level
+routing in isolation — the same open, environment-dependent shape as row 11,
+but driven by a resource cycle rather than a mis-set `id`.

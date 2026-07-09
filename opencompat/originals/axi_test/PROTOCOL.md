@@ -1,146 +1,100 @@
-# `axi_test.sv` — full cycle-by-cycle protocol
+# `axi_test.sv` — full cycle-by-cycle protocol (port-wire view)
 
-This file is a UVM-less SystemVerilog *class library*, not one module — it is a
-collection of tasks that drive/monitor a virtual `AXI_BUS_DV` interface. Two
-independent pieces are relevant to ANNOTATIONS.md rows 2 and 5: the low-level
-per-channel driver (`axi_driver`, used identically by every higher-level agent)
-and the per-ID in-flight bookkeeping inside the random write master
-(`axi_rand_master`). This corrects an earlier draft of this file's type, which
-assumed `send_w` is only ever called after `send_aw` returns for a given
-transaction — that is not what the code does; see below.
+This file is a class library of tasks that drive/monitor an AXI4 bus, not one
+module — so "port wires" here means the AXI4 signals the driven interface
+exposes (`aw_valid`/`aw_ready`/`aw_id`/`aw_addr`, `w_valid`/`w_ready`/
+`w_last`, `b_valid`/`b_ready`/`b_id`, `ar_*`, `r_*`), not any variable
+internal to the SystemVerilog classes. Two boundaries matter here: row 2 is
+about how one driver's AW and W wires relate to each other cycle to cycle;
+row 5 is about what values the AW `id` wire is allowed to carry over time,
+and it is the file's one genuinely **open** case — whether a given ID reuse
+is safe depends on what the environment on the other side of the bus (the
+subordinate/interconnect) guarantees about response ordering, not on the
+driver's wires alone.
 
-## `axi_driver`'s per-channel primitives (lines 283-680)
+## Row 2 — the AW/W wire relationship
 
-Every one of `send_aw`/`send_w`/`send_ar`/`send_r`/`send_b` (and the `recv_*`,
-`mon_*` counterparts) follows the identical one-shot shape, independent of any
-other channel:
+**Each of the AW, W, AR, R, B channels behaves identically and
+independently on the wire**: whichever side is producing a channel drives
+that channel's payload fields and `*_valid=1`, holds them completely
+unchanged for as many cycles as it takes, and only changes them the cycle
+immediately after `*_valid=1` and `*_ready=1` are observed together. There
+is nothing in any single channel's own wire behavior that references any
+other channel — `w_valid` does not depend on `aw_valid`, `aw_ready`, or
+`aw_id`, and vice versa, at the level of one channel handshake in isolation.
 
-1. Drive all payload fields for the beat non-blocking with a `#TA` stimuli
-   application delay, and set that channel's `*_valid <= #TA 1` in the same
-   statement group (e.g. `send_aw`, lines 377-389).
-2. `cycle_start()` (`#TT`, a test-time delay within the cycle) then loop:
-   while the peer's `*_ready` signal reads 0, do `cycle_end()` (`@(posedge
-   clk_i)`) followed by `cycle_start()` again — i.e. hold the payload and
-   `valid` asserted, unchanged, for as many whole clock cycles as it takes.
-3. Once `*_ready` reads 1 (sampled at `TT` into the cycle), do one final
-   `cycle_end()` to let that edge complete the handshake, then on the very
-   next statement drive all payload fields and `*_valid` back to 0.
-4. Net effect: each `send_*` call presents exactly one beat, holds it valid
-   until accepted (arbitrarily many wait cycles, minimum zero if `ready` is
-   already high), and returns control to its caller only after the accepting
-   edge has passed. Nothing else happens on that channel while a `send_*` call
-   is in progress — the calling task is blocked for the whole handshake.
-5. `recv_*` is the mirror image from the receiving side: raise `*_ready`,
-   spin until `*_valid`, capture the payload, drop `*_ready`.
-6. `mon_*` is passive: never drives anything, just polls every cycle for
-   `*_valid && *_ready` (both already driven by two other agents) and
-   captures the beat once that joint condition is true — used only for
-   snooping, in `axi_monitor.monitor()` (lines 1893-1926), which forks five
-   independent `forever` loops (one per channel: AW, W, B, AR, R) that each
-   push every observed beat into its own mailbox. This is a passive tap, not
-   a driver — it imposes no ordering of its own.
+The AW/W *relationship* this file actually produces on the wires, across a
+run of several back-to-back write transactions, is this: for a given
+transaction, an `aw_valid=1` beat carrying that transaction's `id`/`addr`
+will appear on the AW channel at some point, and one or more `w_valid=1`
+beats (the last with `w_last=1`) belonging to that same transaction will
+appear on the W channel at some point — but **the wires give no guarantee
+about which appears first**. Concretely: it is possible to observe a cycle
+where `w_valid=1`/`w_ready=1` closes a W beat for transaction N while
+transaction N's AW beat has not yet even been presented (`aw_valid=0` that
+whole time) — nothing on these wires prevents that ordering, and this file's
+generator does not avoid it. (This corrects an earlier reading of this file
+that assumed AW is always fully driven-and-accepted before the matching W
+beats are ever presented — the wires this file actually produces do not
+uphold that ordering as a hard rule; W-before-AW for the same transaction is
+a reachable trace.)
 
-**Crucially**: `send_aw` and `send_w` are independent primitives. Nothing in
-`axi_driver` itself calls one from the other, and nothing in `axi_driver`
-serializes AW after W or vice versa — each is a self-contained "present this
-one beat on this one channel until it's accepted" loop.
+A single `send_aw` (or `send_w`) invocation is a one-shot wire pattern: drive
+the payload and `*_valid=1`, hold unchanged cycle after cycle until
+`*_ready=1` is seen on the same cycle, then drop `*_valid=0` the next cycle.
+Never re-offer a different beat's payload while `*_valid` is still 1 from a
+prior beat — one beat fully closes before the next one's payload appears.
+The monitor-side wire behavior (used purely to observe what the driver and
+DUT put on the bus, never to drive it) is: watch every channel every cycle,
+and treat `*_valid=1 && *_ready=1` together as "this beat happened,"
+regardless of who is driving which side.
 
-## Where the AW/W ordering actually comes from: `axi_rand_master.run` (lines 682-1319)
+## Row 5 — what the AW `id` wire is allowed to carry, and why it's open
 
-`run(n_reads, n_writes)` (line 1298) forks six concurrent processes and
-`join`s them (waits for all six to finish):
+Ignore, for this section, exactly how many cycles pass between beats — the
+question is only: across a sequence of AW beats this driver presents on the
+wire, what constraints (if any) hold on the sequence of `aw_id` values, and
+what does the wire alone tell an outside observer about which `b_id`
+response belongs to which `aw_id` request?
 
-- `send_ars(n_reads, ax_user)` then sets `ar_done=1'b1` — generates and issues
-  `n_reads` read address beats one at a time via `drv.send_ar`.
-- `recv_rs(ar_done, aw_done)` — drains R-channel responses as they arrive.
-- `create_aws(n_writes, ax_user)` then sets `aw_done=1'b1` (lines 1212-1231):
-  for each of `n_writes` iterations, build a random (or exclusive-reused) AW
-  beat, block via `rand_wait` while `tot_w_flight_cnt >= MAX_WRITE_TXNS`,
-  call `legalize_id` (below) to pick/confirm its ID, then **push the same
-  beat object onto two separate queues**: `aw_queue.push_back(aw_beat)` AND
-  `w_queue.push_back(aw_beat)` (line 1228-1229). This is the pivot: from this
-  point on, the AW beat and its W beats are two independent queue entries.
-- `send_aws(aw_done)` (lines 1233-1241) — a **separate forked process** that
-  loops: wait until `aw_queue` is non-empty (or done-and-empty, to exit), pop
-  the front entry, `rand_wait` a random 0..`AX_MAX_WAIT_CYCLES` gap, then
-  `drv.send_aw(aw_beat)` (blocks until that AW handshake completes).
-- `send_ws(aw_done)` (lines 1243-1279) — **another separate forked process**,
-  running *concurrently* with `send_aws`, not after it: loops on `w_queue`
-  independently, pops the front AW-beat object (to learn the burst length/
-  address for computing strobes), then for each of that burst's data beats,
-  `rand_wait` a random 0..`W_MAX_WAIT_CYCLES` gap and `drv.send_w(w_beat)`.
-- `recv_bs(aw_done)` — drains B-channel responses, decrementing in-flight
-  counters.
-
-Because `send_aws` and `send_ws` are separate forked tasks each pulling from
-their own independent queue with their own independent random wait, **there is
-no code-level guarantee that a given transaction's AW beat is driven before
-its W beat(s)** — `send_ws` could pop `w_queue`'s matching entry and start
-driving W before `send_aws` has gotten around to popping the corresponding
-`aw_queue` entry and driving AW, purely depending on the two processes'
-relative random wait draws. In practice, across many random transactions
-queued back-to-back, AW for transaction N might still complete before W for
-transaction N in the common case, but the driver places no explicit
-sequencing constraint that forces it — the true contract is closer to "AW and
-W for the same transaction are each eventually offered, independently timed,"
-not "AW strictly precedes W."　(ANNOTATIONS.md row 2's characterization of a
-hard `send_aw`-then-`send_w` call chain describes a simpler, single-threaded
-mental model of the driver; the actual `axi_rand_master` is already
-concurrent by construction.)
-
-## Per-ID in-flight tracking: `legalize_id` / `id_is_legal` (lines 1103-1166) — row 5
-
-State: `r_flight_cnt[id]`, `w_flight_cnt[id]` (per-ID outstanding counts),
-`tot_r_flight_cnt`, `tot_w_flight_cnt` (aggregate counts), `atop_resp_b[id]`,
-`atop_resp_r[id]` (bitmaps: does an in-flight ATOP on this ID still owe a B/R
-response), all protected by a binary semaphore `cnt_sem`.
-
-Cycle-by-cycle behavior of `legalize_id(is_read, beat)`, called once per
-transaction from `create_aws` (write) or `send_ars` (read) before that
-transaction's beat is queued/sent:
-
-1. Acquire `cnt_sem` (line 1133) — this task is itself only ever entered by
-   one of the two sequential single-threaded generator loops
-   (`create_aws`/`send_ars`), so the semaphore here guards against `recv_bs`/
-   `recv_rs` concurrently decrementing counts mid-check, not against another
-   `legalize_id` call (those are not themselves forked in parallel).
-2. Check `id_is_legal`: if `AXI_ATOPS` and this ID already owes an ATOP
-   response (`atop_resp_b`/`atop_resp_r` set) → illegal. If this beat *starts*
-   a non-read ATOP and that ID already has ANY outstanding read or write
-   (`r_flight_cnt`/`w_flight_cnt` != 0) → illegal. If `UNIQUE_IDS` is set and
-   this ID already has an outstanding transaction *in the same direction*
-   (`r_flight_cnt[id]!=0` for a read, `w_flight_cnt[id]!=0` for a write) →
-   illegal. Otherwise legal.
-3. If legal: fall through, release semaphore (line 1165) at the end, having
-   incremented `w_flight_cnt[id]`/`tot_w_flight_cnt` (write) or
-   `r_flight_cnt[id]`/`tot_r_flight_cnt` (read) — line 1149-1163 — and, for a
-   non-zero-length ATOP, marked `atop_resp_b[id]` (and `atop_resp_r[id]` if
-   the ATOP type also returns read data).
-4. If illegal: release the semaphore, `rand_wait(1,1)` (block exactly one
-   cycle), then — unless this is a locked/exclusive transfer whose ID must
-   not change — draw a fresh random ID and loop back to step 1 with the new
-   ID. This repeats every cycle until some ID is found legal.
-5. The *release* side, symmetric and cycle-driven from the response tasks:
-   `recv_bs` (write) decrements `w_flight_cnt[b_beat.b_id]`/
-   `tot_w_flight_cnt` the cycle a B beat with that ID is received (lines
-   1286-1292); `recv_rs` (read) decrements `r_flight_cnt[r_beat.r_id]`/
-   `tot_r_flight_cnt` the cycle an R beat with `r_last` and that ID is
-   received (lines 1195-1204). Both also take `cnt_sem` for the update.
-
-**Net contract this enforces on the ID an `axi_rand_master` itself will ever
-place on the bus**: with `UNIQUE_IDS=1`, this master will never present a new
-AW (or AR) beat carrying an ID that already has an outstanding transaction of
-the same direction in flight — it stalls (drawing new random IDs, one retry
-per cycle) until a free ID becomes available or the current ID's prior
-transaction completes. Without `UNIQUE_IDS` (the default, line 710), IDs may
-be reused freely across in-flight write transactions of the same ID, which is
-the row-5 hazard: a same-ID B response can no longer be unambiguously
-attributed to a specific one of the (possibly several) outstanding writes
-sharing that ID, since AXI only guarantees *same-ID responses return in
-issue order*, not that a scoreboard watching from outside can tell which
-logical write instance a given B belongs to when more than one is in flight
-under one ID. The `axi_monitor`/`axi_scoreboard` classes (lines 1856+,
-1951+) are pure passive observers/checkers of what actually appeared on the
-bus — they do not themselves impose or relax this ID-reuse contract; the
-contract lives entirely in `legalize_id`'s use (or non-use) of `UNIQUE_IDS`
-inside the master that generates the traffic.
+- **AXI4's own wire-level guarantee**: for two beats sharing the same `id`,
+  the corresponding `b_valid` responses come back on the B channel in the
+  same order the `aw_valid` requests were issued (same-ID responses are
+  ordered). AXI4 places **no constraint at all** on `id` reuse: nothing
+  says an `aw_valid=1` beat may not carry an `id` that a still-outstanding
+  earlier beat (whose `b_valid` has not yet been observed) already used.
+- **What this driver's own internal bookkeeping does** (call it `State`: a
+  per-`id` outstanding-count and, if configured, an in-flight-ATOP flag,
+  updated the cycle an `aw_valid&&aw_ready` (or `ar_valid&&ar_ready`) beat is
+  observed to close, and again the cycle the matching `b_valid&&b_ready` (or
+  final `r_valid&&r_ready&&r_last`) closes): before presenting any AW/AR
+  beat's `id` on the wire, this `State` is consulted. If a mode bit
+  (`UNIQUE_IDS`) is set, the driver will **never** present an `aw_valid=1`
+  beat whose `id` matches any `id` this same `State` still shows as
+  outstanding for a write — it withholds `aw_valid` on that `id` (retrying
+  with a different `id` every cycle) until `State` shows that `id` free
+  again (i.e. until the matching `b_valid` has been observed). With
+  `UNIQUE_IDS` unset (the file's default), `State` is still tracked but is
+  **not** consulted to block a reuse — an `aw_valid=1` beat carrying an
+  already-outstanding `id` is presented on the wire freely.
+- **Why this is the open case, not a closed pairwise one**: whether a trace
+  where `aw_id=5` is reused while an earlier `id=5` write is still
+  outstanding is *safe* depends entirely on what's on the other end of the
+  wire. An environment (subordinate/interconnect) that itself guarantees to
+  echo `b_id` responses strictly in the order their `aw_valid` beats closed,
+  full stop — regardless of `id` — makes the reuse harmless: a receiver
+  watching the wire can still attribute each `b_valid` to the right request
+  by position. An environment that reorders responses across different IDs
+  but preserves only same-ID order (the AXI4 minimum) makes the reuse
+  genuinely ambiguous on the wire: two `b_valid` beats with `id=5` arrive,
+  and nothing observable on the B channel says which of the two outstanding
+  `id=5` writes each one answers. So the wire trace this driver can produce
+  with `UNIQUE_IDS` unset is compatible with some environments and not
+  others — this is exactly the setting where the verdict depends on a
+  quantifier over the environment's behavior, not on this driver's wires
+  and one fixed subordinate's wires alone.
+- **Passive observers** (the monitor/scoreboard machinery in this file) only
+  ever watch `*_valid&&*_ready` on each channel; they do not drive `aw_id`
+  and so cannot themselves create or prevent the row-5 hazard — the reuse
+  contract lives entirely in whether the *driving* side's `State` (above) is
+  consulted before `aw_valid` is raised.

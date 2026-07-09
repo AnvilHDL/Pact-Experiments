@@ -30,46 +30,11 @@
 // that may answer w-first with a manager whose only forward-progress edge needs
 // aw_gnt specifically, regardless of w_gnt's own state.
 
-interface biu_axi_itfc(m_ep : right aw_w_ch<addr_t, data_t>) =
-    F rec X . ^(
-        m_ep.aw_req ; m_ep.w_req ; m_ep.aw_gnt ; m_ep.w_gnt,
-        * : m_ep.aw_req ; m_ep.w_req ; m_ep.w_gnt ; #1 ; X
-      )
-
-interface legal_subordinate_itfc(s_ep : left aw_w_ch<addr_t, data_t>) =
-    F s_ep.aw_req ; s_ep.w_req ; ((s_ep.aw_gnt ; s_ep.w_gnt) + (s_ep.w_gnt ; s_ep.aw_gnt)) ; #1
-
 pool adbg_axi_biu_pool {
-    m_ep -- s_ep : aw_w_ch<addr_t, data_t>;
-    ibiu : biu_axi_itfc(m_ep),
-    isubordinate : legal_subordinate_itfc(s_ep)
+    ep_le -- ep_ri : ch;
+    i1 : rec X . ^(
+        ep.aw_req : rec Y . ^(ep.w_req, * : #1;Y),
+        * : #1;X
+    );#1,
+    i2 : ep.w_req;#1;ep.aw_req;#1
 }
-
-// Debug-host boundary: single-outstanding strobe/ready round trip.
-interface debug_host_itfc(dbg_ep : right strobe_ch<word_t>) =
-    F rec X . dbg_ep.strobe ; dbg_ep.ready ; #1 ; X
-
-interface biu_debug_side_itfc(dbg_ep : left strobe_ch<word_t>) =
-    rec X . dbg_ep.strobe ; #1 ; dbg_ep.ready ; X
-
-pool adbg_axi_biu_debug_pool {
-    dbg_ep -- dbg_ep2 : strobe_ch<word_t>;
-    ihost : debug_host_itfc(dbg_ep2),
-    ibiu_dbg : biu_debug_side_itfc(dbg_ep)
-}
-
-chan aw_w_ch<A : type, D : type> {
-    right aw_req : (A@#1),
-    left  aw_gnt : (void@#1),
-    right w_req  : (D@#1),
-    left  w_gnt  : (void@#1)
-}
-
-chan strobe_ch<W : type> {
-    right strobe : (W@#1),
-    left  ready  : (W@#1)
-}
-
-type addr_t = logic[32];
-type data_t = logic[64];
-type word_t = logic[64];
