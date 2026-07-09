@@ -5,6 +5,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 ANVIL_DIR="$ROOT/src/compat"
 AXI_DIR="$ROOT/axi"
+TB_DIR="$ROOT/src/testbenches"
 LOG_DIR="$AXI_DIR/logs/mux_read_cycle_equiv"
 SV_OBJ_DIR="$AXI_DIR/build/tb_axi_read_mux_obj"
 SV_DRIVER="$AXI_DIR/build/tb_axi_read_mux_driver.cpp"
@@ -31,9 +32,18 @@ normalize_logic_log() {
     > "$out_file"
 }
 
-mkdir -p "$LOG_DIR" "$AXI_DIR/build"
+mkdir -p "$LOG_DIR" "$AXI_DIR/build" "$TB_DIR"
 
 echo "[1/2] Building and running axi/src/axi_lite_mux_read_tb.sv"
+
+# axi/ is an untracked-content submodule (its testbench .sv files are not
+# committed anywhere in the submodule's own history), so refresh the tracked
+# copy under src/testbenches/ on every run rather than building straight out
+# of the submodule working tree - otherwise these sources only exist on
+# whichever machine last edited them.
+cp "$AXI_DIR/src/axi_lite_mux_read.sv" "$TB_DIR/axi_lite_mux_read.sv"
+cp "$AXI_DIR/src/axi_lite_mux_read_tb.sv" "$TB_DIR/axi_lite_mux_read_tb.sv"
+
 sed 's/Vtop/Vtb_axi_read_mux/g' "$ANVIL_DIR/sim_main.cpp" > "$SV_DRIVER"
 
 env OBJCACHE= verilator \
@@ -53,8 +63,8 @@ env OBJCACHE= verilator \
   "$ROOT/common_cells/src/spill_register.sv" \
   "$ROOT/common_cells/src/fifo_v3.sv" \
   "$AXI_DIR/src/axi_pkg.sv" \
-  "$AXI_DIR/src/axi_lite_mux_read.sv" \
-  "$AXI_DIR/src/axi_lite_mux_read_tb.sv" \
+  "$TB_DIR/axi_lite_mux_read.sv" \
+  "$TB_DIR/axi_lite_mux_read_tb.sv" \
   "$SV_DRIVER" \
   > "$LOG_DIR/axi_lite_mux_read_tb.verilator-build.log" \
   2>&1

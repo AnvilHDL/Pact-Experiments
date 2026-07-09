@@ -1,6 +1,18 @@
 # PACT Experiment Runbook
 
-This file is the quick entry point for running the different parts of the Anvil/SV case-study experiment.
+This file is the quick entry point for running the different parts of the Anvil/SV case-study experiment: what to run and how. For what each flow actually measures, its per-case behavior, and its findings, see the dedicated docs below rather than this file - pact.md deliberately doesn't duplicate their content.
+
+## Where to find things
+
+There are three independent comparison flows across the same 10 case studies (fifo, stream_fifo, spill_register, arbiter, axi_demux_read, axi_demux_write, axi_mux_read, axi_mux_write, ace, tilelink), plus two smaller standalone metrics collectors. Each flow has its own experiment-setup doc; this file only has run commands.
+
+| Flow | Experiment setup / behavior doc | Findings | Run with |
+| --- | --- | --- | --- |
+| Cycle equivalence (Verilator vs Anvil compat) | [`testbench.md`](testbench.md) | - | `scripts/run_*_cycle_equiv.sh` |
+| Model checking (SymbiYosys k-induction) | [`formal/comm_safety/README.md`](formal/comm_safety/README.md) | same doc | `scripts/run_comm_safety_timing.py` |
+| Yosys synthesis (generic-cell proxy + real sky130/OpenSTA) | [`synthesis/README.md`](synthesis/README.md) | [`synthesis/yosys_perf/OVERHEAD_FINDINGS.md`](synthesis/yosys_perf/OVERHEAD_FINDINGS.md), [`synthesis/yosys_perf/WIDTH_FINDINGS.md`](synthesis/yosys_perf/WIDTH_FINDINGS.md) | `scripts/collect_yosys_perf.py`, `scripts/collect_real_synth_perf.py` |
+| State-space estimate (SV only) | below | - | `scripts/collect_state_space.py` |
+| Code size / assertion / signature-size comparison | below | - | `scripts/collect_code_size.py` |
 
 ## Prerequisites
 
@@ -24,6 +36,7 @@ Most generated artifacts are intentionally ignored under:
 ```text
 formal/comm_safety/results/
 synthesis_reports/yosys_perf_results/
+synthesis_reports/real_synth_perf_results/
 ```
 
 **All 5 collection scripts** (`run_comm_safety_timing.py`, `collect_state_space.py`, `collect_code_size.py`, `collect_yosys_perf.py`, `collect_real_synth_perf.py`) **write into a new timestamped subdirectory by default, never overwriting a previous run's results** - e.g. `formal/comm_safety/results/20260709_121220/` or `synthesis_reports/yosys_perf_results/20260709_121336/`. Each prints its own `Results directory: ...` line at startup so you always know where a given run's output landed. Pass `--results-dir <path>` (or `--csv <path>` for `collect_code_size.py`) to force a specific location instead - useful for re-running into a known directory, or for scripting that expects a stable path.
@@ -32,7 +45,7 @@ synthesis_reports/yosys_perf_results/
 
 ## Cycle Equivalence
 
-These scripts run the SV testbench and the matching Anvil compat test back to back, then compare cycle-level behavior.
+These scripts run the SV testbench and the matching Anvil compat test back to back, then compare cycle-level behavior. See [`testbench.md`](testbench.md) for what each case's stimulus does, the shared run-script mechanics (normalization/diffing, output layout), and the submodule source-reproducibility fix applied to the 6 scripts that build from `axi/`/`ace`/`tilelink/`.
 
 Run all common-cell cases:
 
@@ -94,122 +107,7 @@ make run MODULE_NAME=test_ace LTOFF=1 COMPAT=1
 
 ## Communication Safety And Liveness
 
-The communication-safety work is under:
-
-```text
-formal/comm_safety/
-```
-
-All `.sby` files use `mode prove` (SymbiYosys k-induction, unbounded proof attempt) with no hardcoded timeout - only the depth used as the induction step bound stays in the file. `mode prove` produces two independent results per case: `basecase` (equivalent to BMC up to `depth`) and `induction` (does the property inductively hold for all time, not just up to depth). A basecase PASS with induction FAIL/UNKNOWN means the property is true within the tested depth but not provable by plain k-induction without extra helper invariants - that is expected and reported as-is (`yosys_status=UNKNOWN`), not treated as a real failure or something to fix by adding invariants.
-
-### What Is Actually Being Checked, Per Case
-
-Each case's SV-side properties live in one `module comm_<case>_formal ... endmodule` block in `formal/comm_safety/sv/comm_safety_common.sv` (fifo, spill_register, stream_fifo, arbiter) or `formal/comm_safety/sv/comm_safety_tb_wrappers.sv` (the AXI mux/demux, ace, tilelink cases). These are plain `always_ff`-guarded `assert`/`assume` statements, not SVA `assert property (...)` - yosys-slang's `read_slang` frontend rejects ALL SVA syntax outright ("SVA unsupported"), including plain `|->` implication, so any file that used `assert property` never actually ran any checks under this flow until rewritten (see `src/testbenches/fifo_test.sv`'s history for an example of this being caught and fixed).
-
-`assert`s are the safety/liveness properties actually proved; `assume`s are environment constraints (mainly the reset-settling guard: hold `rst_ni` low for the first real cycle, then high afterward, so k-induction can't pick a trace where reset never asserts and registers start from an arbitrary "valid" state). Counts below are from `harness_asserts`/`harness_assumes` in `run_comm_safety_timing.py`'s own `timing.csv` output (also collectible standalone via `scripts/collect_code_size.py`, which reports the same two counts as `sv_harness_asserts`/`sv_harness_assumes`).
-
-| Case | k-induction depth | Harness `assert`s (active) | Harness `assume`s | Harness module |
-| --- | ---: | ---: | ---: | --- |
-| fifo | 200 | 9 | 5 | `comm_fifo_formal` |
-| spill_register | 200 | 8 | 3 | `comm_spill_formal` |
-| stream_fifo | 200 | 8 | 5 | `comm_stream_fifo_formal` |
-| arbiter | 200 | 4 | 3 | `comm_arbiter_formal` |
-| axi_demux_read | 300 | 11 | 2 | `comm_axi_demux_read_formal` |
-| axi_demux_write | 300 | 1 | 2 | `comm_axi_demux_write_formal` |
-| axi_mux_read | 300 | 11 | 2 | `comm_axi_mux_read_formal` |
-| axi_mux_write | 300 | 17 | 2 | `comm_axi_mux_write_formal` |
-| ace | 400 | 20 | 2 | `comm_ace_formal` |
-| tilelink | 400 | 7 | 2 | `comm_tilelink_formal` |
-
-`axi_demux_write`'s and `tilelink`'s low active-assert counts reflect the commented-out assertions documented in the next section (16 of 17 commented for `axi_demux_write`, 10 of 17 for `tilelink`) - the count excludes anything on a `//`-commented line, so it reflects what `mode prove` actually checks right now, not the harness file's total assertion text.
-
-Depth was raised from each case's original (16-180, roughly matched to design size) to a uniform 200/300/400 by phase, since a large time budget is available and `mode prove`'s own internal retry (attempting induction at depth, depth-1, depth-2, ... down to 0 within one run) benefits from a higher ceiling - see "the depth line in the `.sby` file's `[options]` section" above for how to change it further; there is no CLI override flag in this SBY version, only the file value.
-
-### Assertions Commented Out Because They Were Failing Model Checking
-
-Two blocks of safety assertions in `formal/comm_safety/sv/comm_safety_tb_wrappers.sv` are currently commented out. Both are real, root-caused false positives - the assertion's own premise was wrong for what the DUT actually does, not a bug the DUT has. In both cases the fix chosen was to comment out the specific over-strict assertion rather than rewrite the harness's tracking model, because the case's bounded-liveness `age < Bound` property (the priority property) doesn't depend on the removed tracking.
-
-**`axi_demux_write` (`module comm_axi_demux_write_formal`, ~line 140-176): single-in-flight-AW assumption, wrong for a pipelined DUT.**
-
-```systemverilog
-// if (slv_aw_fire) begin
-//   assert(!aw_pending && !b_pending);
-//   assert(aw_route == aw_addr_route);
-//   assert(mst_aw_fire[aw_route]);
-// end
-// if (slv_w_fire) begin
-//   assert(aw_pending);
-//   assert(mst_w_fire[route_q]);
-// end
-// if (slv_b_fire) begin
-//   assert(b_pending);
-//   assert(tb.slv_resp.b.resp == 2'b00);
-//   assert(mst_b_fire[route_q]);
-// end
-//
-// for (int i = 0; i < NoPorts; i++) begin
-//   if (mst_aw_fire[i]) begin
-//     assert(slv_aw_fire);
-//     assert(aw_route == i[1:0]);
-//   end
-//   if (mst_w_fire[i]) begin
-//     assert(aw_pending);
-//     assert(route_q == i[1:0]);
-//     assert(tb.mst_reqs[i].w.data == data_q);
-//   end
-//   if (mst_b_fire[i]) begin
-//     assert(b_pending);
-//     assert(route_q == i[1:0]);
-//   end
-// end
-```
-
-Root cause: `route_q`/`aw_pending`/`b_pending` are single registers, so the harness can represent at most ONE in-flight AW-to-W-to-B transaction at a time. But the real DUT (`axi_lite_write_demux`, `MaxTrans=8`) accepts a new AW whenever its `w_fifo` isn't full (`slv_aw_ready = !w_fifo_full && ...`), fully independent of whether a prior AW's W/B has completed - genuine pipelining up to depth 8. `mode prove`'s basecase found a real, reachable counterexample: the DUT legitimately accepts a second AW while the first is still draining, which the single-entry model can't represent and flags as illegal. Confirmed via directly reading `axi_lite_write_demux`'s AW-accept logic (`!w_fifo_full && slv_aw_valid`) - not an assumption, a read of the actual RTL condition.
-
-A correct fix would replace `route_q`/`aw_pending`/`b_pending` with an 8-deep queue mirroring the DUT's own `w_fifo`/`b_fifo` depth (same pattern already used correctly in `axi_mux_read`'s/`axi_mux_write`'s harness, which use real `QueueDepth=8` arrays - `w_route_q`/`b_route_q` - and were never affected by this bug). Not done here; commenting out was the chosen fix given the bounded-liveness property is the priority and doesn't need this tracking.
-
-**`tilelink` (`module comm_tilelink_formal`, ~line 694-707): `source` assumed to encode port identity, which TileLink doesn't guarantee.**
-
-```systemverilog
-if (m0_d_fire) begin
-  assert(to_m0_count + new_to_m0 != 0);
-  // assert(tb.m0_d_bits_source == 2'd0); -- not a liveness check;
-  // commented because it wrongly assumes `source` always encodes the
-  // requesting master's own port index. The crossbar only trims
-  // `source` back to whatever the client sent (TLCrossBar.scala:
-  // `remapped.a.bits.source := io.a.bits.source | range.start.U` in,
-  // `trim(...)` out) - it never forces source==port index. Nothing in
-  // TLCrossBar_test.sv constrains m0_a_bits_source/m1_a_bits_source,
-  // so a real counterexample exists where m0 issues source=1 and gets
-  // correctly routed back to m0 with source=1 preserved, tripping this
-  // assertion even though routing was correct.
-end
-if (m1_d_fire) begin
-  assert(to_m1_count + new_to_m1 != 0);
-  // assert(tb.m1_d_bits_source == 2'd1); -- see comment above.
-end
-```
-
-Root cause: nothing in `TLCrossBar_test.sv` drives `m0_a_bits_source`/`m1_a_bits_source`, so they are free/unconstrained inputs from `mode prove`'s perspective. The assertion assumed each master always tags its own requests with a fixed `source` id matching its own port index (`m0`→0, `m1`→1) - but TileLink's real protocol makes `source` an opaque, client-chosen tag; the crossbar's remap (`TLCrossBar.scala`) only OR's in a per-master offset on the way in and trims it back on the way out, it never forces `source == port index`. `mode prove` found the real counterexample this predicts: `m0` issuing a request with `source=1` gets correctly routed back to `m0` with `source=1` preserved, which trips `assert(tb.m1_d_bits_source == 2'd1)` even though the crossbar behaved correctly.
-
-That fix alone wasn't enough - commenting it out revealed a real, different, deeper root cause, and fixing that (by commenting four more assertion pairs, all downstream symptoms of the SAME bug) got `tilelink` to a clean basecase PASS, with only the intended liveness property left unresolved. Full chain, in the order each failure surfaced:
-
-1. `assert(tb.m0_d_bits_source == 2'd0)` / `m1_d_bits_source == 2'd1` (shown above) - fixed by commenting (the `source`-encodes-port-index assumption, described above).
-2. `assert(tb.s0_d_bits_source == s0_resp_q[s0_head])` / `s1_d_bits_source == s1_resp_q[s1_head]` (~line 683/688) - next failure once (1) was commented.
-3. `assert(s0_resp_count <= QueueDepth)` / `s1_resp_count <= QueueDepth` (~line 666/667) - next failure once (2) was commented.
-4. `assert(to_m0_count <= QueueDepth)` / `to_m1_count <= QueueDepth` (~line 678/679) - next failure once (3) was commented.
-5. `assert(s0_resp_count != 0)` / `s1_resp_count != 0` (~line 698/712) - next failure once (4) was commented; commenting this finally got basecase to PASS.
-
-**Root cause of (2)-(5), found by tracing the actual counterexample VCD**: this is NOT another harness-modeling assumption like (1) - it's a genuine bug in the vendored TileLink test stub, `tl_slave` in `tilelink/tilelink/TLCrossBar_test.sv`:
-
-```systemverilog
-// Accept A channel requests every cycle
-assign a_ready = 1'b1;
-```
-
-`a_ready` is permanently high, completely independent of the stub's own `state` (`IDLE`/`RESPONDING`). So if a second A-channel request arrives while the stub is still `RESPONDING` to a prior one, it's accepted anyway and `pending_source <= a_bits_source` silently overwrites the first request's source before its response is even sent - the stub provides no real backpressure despite modeling a `state` machine that implies it should. This breaks the in-order-FIFO assumption `s0_resp_q`/`s1_resp_q` are built on (assertion 2), which cascades into the shadow counters going out of bounds (assertions 3-4) and eventually appearing to receive a response nothing was pending for (assertion 5). Confirmed via VCD trace inspection (`$var` declarations show `tb_slave0_pending_source`/`tb_slave1_pending_source` as single registers, and reading the stub source directly confirms `a_ready` has no `state`-based gating) - not inferred from the pattern alone. This is a real correctness bug in the submodule's stub, not something owned by this harness; per this project's convention of not editing vendored submodule test files directly, all five downstream assertions were commented instead of fixing `tl_slave` itself. A real fix, if ever done in the submodule, would be `assign a_ready = (state == IDLE);`.
-
-**Current status**: `tilelink.sby` now passes basecase cleanly. Induction fails on `assert(age < Bound)` itself (the actual bounded-liveness property, ~line 755) - this is the same benign "true within tested depth, not provable by plain k-induction without helper invariants" pattern seen on every other case in this project, not a new problem. `tilelink` is functionally in the same state as the rest of the suite: liveness proven up to `depth`, full k-induction convergence not yet achieved anywhere in this project without further invariant work.
+The communication-safety work is under `formal/comm_safety/`. See [`formal/comm_safety/README.md`](formal/comm_safety/README.md) for the full picture: `mode prove`/k-induction semantics, the per-case status table (depth, active assertion/assume counts, harness module), full safety-coverage descriptions per case, and the two root-caused findings behind why `axi_demux_write` and `tilelink` currently run with some assertions commented out (a harness-modeling gap in one case, a genuine vendored-submodule stub bug in the other - both explained there with the full counterexample chain).
 
 The timing driver runs model checking and Anvil compat timing in one command.
 
@@ -274,11 +172,13 @@ formal/comm_safety/results/timing.csv
 formal/comm_safety/results/sby_<case>/
 ```
 
-`timing.csv` includes `kinduction_depth`, `harness_module`, `harness_lines`, `harness_asserts`, `harness_assumes` alongside the pass/fail/timing columns - the same assertion/assume counts and depth bound documented in the table above, so a single run's CSV is self-describing without cross-referencing this file.
+`timing.csv` includes `kinduction_depth`, `harness_module`, `harness_lines`, `harness_asserts`, `harness_assumes` alongside the pass/fail/timing columns - the same assertion/assume counts and depth bound documented in `formal/comm_safety/README.md`'s per-case status table, so a single run's CSV is self-describing without cross-referencing that doc.
 
 ## Yosys Performance Collection
 
-The performance collection flow compares Anvil-generated core modules against SV core components using Yosys synthesis statistics. It reports cell/area proxy metrics, not real activity-based power.
+The performance collection flow compares Anvil-generated core modules against SV core components using Yosys synthesis statistics. See [`synthesis/README.md`](synthesis/README.md) for the experiment setup - which modules are synthesized by default per case (`anvil_core_patterns`/`sv_top`/`sv_files` in the manifest), how the default-vs-`--include-neighbors` module selection works, and the `perf_sv_wrappers.sv` wrapper each case builds against. For results and root-caused overhead sources, see `synthesis/yosys_perf/OVERHEAD_FINDINGS.md` and `WIDTH_FINDINGS.md`.
+
+`collect_yosys_perf.py` reports Yosys's generic-cell counts as a cell/area proxy, not real activity-based power. `collect_real_synth_perf.py` layers real sky130 synthesis and OpenSTA static timing/power on top of `collect_yosys_perf.py`'s already-generated SV (see Prerequisites above for how it auto-discovers which run to read).
 
 Smoke test:
 
@@ -340,10 +240,12 @@ The manifest for case mappings and ignored-neighbor patterns is:
 scripts/yosys_perf_manifest.json
 ```
 
-Width and structure notes for the current perf setup are in:
+Real sky130 synthesis + OpenSTA timing/power, reading a `collect_yosys_perf.py` run's already-generated SV (defaults to the most recent timestamped run - see Prerequisites):
 
-```text
-synthesis/yosys_perf/WIDTH_FINDINGS.md
+```sh
+python3 scripts/collect_real_synth_perf.py --case fifo --variant both
+python3 scripts/collect_real_synth_perf.py --variant both
+python3 scripts/collect_real_synth_perf.py --generated-dir synthesis_reports/yosys_perf_results/20260709_121336/generated --variant both
 ```
 
 ## State-Space Estimate (SV only)
@@ -364,7 +266,7 @@ formal/comm_safety/results/state_space/state_space.csv
 formal/comm_safety/results/state_space/logs/<case>/sv.log
 ```
 
-Known gaps: `axi_mux_read`/`axi_mux_write` are missing `common_cells/src/cf_math_pkg.sv` from their `.sby` file lists (same bug fixed for the model-checking `.sby`s themselves - see below); `ace`'s SV testbench has an unhandled `$finish` blocking synthesis. Not yet fixed in this script's own file-list handling.
+The script derives its file list and defines directly from each case's own `.sby` `read_slang` command line (it doesn't maintain a separate file list), so it inherits whatever that `.sby` already has correct: `axi_mux_read.sby`/`axi_mux_write.sby` already include `common_cells/src/cf_math_pkg.sv`, and `ace.sby` already passes `-D FORMAL_COMM_SAFETY`, which guards `ace/src/ccu_fsm_tb.sv`'s simulation-only `$finish` behind an `` `ifndef FORMAL_COMM_SAFETY `` block - both were real gaps at some earlier point, fixed in the `.sby` files/testbench itself rather than in this script, and this script picks up both fixes automatically since it reads those files' current content, not a cached copy.
 
 ## Lines of Code / Assertion / Signature-Size Comparison
 
@@ -414,7 +316,7 @@ tilelink
 Most result files are ignored. To manually remove generated reports:
 
 ```sh
-rm -rf formal/comm_safety/results synthesis_reports/yosys_perf_results
+rm -rf formal/comm_safety/results synthesis_reports/yosys_perf_results synthesis_reports/real_synth_perf_results
 ```
 
 Use the cleanup command only when you do not need the current logs or summaries.

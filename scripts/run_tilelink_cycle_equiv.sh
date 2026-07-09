@@ -5,6 +5,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 ANVIL_DIR="$ROOT/src/compat"
 TILELINK_DIR="$ROOT/tilelink"
+TB_DIR="$ROOT/src/testbenches"
 LOG_DIR="$TILELINK_DIR/logs/tilelink_cycle_equiv"
 SV_OBJ_DIR="$TILELINK_DIR/build/tb_tlcrossbar_obj"
 SV_DRIVER="$TILELINK_DIR/build/tb_tlcrossbar_driver.cpp"
@@ -26,9 +27,25 @@ normalize_logic_log() {
     > "$out_file"
 }
 
-mkdir -p "$LOG_DIR" "$TILELINK_DIR/build"
+mkdir -p "$LOG_DIR" "$TILELINK_DIR/build" "$TB_DIR"
 
 echo "[1/3] Building and running tilelink/tilelink/TLCrossBar_test.sv"
+
+# tilelink/ is an untracked-content submodule: debug_output/ is a scratch
+# directory holding both the CIRCT/firtool-generated SV and unrelated build
+# byproducts (multi-hundred-MB .blif files, logs), and none of it - nor the
+# hand-authored testbench under tilelink/tilelink/ - is committed anywhere in
+# the submodule's own history. Refresh just the .sv sources actually needed
+# for this build under src/testbenches/ on every run, leaving the rest of
+# debug_output/'s build detritus alone.
+cp "$TILELINK_DIR/debug_output/TLArbiter.sv" "$TB_DIR/TLArbiter.sv"
+cp "$TILELINK_DIR/debug_output/TLArbiter_2.sv" "$TB_DIR/TLArbiter_2.sv"
+cp "$TILELINK_DIR/debug_output/TLArbiter_4.sv" "$TB_DIR/TLArbiter_4.sv"
+cp "$TILELINK_DIR/debug_output/TLArbiter_6.sv" "$TB_DIR/TLArbiter_6.sv"
+cp "$TILELINK_DIR/debug_output/TLArbiter_8.sv" "$TB_DIR/TLArbiter_8.sv"
+cp "$TILELINK_DIR/debug_output/TLCrossBar.sv" "$TB_DIR/TLCrossBar.sv"
+cp "$TILELINK_DIR/tilelink/TLCrossBar_test.sv" "$TB_DIR/TLCrossBar_test.sv"
+
 sed 's/Vtop/Vtb_tlcrossbar/g' "$ANVIL_DIR/sim_main.cpp" > "$SV_DRIVER"
 
 env OBJCACHE= verilator \
@@ -39,14 +56,14 @@ env OBJCACHE= verilator \
   -DTILELINK_CROSSBAR_TB_TRACE \
   --top-module tb_tlcrossbar \
   --Mdir "$SV_OBJ_DIR" \
-  -I"$TILELINK_DIR/debug_output" \
-  "$TILELINK_DIR/debug_output/TLArbiter.sv" \
-  "$TILELINK_DIR/debug_output/TLArbiter_2.sv" \
-  "$TILELINK_DIR/debug_output/TLArbiter_4.sv" \
-  "$TILELINK_DIR/debug_output/TLArbiter_6.sv" \
-  "$TILELINK_DIR/debug_output/TLArbiter_8.sv" \
-  "$TILELINK_DIR/debug_output/TLCrossBar.sv" \
-  "$TILELINK_DIR/tilelink/TLCrossBar_test.sv" \
+  -I"$TB_DIR" \
+  "$TB_DIR/TLArbiter.sv" \
+  "$TB_DIR/TLArbiter_2.sv" \
+  "$TB_DIR/TLArbiter_4.sv" \
+  "$TB_DIR/TLArbiter_6.sv" \
+  "$TB_DIR/TLArbiter_8.sv" \
+  "$TB_DIR/TLCrossBar.sv" \
+  "$TB_DIR/TLCrossBar_test.sv" \
   "$SV_DRIVER" \
   > "$LOG_DIR/TLCrossBar_test.verilator-build.log" \
   2>&1
