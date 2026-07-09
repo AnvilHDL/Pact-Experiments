@@ -1,0 +1,56 @@
+// PACT open type for Row 9 and Row 10 (ANNOTATIONS.md) — ccu_fsm.sv.
+//
+// Row 9: snoop ports s2m_req_o/m2s_resp_i (29-30), cr_valid (59), WAIT_RESP_R (44).
+// Snoop channels carry no transaction ID (Culsans, arXiv 2407.19895), so the CCU's
+// correctness depends on responses (cr?) arriving in the same order requests (ac!)
+// were issued — order *is* identity here. `fifo_core_itfc` types that assumption;
+// `inorder_snoop_itfc` is a winning environment witness, `reordering_snoop_itfc` is
+// not (open: the verdict depends on which environment is composed).
+//
+// Row 10: the FSM interleaves memory-unit writeback handling with snoop-unit
+// response handling for the *same* line; the documented hazard (US9372808;
+// coherence literature) is a writeback for line X racing a snoop for X, each
+// blocking on the other absent a non-blocking channel. `racy_ccu_itfc` types a CCU
+// that services the two paths in lockstep (writeback fully completes before a
+// pending snoop response is drained, and vice versa) — composed with a peer that
+// requires the other order first, no schedule resolves the cycle.
+
+interface fifo_core_itfc(sn_ep : left snoop_order_ch<line_t>) =
+    rec X . sn_ep.ac_req ; sn_ep.cr_res ; (#1 ; X)
+
+interface inorder_snoop_itfc(sn_ep : right snoop_order_ch<line_t>) =
+    F rec X . sn_ep.ac_req ; sn_ep.cr_res ; (#1 ; X)
+
+interface reordering_snoop_itfc(sn_ep : right snoop_order_ch<line_t>) =
+    F rec X . sn_ep.ac_req ; ((sn_ep.ac_req ; X) + (sn_ep.cr_res ; X))
+
+pool ccu_fsm_row9_pool {
+    sn_ep -- sn_ep2 : snoop_order_ch<line_t>;
+    iccu : fifo_core_itfc(sn_ep2),
+    isnoop_source : inorder_snoop_itfc(sn_ep)
+}
+
+interface racy_ccu_itfc(wb_ep : left writeback_ch<line_t>, sn_ep : left snoop_order_ch<line_t>) =
+    F ((wb_ep.wb_req ; wb_ep.wb_gnt) + (sn_ep.ac_req ; sn_ep.cr_res)) ; #1
+
+interface peer_itfc(wb_ep : right writeback_ch<line_t>, sn_ep : right snoop_order_ch<line_t>) =
+    F sn_ep.ac_req ; wb_ep.wb_req ; sn_ep.cr_res ; wb_ep.wb_gnt ; #1
+
+pool ccu_fsm_row10_pool {
+    wb_ep -- wb_ep2 : writeback_ch<line_t>,
+    sn_ep -- sn_ep2 : snoop_order_ch<line_t>;
+    iccu : racy_ccu_itfc(wb_ep2, sn_ep2),
+    ipeer : peer_itfc(wb_ep, sn_ep)
+}
+
+chan snoop_order_ch<L : type> {
+    right ac_req : (L@#1),
+    left  cr_res : (L@#1)
+}
+
+chan writeback_ch<L : type> {
+    right wb_req : (L@#1),
+    left  wb_gnt : (void@#1)
+}
+
+type line_t = logic[6];

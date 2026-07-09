@@ -1,0 +1,44 @@
+// PACT open type for Row 11 and Row 12 (ANNOTATIONS.md) — axi_mux.sv (+ axi_demux.sv
+// for row 11's paired IP; only the mux side is typed here, see axi_demux/ for the
+// demux side's Row 3 type).
+//
+// Row 11 (eXpect, ICCAD'24): response-path arbitration in slv_r_chans/slv_b_chans
+// muxing (~160-162). The contract is "every response is delivered, once, in the
+// label (RID/BID) order the manager expects"; `reordering_mux_itfc` types a mux
+// that is free to answer a later-issued id before an earlier one — inconsistent
+// with any manager whose type expects in-order per-label delivery.
+//
+// Row 12 (deadlock-freedom thesis, diva-portal:1510046): the mux must preserve
+// same-ID response order (~34-39, 100-162, B/R channel arbiters). `inorder_mux_itfc`
+// pins that: a slow subordinate's response for id X is held ahead of a later one for
+// the same id. Composed with an environment whose completion of the held slow
+// transaction depends on the fast one being consumed first (shared buffering/credit),
+// the in-order rule itself closes a wait cycle — distinct from Row 6/axi_xbar, where
+// the cycle comes from resource holding, not from the ordering rule.
+
+interface inorder_mux_itfc(s_ep1 : left resp_ch<id_t>, s_ep2 : left resp_ch<id_t>, m_ep : right resp_ch<id_t>) =
+    rec X . ^(
+        s_ep1.res : m_ep.res ; #1 ; X,
+        s_ep2.res : m_ep.res ; #1 ; X
+    )
+
+interface reordering_mux_itfc(s_ep1 : left resp_ch<id_t>, s_ep2 : left resp_ch<id_t>, m_ep : right resp_ch<id_t>) =
+    rec X . (
+        (s_ep1.res ; #1 ; X) + (s_ep2.res ; #1 ; X) + (m_ep.res ; #1 ; X)
+    )
+
+interface manager_itfc(m_ep : left resp_ch<id_t>) = F rec X . m_ep.res ; #1 ; X
+
+pool axi_mux_pool {
+    s_ep1 -- s_ep1_ri : resp_ch<id_t>,
+    s_ep2 -- s_ep2_ri : resp_ch<id_t>,
+    m_ep -- m_ep_ri : resp_ch<id_t>;
+    imux : inorder_mux_itfc(s_ep1_ri, s_ep2_ri, m_ep),
+    imanager : manager_itfc(m_ep_ri)
+}
+
+chan resp_ch<Id : type> {
+    right res : (Id@#1)
+}
+
+type id_t = logic[4];

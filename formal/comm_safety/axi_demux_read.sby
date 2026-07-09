@@ -1,6 +1,6 @@
 [options]
 mode prove
-depth 300
+depth 500
 expect pass
 
 [engines]

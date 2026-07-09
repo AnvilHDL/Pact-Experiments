@@ -1,0 +1,56 @@
+// PACT open type for Row 2 and Row 5 (ANNOTATIONS.md) — axi_test.sv.
+//
+// Row 2: `send_aw` (task at 80/374) spins on aw_ready then returns; `send_w` (96/409)
+// is only ever called after `send_aw` returns (see send_aws/send_ws, 1233-1276) — the
+// driver's own local type therefore *offers* w! only after observing aw?. A spec-legal
+// DUT crossbar may legally wait for WVALID before AWREADY (the open type below), which
+// has no witness satisfying the driver's assumed order — same shape as Row 1, opposite
+// blame: here the *environment model* (the driver) is the inconsistent side.
+//
+// Row 5: the random manager + `axi_monitor`/scoreboard track per-ID outstanding write
+// transactions; reusing an AWID before its prior B has been observed is the hazard.
+// `id_t` is folded into the aw! label so the residual obligation ("at most one
+// outstanding transaction per id, in program order") is visible as a label-sequencing
+// constraint on the boundary, open because whether reuse is actually unsafe depends on
+// the interconnect's per-ID response-ordering guarantee.
+
+interface driver_itfc(m_ep : right aw_w_ch<id_t>) =
+    F m_ep.aw_req ; m_ep.aw_gnt ; m_ep.w_req ; m_ep.w_gnt ; #1
+
+interface legal_dut_itfc(s_ep : left aw_w_ch<id_t>) =
+    F ((s_ep.aw_req ; s_ep.w_req) + (s_ep.w_req ; s_ep.aw_req)) ; s_ep.aw_gnt ; s_ep.w_gnt ; #1
+
+pool axi_test_driver_pool {
+    m_ep -- s_ep : aw_w_ch<id_t>;
+    idriver : driver_itfc(m_ep),
+    ilegal_dut : legal_dut_itfc(s_ep)
+}
+
+// Row 5: per-ID outstanding-write monitor boundary. `monitor_itfc` types the
+// scoreboard's expectation that no aw! reuses an id before that id's b? has been
+// observed; `reuser_itfc` types a manager that is free to violate it.
+interface monitor_itfc(w_ep : left id_write_ch<id_t>) =
+    rec X . w_ep.aw_req ; w_ep.b_res ; (#1 ; X)
+
+interface reuser_itfc(w_ep : right id_write_ch<id_t>) =
+    rec X . w_ep.aw_req ; ((w_ep.aw_req ; X) + (w_ep.b_res ; X))
+
+pool axi_test_monitor_pool {
+    w_ep -- w_ep2 : id_write_ch<id_t>;
+    imonitor : monitor_itfc(w_ep2),
+    ireuser : reuser_itfc(w_ep)
+}
+
+chan aw_w_ch<Id : type> {
+    right aw_req : (Id@#1),
+    left  aw_gnt : (void@#1),
+    right w_req  : (Id@#1),
+    left  w_gnt  : (void@#1)
+}
+
+chan id_write_ch<Id : type> {
+    right aw_req : (Id@#1),
+    left  b_res  : (Id@#1)
+}
+
+type id_t = logic[4];
