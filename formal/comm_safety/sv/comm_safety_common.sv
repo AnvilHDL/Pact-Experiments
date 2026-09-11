@@ -1,42 +1,37 @@
 `ifdef FORMAL_COMM_SAFETY
 
+`ifdef FORMAL_COMM_FIFO_FULL_DESIGN
 module comm_fifo_formal(input logic clk_i, input logic rst_ni);
-  localparam int unsigned Depth = 4;
-  localparam int unsigned Bound = 12;
-  typedef logic [1:0] data_t;
-
-  (* anyseq *) data_t data_i;
-  (* anyseq *) logic push_i;
-  (* anyseq *) logic pop_i;
+  localparam int unsigned MaxTransactions = 8;
+  localparam int unsigned Bound = 64;
 
   logic full_o;
   logic empty_o;
-  logic [$clog2(Depth)-1:0] usage_o;
-  data_t data_o;
+  logic push_i;
+  logic pop_i;
+  logic shadow_full_req;
+  logic shadow_empty_req;
+  logic shadow_push_req;
+  logic shadow_pop_req;
 
-  fifo_v3 #(
-    .FALL_THROUGH(1'b0),
-    .DATA_WIDTH(2),
-    .DEPTH(Depth),
-    .dtype(data_t)
-  ) dut (
+  tb_fifo #(
+    .MAX_TRANSACTIONS(MaxTransactions)
+  ) full_design (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .flush_i(1'b0),
-    .testmode_i(1'b0),
-    .full_o(full_o),
-    .empty_o(empty_o),
-    .usage_o(usage_o),
-    .data_i(data_i),
-    .push_i(push_i),
-    .data_o(data_o),
-    .pop_i(pop_i)
+    .formal_full_o(full_o),
+    .formal_empty_o(empty_o),
+    .formal_push_i(push_i),
+    .formal_pop_i(pop_i),
+    .formal_shadow_full_req(shadow_full_req),
+    .formal_shadow_empty_req(shadow_empty_req),
+    .formal_shadow_push_req(shadow_push_req),
+    .formal_shadow_pop_req(shadow_pop_req)
   );
 
   logic f_past_valid = 1'b0;
-  logic [$clog2(Depth+1)-1:0] shadow_count;
-  logic [$clog2(Depth)-1:0] head, tail;
-  data_t shadow_mem [Depth-1:0];
+  (* anyseq *) logic track_this_push;
+  logic tracking_push;
   logic [$clog2(Bound+1)-1:0] live_age;
 
   wire push_fire = push_i && !full_o;
@@ -53,42 +48,28 @@ module comm_fifo_formal(input logic clk_i, input logic rst_ni);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      shadow_count <= '0;
-      head <= '0;
-      tail <= '0;
+      tracking_push <= 1'b0;
       live_age <= '0;
     end else begin
-      assert(shadow_count <= Depth);
-      assume(!push_i || !full_o);
-      assume(!pop_i || !empty_o);
-      assert(empty_o == (shadow_count == 0));
-      assert(full_o == (shadow_count == Depth));
-      assert(usage_o == shadow_count[$bits(usage_o)-1:0]);
+      // Sync Safety Properties
+      assert(!push_i || !full_o);
+      assert(!pop_i || !empty_o);
 
-      if (pop_fire) begin
-        assert(shadow_count != 0);
-        assert(data_o == shadow_mem[head]);
-      end
+      assert(shadow_push_req == push_fire);
+      assert(shadow_pop_req == pop_fire);
+      assert(shadow_full_req == full_o);
+      assert(shadow_empty_req == empty_o);
 
-      if (push_fire && !pop_fire) begin
-        assert(shadow_count < Depth);
-        shadow_count <= shadow_count + 1'b1;
-      end else if (pop_fire && !push_fire) begin
-        assert(shadow_count != 0);
-        shadow_count <= shadow_count - 1'b1;
-      end
 
-      if (push_fire) begin
-        shadow_mem[tail] <= data_i;
-        tail <= (tail == Depth-1) ? '0 : tail + 1'b1;
-      end
-      if (pop_fire) begin
-        head <= (head == Depth-1) ? '0 : head + 1'b1;
-      end
-
-      if (shadow_count != 0 && !pop_fire) begin
+      // Bounded Liveness Property
+      if (!tracking_push && push_fire && track_this_push) begin
+        tracking_push <= 1'b1;
+        live_age <= '0;
+      end else if (tracking_push && pop_fire) begin
+        tracking_push <= 1'b0;
+        live_age <= '0;
+      end else if (tracking_push) begin
         live_age <= live_age + 1'b1;
-        assume(live_age < Bound);
         assert(live_age < Bound);
       end else begin
         live_age <= '0;
@@ -96,6 +77,7 @@ module comm_fifo_formal(input logic clk_i, input logic rst_ni);
     end
   end
 endmodule
+`endif
 
 module comm_spill_formal(input logic clk_i, input logic rst_ni);
   localparam int unsigned Bound = 8;

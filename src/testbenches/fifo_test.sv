@@ -234,7 +234,21 @@ end
 
 endmodule
 
-module tb_fifo(input logic clk_i, input logic rst_ni);
+module tb_fifo(
+    input logic clk_i,
+    input logic rst_ni
+`ifdef FORMAL_COMM_SAFETY
+    ,
+    output logic formal_full_o,
+    output logic formal_empty_o,
+    output logic formal_push_i,
+    output logic formal_pop_i,
+    output logic formal_shadow_full_req,
+    output logic formal_shadow_empty_req,
+    output logic formal_shadow_push_req,
+    output logic formal_shadow_pop_req
+`endif
+);
 
 parameter int MAX_TRANSACTIONS = 8;
 
@@ -255,6 +269,17 @@ logic fifo_progress;
 logic mst_progress_q;
 logic slv_progress_q;
 logic  fifo_progress_q;
+
+`ifdef FORMAL_COMM_SAFETY
+assign formal_full_o = full_o;
+assign formal_empty_o = empty_o;
+assign formal_push_i = push_i;
+assign formal_pop_i = pop_i;
+assign formal_shadow_full_req = shadow_full_req;
+assign formal_shadow_empty_req = shadow_empty_req;
+assign formal_shadow_push_req = shadow_push_req;
+assign formal_shadow_pop_req = shadow_pop_req;
+`endif
 
 fifo_v3 #(
     .FALL_THROUGH(1'b0),
@@ -316,6 +341,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
 end
 `endif
 
+`ifdef FIFO_TB_INLINE_FORMAL
 // Without an explicit reset assumption, BMC/k-induction is free to pick a
 // trace where rst_ni is always 1 (reset never asserts) and every register's
 // arbitrary initial value is "valid" from step 0 - defeating the age
@@ -383,6 +409,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         end
     end
 end
+`endif
 
 
 

@@ -8,7 +8,7 @@ smtbmc yices
 
 [script]
 plugin -i slang
-read_slang --single-unit --top tb_fifo src/testbenches/fifo_test.sv
+read_slang --single-unit --top tb_fifo -D FIFO_TB_INLINE_FORMAL src/testbenches/fifo_test.sv
 prep -top tb_fifo
 
 [files]
