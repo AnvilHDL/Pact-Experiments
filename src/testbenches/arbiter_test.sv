@@ -461,7 +461,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         case (state)
             IDLE: begin
                 req_o <= 0;
-                if (cycle_count % 4 == 0) begin
+                if ((cycle_count % 3 == 0) || ((cycle_count & (cycle_count - 1)) == 0 && cycle_count != 0)) begin
                     state <= REQUESTING;
                     req_o <= 1;
                     data_o <= DataType'(id);
@@ -501,7 +501,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         gnt_i <= 0;
     end else begin
         cycle_count <= cycle_count + 1;
-        gnt_i <= (cycle_count % 3 == 0) && req_o;
+        gnt_i <= ((cycle_count % 7 == 0) || ((cycle_count & (cycle_count - 1)) == 0 && cycle_count != 0)) && req_o;
     end
 end
 

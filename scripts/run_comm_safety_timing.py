@@ -16,7 +16,11 @@ from pathlib import Path
 # encoded in the low bits regardless of the `expect` setting.
 SBY_RETCODE_STATUS = {
     0: "PASS",
-    1: "PASS",
+    # sby returns 1 only for a status its `expect` did not list, and for its own
+    # error exits (bad config, missing [files] source, uncaught traceback). Every
+    # .sby here sets `expect pass`, so a real pass returns 0 and a 1 is always the
+    # error case - mapping it to PASS reported crashed runs as successful proofs.
+    1: "ERROR",
     2: "FAIL",
     4: "UNKNOWN",
     8: "TIMEOUT",

@@ -157,7 +157,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         case (state)
             IDLE: begin
                 push_i <= 0;
-                if ((cycle_count % 4 == 0) || ((cycle_count & (cycle_count - 1)) == 0 && cycle_count != 0)) begin
+                if ((cycle_count % 3 == 0) || ((cycle_count & (cycle_count - 1)) == 0 && cycle_count != 0)) begin
                     state <= TRY_PUSH;
                 end
             end
@@ -213,7 +213,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         case (state)
             IDLE: begin
                 pop_i <= 0;
-                if ((cycle_count % 4 == 0) || ((cycle_count & (cycle_count - 1)) == 0 && cycle_count != 0)) begin
+                if ((cycle_count % 7 == 0) || ((cycle_count & (cycle_count - 1)) == 0 && cycle_count != 0)) begin
                     state <= TRY_POP;
                 end
             end

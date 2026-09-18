@@ -47,62 +47,48 @@ proc arbiter_slave<Tp : type, id : int, data : int>(slave_interface){
 }
 
 proc arbiter_master<Tp : type>(master_interface){
+    // Schedule re-derived from the SystemVerilog testbench trace after the
+    // stub periods were matched to fifo_test.sv (master %3, slave %7, plus the
+    // power-of-two burst term). Each `cycle N` is the gap to the next event, so
+    // the running sum is that event's absolute cycle in the SV trace.
     loop{
+        cycle 2 >>
+        let _ = recv mst_ep.req >>
+        cycle 1 >>
+        let _ = recv mst_ep.req >>
+        cycle 2 >>
+        let _ = recv mst_ep.req >>
+        cycle 3 >>
+        let _ = recv mst_ep.req >>
+        cycle 1 >>
+        let _ = recv mst_ep.req >>
+        cycle 6 >>
+        let _ = recv mst_ep.req >>
+        cycle 2 >>
+        let _ = recv mst_ep.req >>
+        cycle 5 >>
+        let _ = recv mst_ep.req >>
+        cycle 7 >>
+        let _ = recv mst_ep.req >>
         cycle 4 >>
         let _ = recv mst_ep.req >>
         cycle 3 >>
         let _ = recv mst_ep.req >>
-        cycle 3 >>
+        cycle 7 >>
         let _ = recv mst_ep.req >>
-        cycle 3 >>
+        cycle 7 >>
         let _ = recv mst_ep.req >>
-        cycle 3 >>
+        cycle 7 >>
         let _ = recv mst_ep.req >>
-        cycle 3 >>
+        cycle 7 >>
         let _ = recv mst_ep.req >>
-        cycle 3 >>
+        cycle 1 >>
         let _ = recv mst_ep.req >>
-        cycle 3 >>
+        cycle 6 >>
         let _ = recv mst_ep.req >>
-        cycle 3 >>
+        cycle 7 >>
         let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 3 >>
-        let _ = recv mst_ep.req >>
-        cycle 1
+        cycle 10
     }
 }
 

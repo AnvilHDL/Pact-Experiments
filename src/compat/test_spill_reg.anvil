@@ -98,6 +98,10 @@ proc spill_reg <T: type> (spill_register_itfc){
 proc spill_master<T : type>(master_itfc){
     reg cyc : logic[8];
 
+    // Schedule re-derived from the SystemVerilog testbench trace after the
+    // stub periods were matched to fifo_test.sv (master %3, slave %7, plus the
+    // power-of-two burst term). Each `cycle N` is the gap to the next event, so
+    // the running sum is that event's absolute cycle in the SV trace.
     loop{
         cycle 2 >>
         send reg_ep.req(32'd0) >>
@@ -105,28 +109,25 @@ proc spill_master<T : type>(master_itfc){
         cycle 2 >>
         send reg_ep.req(32'd1) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
-        cycle 7 >>
+        cycle 2 >>
         send reg_ep.req(32'd0) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
-        cycle 12 >>
+        cycle 11 >>
         send reg_ep.req(32'd1) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
-        cycle 12 >>
+        cycle 18 >>
         send reg_ep.req(32'd0) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
-        cycle 12 >>
+        cycle 3 >>
         send reg_ep.req(32'd1) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
-        cycle 12 >>
+        cycle 21 >>
         send reg_ep.req(32'd0) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
-        cycle 12 >>
+        cycle 21 >>
         send reg_ep.req(32'd1) >>
         dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd1) >>
-        cycle 12 >>
-        send reg_ep.req(32'd0) >>
-        dprint "[Cycle %d] Enqueued data %d\n" (*cyc, 8'd0) >>
-        cycle 1
+        cycle 10
     }
     loop{
         set cyc := *cyc + 8'd1
@@ -136,8 +137,12 @@ proc spill_master<T : type>(master_itfc){
 proc spill_slave<T : type>(slave_itfc){
     reg cyc : logic[8];
 
+    // Schedule re-derived from the SystemVerilog testbench trace after the
+    // stub periods were matched to fifo_test.sv (master %3, slave %7, plus the
+    // power-of-two burst term). Each `cycle N` is the gap to the next event, so
+    // the running sum is that event's absolute cycle in the SV trace.
     loop{
-        cycle 10 >>
+        cycle 4 >>
         let r0 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r0) >>
         send reg_ep.spill(()) >>
@@ -145,27 +150,23 @@ proc spill_slave<T : type>(slave_itfc){
         let r1 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r1) >>
         send reg_ep.spill(()) >>
-        cycle 12 >>
+        cycle 18 >>
         let r2 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r2) >>
         send reg_ep.spill(()) >>
-        cycle 12 >>
+        cycle 3 >>
         let r3 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r3) >>
         send reg_ep.spill(()) >>
-        cycle 12 >>
+        cycle 21 >>
         let r4 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r4) >>
         send reg_ep.spill(()) >>
-        cycle 12 >>
+        cycle 21 >>
         let r5 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r5) >>
         send reg_ep.spill(()) >>
-        cycle 12 >>
-        let r6 = recv reg_ep.data >>
-        dprint "[Cycle %d] Received data %d\n" (*cyc, r6) >>
-        send reg_ep.spill(()) >>
-        cycle 1
+        cycle 10
     }
     loop{
         set cyc := *cyc + 8'd1

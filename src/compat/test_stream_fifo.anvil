@@ -44,71 +44,75 @@ proc stream_fifo<T : type>(stream_fifo_if){
 proc stream_fifo_master<T : type>(master_itfc){
     reg cyc : logic[8];
 
+    // Schedule re-derived from the SystemVerilog testbench trace after the
+    // stub periods were matched to fifo_test.sv (master %3, slave %7, plus the
+    // power-of-two burst term). Each `cycle N` is the gap to the next event, so
+    // the running sum is that event's absolute cycle in the SV trace.
     loop{
         cycle 2 >>
         send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
-        cycle 4 >>
+        cycle 3 >>
+        send fifo_ep.push(32'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd1) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
+        cycle 3 >>
+        send fifo_ep.push(32'd0) >>
+        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
+        cycle 3 >>
         send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
         cycle 4 >>
         send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
-        cycle 4 >>
+        cycle 7 >>
         send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
-        cycle 4 >>
+        cycle 7 >>
         send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
-        cycle 4 >>
+        cycle 7 >>
         send fifo_ep.push(32'd1) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
-        cycle 4 >>
+        cycle 7 >>
         send fifo_ep.push(32'd0) >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd1) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd0) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd1) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd0) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd1) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd0) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd1) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd0) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd1) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd0) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd1) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd0) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd1) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd1) >>
-        cycle 4 >>
-        send fifo_ep.push(32'd0) >>
-        dprint "[Cycle %d] Pushed %d\n" (*cyc, 8'd0) >>
-        cycle 1
+        cycle 10
     }
     loop{
         set cyc := *cyc + 8'd1
@@ -116,68 +120,53 @@ proc stream_fifo_master<T : type>(master_itfc){
 }
 
 proc stream_fifo_slave<T : type>(slave_itfc){
+    // Schedule re-derived from the SystemVerilog testbench trace after the
+    // stub periods were matched to fifo_test.sv (master %3, slave %7, plus the
+    // power-of-two burst term). Each `cycle N` is the gap to the next event, so
+    // the running sum is that event's absolute cycle in the SV trace.
+    // The printed cycle is a literal here (as upstream), so it must carry the
+    // SV trace's absolute cycle for the trace diff to line up.
     loop{
         cycle 3 >>
         let p0 = recv fifo_ep.pop >>
         dprint "[Cycle %d] Popped %d\n" (8'd3, p0) >>
-        cycle 8 >>
+        cycle 6 >>
         let p1 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd10, p1) >>
-        cycle 4 >>
+        dprint "[Cycle %d] Popped %d\n" (8'd9, p1) >>
+        cycle 7 >>
         let p2 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd14, p2) >>
-        cycle 4 >>
+        dprint "[Cycle %d] Popped %d\n" (8'd16, p2) >>
+        cycle 7 >>
         let p3 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd18, p3) >>
-        cycle 4 >>
+        dprint "[Cycle %d] Popped %d\n" (8'd23, p3) >>
+        cycle 7 >>
         let p4 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd22, p4) >>
+        dprint "[Cycle %d] Popped %d\n" (8'd30, p4) >>
         cycle 4 >>
         let p5 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd26, p5) >>
-        cycle 4 >>
+        dprint "[Cycle %d] Popped %d\n" (8'd34, p5) >>
+        cycle 3 >>
         let p6 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd30, p6) >>
-        cycle 4 >>
+        dprint "[Cycle %d] Popped %d\n" (8'd37, p6) >>
+        cycle 7 >>
         let p7 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd34, p7) >>
-        cycle 4 >>
+        dprint "[Cycle %d] Popped %d\n" (8'd44, p7) >>
+        cycle 7 >>
         let p8 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd38, p8) >>
-        cycle 4 >>
+        dprint "[Cycle %d] Popped %d\n" (8'd51, p8) >>
+        cycle 7 >>
         let p9 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd42, p9) >>
-        cycle 4 >>
+        dprint "[Cycle %d] Popped %d\n" (8'd58, p9) >>
+        cycle 7 >>
         let p10 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd46, p10) >>
-        cycle 4 >>
+        dprint "[Cycle %d] Popped %d\n" (8'd65, p10) >>
+        cycle 7 >>
         let p11 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd50, p11) >>
-        cycle 4 >>
+        dprint "[Cycle %d] Popped %d\n" (8'd72, p11) >>
+        cycle 7 >>
         let p12 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd54, p12) >>
-        cycle 4 >>
-        let p13 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd58, p13) >>
-        cycle 4 >>
-        let p14 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd62, p14) >>
-        cycle 4 >>
-        let p15 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd66, p15) >>
-        cycle 4 >>
-        let p16 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd70, p16) >>
-        cycle 4 >>
-        let p17 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd74, p17) >>
-        cycle 4 >>
-        let p18 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd78, p18) >>
-        cycle 4 >>
-        let p19 = recv fifo_ep.pop >>
-        dprint "[Cycle %d] Popped %d\n" (8'd82, p19) >>
-        cycle 1
+        dprint "[Cycle %d] Popped %d\n" (8'd79, p12) >>
+        cycle 10
     }
 }
 
