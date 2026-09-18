@@ -40,8 +40,8 @@ echo "[1/2] Building and running axi/src/axi_lite_demux_write_tb.sv"
 # copy under src/testbenches/ on every run rather than building straight out
 # of the submodule working tree - otherwise these sources only exist on
 # whichever machine last edited them.
-cp "$AXI_DIR/src/axi_lite_demux_write.sv" "$TB_DIR/axi_lite_demux_write.sv"
-cp "$AXI_DIR/src/axi_lite_demux_write_tb.sv" "$TB_DIR/axi_lite_demux_write_tb.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$AXI_DIR/src/axi_lite_demux_write.sv" "$TB_DIR/axi_lite_demux_write.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$AXI_DIR/src/axi_lite_demux_write_tb.sv" "$TB_DIR/axi_lite_demux_write_tb.sv"
 
 sed 's/Vtop/Vtb_axi_write_demux/g' "$ANVIL_DIR/sim_main.cpp" > "$SV_DRIVER"
 

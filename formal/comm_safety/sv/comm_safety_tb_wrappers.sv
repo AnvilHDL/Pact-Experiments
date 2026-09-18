@@ -1170,9 +1170,9 @@ module comm_tilelink_formal(input logic clk_i, input logic rst_ni);
       assert(m0_a_snd == m0_a_fire);
       assert(m1_a_snd == m1_a_fire);
 
-      // ---- S: a manager takes a request only when it can process it (its
-      //         a_ready is constant 1, so an A handshake while it is still
-      //         responding is accepted on the wire and then overwritten) ----
+      // ---- S: a manager takes a request only when it can process it (the
+      //         stub raises a_ready only when IDLE; an A handshake while it is
+      //         still responding would be a dropped exchange) ----
       assert(s0_a_rcv == s0_a_fire);
       assert(s1_a_rcv == s1_a_fire);
 

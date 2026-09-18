@@ -22,10 +22,10 @@ mkdir -p "$LOG_DIR" "$ACE_DIR/build" "$TB_DIR"
 # copies under src/testbenches/ on every run rather than building straight
 # out of the submodule working tree - otherwise these sources only exist on
 # whichever machine last edited them.
-cp "$ACE_DIR/src/ace_pkg.sv" "$TB_DIR/ace_pkg.sv"
-cp "$ACE_DIR/src/snoop_pkg.sv" "$TB_DIR/snoop_pkg.sv"
-cp "$ACE_DIR/src/ccu_fsm.sv" "$TB_DIR/ccu_fsm.sv"
-cp "$ACE_DIR/src/ccu_fsm_tb.sv" "$TB_DIR/ccu_fsm_tb.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$ACE_DIR/src/ace_pkg.sv" "$TB_DIR/ace_pkg.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$ACE_DIR/src/snoop_pkg.sv" "$TB_DIR/snoop_pkg.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$ACE_DIR/src/ccu_fsm.sv" "$TB_DIR/ccu_fsm.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$ACE_DIR/src/ccu_fsm_tb.sv" "$TB_DIR/ccu_fsm_tb.sv"
 
 echo "[1/2] Running Anvil compat test_ace"
 (

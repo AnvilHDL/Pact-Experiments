@@ -38,13 +38,13 @@ echo "[1/3] Building and running tilelink/tilelink/TLCrossBar_test.sv"
 # the submodule's own history. Refresh just the .sv sources actually needed
 # for this build under src/testbenches/ on every run, leaving the rest of
 # debug_output/'s build detritus alone.
-cp "$TILELINK_DIR/debug_output/TLArbiter.sv" "$TB_DIR/TLArbiter.sv"
-cp "$TILELINK_DIR/debug_output/TLArbiter_2.sv" "$TB_DIR/TLArbiter_2.sv"
-cp "$TILELINK_DIR/debug_output/TLArbiter_4.sv" "$TB_DIR/TLArbiter_4.sv"
-cp "$TILELINK_DIR/debug_output/TLArbiter_6.sv" "$TB_DIR/TLArbiter_6.sv"
-cp "$TILELINK_DIR/debug_output/TLArbiter_8.sv" "$TB_DIR/TLArbiter_8.sv"
-cp "$TILELINK_DIR/debug_output/TLCrossBar.sv" "$TB_DIR/TLCrossBar.sv"
-cp "$TILELINK_DIR/tilelink/TLCrossBar_test.sv" "$TB_DIR/TLCrossBar_test.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$TILELINK_DIR/debug_output/TLArbiter.sv" "$TB_DIR/TLArbiter.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$TILELINK_DIR/debug_output/TLArbiter_2.sv" "$TB_DIR/TLArbiter_2.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$TILELINK_DIR/debug_output/TLArbiter_4.sv" "$TB_DIR/TLArbiter_4.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$TILELINK_DIR/debug_output/TLArbiter_6.sv" "$TB_DIR/TLArbiter_6.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$TILELINK_DIR/debug_output/TLArbiter_8.sv" "$TB_DIR/TLArbiter_8.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$TILELINK_DIR/debug_output/TLCrossBar.sv" "$TB_DIR/TLCrossBar.sv"
+"$ROOT/scripts/refresh_testbench.sh" "$TILELINK_DIR/tilelink/TLCrossBar_test.sv" "$TB_DIR/TLCrossBar_test.sv"
 
 sed 's/Vtop/Vtb_tlcrossbar/g' "$ANVIL_DIR/sim_main.cpp" > "$SV_DRIVER"
 

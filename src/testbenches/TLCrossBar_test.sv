@@ -190,8 +190,11 @@ state_t state;
 logic [31:0] cycle_count;
 logic [1:0] pending_source;
 
-// Accept A channel requests every cycle
-assign a_ready = 1'b1;
+// Accept an A channel request only while idle. Accepting while RESPONDING
+// (the original `assign a_ready = 1'b1;`) overwrote pending_source and, when
+// the request arrived in the same cycle as the D handshake, dropped it: the
+// crossbar saw the request as taken but no response was ever sent.
+assign a_ready = (state == IDLE);
 
 // Unused channels
 assign e_ready = 1'b1;
@@ -259,9 +262,8 @@ end
 // Communication-safety self-report, read hierarchically by the formal
 // harness in formal/comm_safety/sv/comm_safety_tb_wrappers.sv.
 //   f_a_rcv : this manager can only take a request into its bookkeeping when
-//             IDLE. a_ready is constant 1, so an A handshake while RESPONDING
-//             is accepted on the wire but overwrites pending_source: the
-//             harness compares this view against the wire-level handshake.
+//             IDLE, which is also when it raises a_ready; the harness checks
+//             that no A handshake happens on the wire outside that state.
 //   f_d_snd : the response is delivered in this cycle.
 //   f_busy  : in flight (a response is owed).
 wire f_a_rcv = (state == IDLE) && a_valid;

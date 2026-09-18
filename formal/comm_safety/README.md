@@ -105,14 +105,15 @@ Every `assume` count is 2 (the reset guard).
 
 ### Expected findings on the first run
 
-- **TileLink** will fail synchronization safety and liveness, for the reason
-  documented below: the vendored `tl_slave` stub has `assign a_ready = 1'b1`
-  and accepts a second request while still responding to the first,
-  overwriting `pending_source`. In this harness that shows up as
-  `assert(s0_a_rcv == s0_a_fire)` (a manager takes a request only when it can
-  process it) and as the per-client outstanding-request age (a request that
-  is never answered). This is consistent with the paper's table, which marks
-  the SV TileLink safety check as failing.
+- **TileLink** was expected to fail because the manager stub `tl_slave` had
+  `assign a_ready = 1'b1;` and dropped requests arriving mid-response. That
+  stub is fixed in the tracked copy (`a_ready = (state == IDLE)`, 2026-09-18),
+  so `assert(s0_a_rcv == s0_a_fire)` and the per-client outstanding-request
+  age are now expected to pass. Two consequences: the untracked
+  `tilelink/tilelink/TLCrossBar_test.sv` on the authoring machine must get the
+  same one-line change, or `scripts/refresh_testbench.sh` copies the bug back
+  over the tracked file; and the paper's table row that marks the SV TileLink
+  safety check as failing describes the stub before this fix.
 - **Stream FIFO and spill register** stubs decide to push/pop one cycle before
   they raise `valid`/`ready`; when such an attempt has to wait, `valid` can
   stay high for one cycle after the FSM believes it is done, so a second
@@ -137,21 +138,26 @@ at most one in-flight AW; the DUT (`MaxTrans=8`) pipelines AWs whenever its
 property per channel and bounds the DUT's own outstanding records
 (`!w_fifo_empty || !b_fifo_empty || lock_aw_valid_q`).
 
-**`tilelink`: `source` is client-chosen, and `tl_slave` never applies
+**`tilelink`: `source` is client-chosen, and `tl_slave` did not apply
 back-pressure.** The old harness assumed `source == port index`; TileLink's
 crossbar only ORs in a per-client offset going in and trims it going out. The
 new harness is independent of the source mapping (it counts requests and
-responses per client). The genuine stub bug remains:
+responses per client). The stub bug that the old harness had to work around
+was, in `src/testbenches/TLCrossBar_test.sv`, module `tl_slave`:
 
 ```systemverilog
-// tilelink/tilelink/TLCrossBar_test.sv, module tl_slave
-assign a_ready = 1'b1;
+assign a_ready = 1'b1;   // accepted a request while RESPONDING, overwriting pending_source
 ```
 
-`a_ready` is high regardless of `state`; a request arriving while
-`RESPONDING` overwrites `pending_source` before the first response is sent.
-Per this project's convention the vendored stub is not edited; the fix would
-be `assign a_ready = (state == IDLE);`.
+It is fixed there as of 2026-09-18:
+
+```systemverilog
+assign a_ready = (state == IDLE);
+```
+
+The Anvil model `src/compat/test_tilelink.anvil` was made cycle-equivalent to
+the stub before the fix; the manager's back-pressure may need mirroring there
+for the cycle-equivalence diff to stay clean.
 
 ## Files
 
@@ -160,7 +166,8 @@ be `assign a_ready = (state == IDLE);`.
   ACE, TileLink.
 - `src/testbenches/*.sv`: `` `ifdef FORMAL_COMM_SAFETY `` self-report blocks
   in every stub module (both `ccu_fsm_tb.sv` and `ccu_fsm_tb2.sv` carry them;
-  `ace.sby` uses `ccu_fsm_tb.sv`).
+  `ace.sby` uses `ccu_fsm_tb.sv`). Generated and re-applied by
+  `scripts/instrument_comm_safety.py`.
 - `fifo_progress.sby`: the inline variant of the FIFO check (`tb_fifo` as top
   with `FIFO_TB_INLINE_FORMAL`, the block inside `fifo_test.sv` itself). It is
   not part of the driver's ten cases; `fifo.sby` is.
@@ -176,13 +183,15 @@ submodules, which therefore have to be initialised (`git submodule update
 --init common_cells axi ace`; the SSH URLs can be rewritten with
 `git -c url."https://github.com/".insteadOf="git@github.com:"`).
 
-**Hazard:** the six cycle-equivalence scripts unconditionally `cp` the
-submodule working-tree copies over `src/testbenches/` on every run (see
-`../../testbench.md`). Running one of them on a machine whose submodule
-copies lack the `` `ifdef FORMAL_COMM_SAFETY `` blocks will silently strip
-the instrumentation from the tracked AXI/ACE/TileLink testbenches. Add the
-same blocks to the submodule-side copies (or drop the `cp` lines) before
-running those scripts.
+**Refresh without loss.** The six cycle-equivalence scripts used to `cp` the
+submodule working-tree copies over `src/testbenches/` unconditionally, which
+would have stripped these blocks (and aborted on any clone where the
+submodule copies are absent, since they are untracked). They now go through
+`scripts/refresh_testbench.sh`, which copies when the submodule copy exists
+and then re-runs `scripts/instrument_comm_safety.py` (idempotent) on the
+result, and otherwise builds from the tracked copy. Run
+`python3 scripts/instrument_comm_safety.py --check` to confirm every tracked
+copy still carries its blocks.
 
 **TileLink generated SV.** `tilelink.sby` expects the CIRCT/firtool output
 (`TLCrossBar.sv`, `TLArbiter*.sv`) under `src/testbenches/`, where
