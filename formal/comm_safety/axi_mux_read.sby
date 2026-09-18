@@ -8,7 +8,7 @@ smtbmc yices
 
 [script]
 plugin -i slang
-read_slang --single-unit --top comm_axi_mux_read_formal -D FORMAL_COMM_SAFETY -D COMMON_CELLS_ASSERTS_OFF -Icommon_cells/include -Iaxi/include axi/src/axi_pkg.sv common_cells/src/cf_math_pkg.sv common_cells/src/lzc.sv common_cells/src/rr_arb_tree.sv common_cells/src/spill_register_flushable.sv common_cells/src/spill_register.sv common_cells/src/fifo_v3.sv axi/src/axi_lite_mux_read.sv axi/src/axi_lite_mux_read_tb.sv formal/comm_safety/sv/comm_safety_tb_wrappers.sv
+read_slang --single-unit --top comm_axi_mux_read_formal -D FORMAL_COMM_SAFETY -D COMMON_CELLS_ASSERTS_OFF -Icommon_cells/include -Iaxi/include axi/src/axi_pkg.sv common_cells/src/cf_math_pkg.sv common_cells/src/lzc.sv common_cells/src/rr_arb_tree.sv common_cells/src/spill_register_flushable.sv common_cells/src/spill_register.sv common_cells/src/fifo_v3.sv src/testbenches/axi_lite_mux_read.sv src/testbenches/axi_lite_mux_read_tb.sv formal/comm_safety/sv/comm_safety_tb_wrappers.sv
 prep -top comm_axi_mux_read_formal
 
 [files]
@@ -21,6 +21,6 @@ common_cells/src/rr_arb_tree.sv common_cells/src/rr_arb_tree.sv
 common_cells/src/spill_register_flushable.sv common_cells/src/spill_register_flushable.sv
 common_cells/src/spill_register.sv common_cells/src/spill_register.sv
 common_cells/src/fifo_v3.sv common_cells/src/fifo_v3.sv
-axi/src/axi_lite_mux_read.sv axi/src/axi_lite_mux_read.sv
-axi/src/axi_lite_mux_read_tb.sv axi/src/axi_lite_mux_read_tb.sv
+src/testbenches/axi_lite_mux_read.sv src/testbenches/axi_lite_mux_read.sv
+src/testbenches/axi_lite_mux_read_tb.sv src/testbenches/axi_lite_mux_read_tb.sv
 formal/comm_safety/sv/comm_safety_tb_wrappers.sv formal/comm_safety/sv/comm_safety_tb_wrappers.sv

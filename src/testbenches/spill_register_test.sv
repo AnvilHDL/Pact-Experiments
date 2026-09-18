@@ -183,6 +183,24 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
     end
 end
 
+`ifdef FORMAL_COMM_SAFETY
+// Communication-safety self-report, read hierarchically by the formal
+// harness in formal/comm_safety/sv/comm_safety_common.sv.
+//   f_attempt : first cycle of a push attempt (the FSM has just entered
+//               TRY_PUSH); every attempt is meant to complete exactly one
+//               push handshake with the DUT.
+//   f_busy    : this participant is in flight (it has started a push and
+//               has not yet reached its progress point).
+logic f_try_q;
+always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) f_try_q <= 1'b0;
+    else         f_try_q <= (state == TRY_PUSH);
+end
+wire f_attempt = (state == TRY_PUSH) && !f_try_q;
+wire f_busy    = (state == TRY_PUSH);
+`endif
+
+
 endmodule
 
 module slave_spill(input logic clk_i, input logic rst_ni, input logic valid_o, output logic ready_i);
@@ -217,6 +235,20 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         endcase
     end
 end
+
+`ifdef FORMAL_COMM_SAFETY
+// Communication-safety self-report, read hierarchically by the formal
+// harness in formal/comm_safety/sv/comm_safety_common.sv.
+//   f_pop_commit : this participant has committed to receive `data` in this
+//                  cycle. ready_i is a one-cycle pulse that is raised only
+//                  after the FSM decided to pop, so a committed receive that
+//                  finds valid_o low is a dropped exchange.
+//   f_busy       : the participant is deciding (TRY_POP); it never blocks on
+//                  the DUT, so it has no in-flight obligation of its own.
+wire f_pop_commit = ready_i;
+wire f_busy       = (state == TRY_POP);
+`endif
+
 
 endmodule
 

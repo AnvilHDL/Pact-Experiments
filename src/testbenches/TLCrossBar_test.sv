@@ -120,6 +120,18 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
     end
 end
 
+`ifdef FORMAL_COMM_SAFETY
+// Communication-safety self-report, read hierarchically by the formal
+// harness in formal/comm_safety/sv/comm_safety_tb_wrappers.sv.
+//   f_a_snd : this client counts its A request as sent in this cycle.
+//   f_busy  : in flight (holding a_valid until the crossbar accepts it).
+// The client accepts any D beat (d_ready is constant 1) and keeps no record
+// of outstanding requests; the harness counts A sent vs D received instead.
+wire f_a_snd = (state == WAITING) && a_valid && a_ready;
+wire f_busy  = (state == WAITING);
+`endif
+
+
 endmodule
 
 module tl_slave(
@@ -242,6 +254,21 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         endcase
     end
 end
+
+`ifdef FORMAL_COMM_SAFETY
+// Communication-safety self-report, read hierarchically by the formal
+// harness in formal/comm_safety/sv/comm_safety_tb_wrappers.sv.
+//   f_a_rcv : this manager can only take a request into its bookkeeping when
+//             IDLE. a_ready is constant 1, so an A handshake while RESPONDING
+//             is accepted on the wire but overwrites pending_source: the
+//             harness compares this view against the wire-level handshake.
+//   f_d_snd : the response is delivered in this cycle.
+//   f_busy  : in flight (a response is owed).
+wire f_a_rcv = (state == IDLE) && a_valid;
+wire f_d_snd = (state == RESPONDING) && d_valid && d_ready;
+wire f_busy  = (state == RESPONDING);
+`endif
+
 
 endmodule
 

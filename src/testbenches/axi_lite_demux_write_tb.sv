@@ -91,6 +91,18 @@ module axi_write_demux_slave #(
     end
   end
 
+`ifdef FORMAL_COMM_SAFETY
+  // Communication-safety self-report, read hierarchically by the formal
+  // harness in formal/comm_safety/sv/comm_safety_tb_wrappers.sv. Each f_*
+  // signal is this participant's OWN view of an exchange: the condition under
+  // which its FSM treats the message as done in this cycle.
+  wire f_aw_snd = (state == SEND_AW) && aw_valid_o && aw_ready_i;
+  wire f_w_snd  = (state == SEND_W) && w_valid_o && w_ready_i;
+  wire f_b_rcv  = (state == WAIT_B) && b_valid_i;   // b_ready_o is constant 1
+  wire f_busy   = (state != IDLE);
+`endif
+
+
 endmodule
 
 module axi_write_demux_master #(
@@ -166,6 +178,19 @@ module axi_write_demux_master #(
       endcase
     end
   end
+
+`ifdef FORMAL_COMM_SAFETY
+  // Communication-safety self-report, read hierarchically by the formal
+  // harness in formal/comm_safety/sv/comm_safety_tb_wrappers.sv. Each f_*
+  // signal is this participant's OWN view of an exchange: the condition under
+  // which its FSM treats the message as done in this cycle.
+  // The FSM commits on aw_valid_i alone (it does not look at aw_ready_o).
+  wire f_aw_rcv = (state == IDLE) && aw_valid_i;
+  wire f_w_rcv  = (state == RECV_W) && w_ready_o && w_valid_i;
+  wire f_b_snd  = (state == SEND_B) && b_valid_o && b_ready_i;
+  wire f_busy   = (state != IDLE);
+`endif
+
 
 endmodule
 

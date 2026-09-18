@@ -479,6 +479,16 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
     end
 end
 
+`ifdef FORMAL_COMM_SAFETY
+// Communication-safety self-report, read hierarchically by the formal
+// harness in formal/comm_safety/sv/comm_safety_common.sv.
+//   f_req  : this participant is requesting and expects exactly one grant.
+//   f_busy : in flight (waiting for that grant).
+wire f_req  = (state == REQUESTING);
+wire f_busy = (state == REQUESTING);
+`endif
+
+
 endmodule
 
 module master_arb(input logic clk_i, input logic rst_ni, input logic req_o, input DataType data_o, input idx_t idx_o, output logic gnt_i);
@@ -494,6 +504,15 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         gnt_i <= (cycle_count % 3 == 0) && req_o;
     end
 end
+
+`ifdef FORMAL_COMM_SAFETY
+// Communication-safety self-report, read hierarchically by the formal
+// harness in formal/comm_safety/sv/comm_safety_common.sv.
+//   f_gnt : this participant is issuing a grant in this cycle; a grant that
+//           meets no pending request is a phantom exchange.
+wire f_gnt = gnt_i;
+`endif
+
 
 endmodule
 

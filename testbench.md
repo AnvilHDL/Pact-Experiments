@@ -22,6 +22,10 @@ This was a real, live divergence, not just a theoretical risk: as of this pass, 
 
 Not copied: `common_cells/src/*.sv` (referenced in place - that submodule is tracked and clean) and `axi/src/axi_pkg.sv` (a pure type/package file referenced in place across all AXI-family scripts, left untouched for consistency with how those scripts already treated it - no drift was found in it). `tilelink/debug_output/` also holds large synthesis byproducts (an 86MB `.blif`, logs) alongside the generated `.sv` sources Verilator needs; only the seven `.sv` files actually on the build command line are copied, not the whole directory.
 
+## Formal instrumentation in the tracked copies
+
+Every stub module in `src/testbenches/*.sv` (the FIFO/stream/spill/arbiter masters and slaves, the AXI-Lite slave/master models, the ACE clients/arbiter/memory, the TileLink clients/managers) carries an `` `ifdef FORMAL_COMM_SAFETY `` block that exports the participant's own view of its handshakes (`f_*` signals). Those blocks are read by the communication-safety harnesses in `formal/comm_safety/` and are inert for Verilator (the define is never set here). Because the six scripts below `cp` the submodule copies over `src/testbenches/` unconditionally, running them on a machine whose `axi/src/`, `ace/src/` or `tilelink/` copies lack these blocks strips the instrumentation from the tracked AXI/ACE/TileLink testbenches; mirror the blocks into the submodule-side copies first (see `formal/comm_safety/README.md`).
+
 ## Per-case behavior
 
 ### Common cells (`run_common_cells_cycle_equiv.sh`)

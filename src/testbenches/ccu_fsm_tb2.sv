@@ -525,6 +525,22 @@ module mem_controller #(
     endcase
   end
 
+`ifdef FORMAL_COMM_SAFETY
+  // Communication-safety self-report, read hierarchically by the formal
+  // harness in formal/comm_safety/sv/comm_safety_tb_wrappers.sv. Each f_*
+  // signal is this participant's OWN view of an exchange: the condition under
+  // which its FSM treats the message as done in this cycle.
+  wire f_ar_rcv = (state_q == IDLE) && req_i.ar_valid;      // ar_ready is 1 in IDLE
+  // AR has priority in IDLE: an AW presented in the same cycle is handshaken
+  // (aw_ready is 1) but not processed, so it is excluded from this view.
+  wire f_aw_rcv = (state_q == IDLE) && req_i.aw_valid && !req_i.ar_valid;
+  wire f_r_snd  = (state_q == READ_RESP) && req_i.r_ready;   // r_valid is 1 in READ_RESP
+  wire f_w_rcv  = (state_q == WRITE_DATA) && req_i.w_valid;  // w_ready is 1 in WRITE_DATA
+  wire f_b_snd  = (state_q == WRITE_RESP) && req_i.b_ready;  // b_valid is 1 in WRITE_RESP
+  wire f_busy   = (state_q != IDLE);
+`endif
+
+
 endmodule
 
 // ========================
@@ -637,6 +653,18 @@ module arbiter #(
       end
     endcase
   end
+
+`ifdef FORMAL_COMM_SAFETY
+  // Communication-safety self-report, read hierarchically by the formal
+  // harness in formal/comm_safety/sv/comm_safety_tb_wrappers.sv. Each f_*
+  // signal is this participant's OWN view of an exchange: the condition under
+  // which its FSM treats the message as done in this cycle.
+  wire                 f_busy  = (state_q != ARB_IDLE);
+  wire                 f_read  = (state_q == ARB_READ);
+  wire                 f_write = (state_q == ARB_WRITE);
+  wire [IdxBits-1:0]   f_sel   = selected_q;
+`endif
+
 
 endmodule
 
@@ -1137,5 +1165,26 @@ module ace_slave #(
       end
     end
   end
+
+`ifdef FORMAL_COMM_SAFETY
+  // Communication-safety self-report, read hierarchically by the formal
+  // harness in formal/comm_safety/sv/comm_safety_tb_wrappers.sv. Each f_*
+  // signal is this participant's OWN view of an exchange: the condition under
+  // which its FSM treats the message as done in this cycle.
+  // Request FSM (client side of the cache-request channel).
+  wire f_ar_snd   = (req_state_q == REQ_SEND_AR) && resp_i.ar_ready;   // ar_valid is 1 in SEND_AR
+  wire f_r_rcv    = (req_state_q == REQ_WAIT_R) && resp_i.r_valid && req_o.r_ready;
+  wire f_aw_snd   = (req_state_q == REQ_SEND_AW) && resp_i.aw_ready;   // aw_valid is 1 in SEND_AW
+  wire f_w_snd    = (req_state_q == REQ_SEND_W) && resp_i.w_ready;     // w_valid is 1 in SEND_W
+  wire f_b_rcv    = (req_state_q == REQ_WAIT_B) && resp_i.b_valid && req_o.b_ready;
+  wire f_req_busy = (req_state_q != REQ_IDLE);
+  // Snoop FSM. The FSM samples ac_valid in SNP_IDLE but only raises ac_ready in
+  // SNP_WAIT_AC, so the handshake it relies on is the one in SNP_WAIT_AC.
+  wire f_ac_rcv   = (snp_state_q == SNP_WAIT_AC);
+  wire f_cr_snd   = (snp_state_q == SNP_SEND_CR) && snoop_req_i.cr_ready;  // cr_valid is 1 in SEND_CR
+  wire f_cd_snd   = (snp_state_q == SNP_SEND_CD) && snoop_req_i.cd_ready;  // cd_valid is 1 in SEND_CD
+  wire f_snp_busy = (snp_state_q != SNP_IDLE);
+`endif
+
 
 endmodule

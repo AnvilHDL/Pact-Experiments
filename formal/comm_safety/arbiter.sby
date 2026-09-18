@@ -8,12 +8,9 @@ smtbmc yices
 
 [script]
 plugin -i slang
-read_slang --single-unit --top comm_arbiter_formal -D FORMAL_COMM_SAFETY -D COMMON_CELLS_ASSERTS_OFF -Icommon_cells/include common_cells/src/cf_math_pkg.sv common_cells/src/lzc.sv common_cells/src/rr_arb_tree.sv formal/comm_safety/sv/comm_safety_common.sv
+read_slang --single-unit --top comm_arbiter_formal -D FORMAL_COMM_SAFETY -D FORMAL_COMM_ARBITER_FULL_DESIGN -D COMMON_CELLS_ASSERTS_OFF src/testbenches/arbiter_test.sv formal/comm_safety/sv/comm_safety_common.sv
 prep -top comm_arbiter_formal
 
 [files]
-common_cells/include common_cells/include
-common_cells/src/cf_math_pkg.sv common_cells/src/cf_math_pkg.sv
-common_cells/src/lzc.sv common_cells/src/lzc.sv
-common_cells/src/rr_arb_tree.sv common_cells/src/rr_arb_tree.sv
+src/testbenches/arbiter_test.sv src/testbenches/arbiter_test.sv
 formal/comm_safety/sv/comm_safety_common.sv formal/comm_safety/sv/comm_safety_common.sv

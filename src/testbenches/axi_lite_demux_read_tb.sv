@@ -68,6 +68,17 @@ module axi_read_demux_slave #(
     end
   end
 
+`ifdef FORMAL_COMM_SAFETY
+  // Communication-safety self-report, read hierarchically by the formal
+  // harness in formal/comm_safety/sv/comm_safety_tb_wrappers.sv. Each f_*
+  // signal is this participant's OWN view of an exchange: the condition under
+  // which its FSM treats the message as done in this cycle.
+  wire f_ar_snd = (state == SEND_AR) && ar_valid_o && ar_ready_i;
+  wire f_r_rcv  = (state == WAIT_R) && r_valid_i;   // r_ready_o is constant 1
+  wire f_busy   = (state != IDLE);
+`endif
+
+
 endmodule
 
 module axi_read_demux_master #(
@@ -130,6 +141,20 @@ module axi_read_demux_master #(
       endcase
     end
   end
+
+`ifdef FORMAL_COMM_SAFETY
+  // Communication-safety self-report, read hierarchically by the formal
+  // harness in formal/comm_safety/sv/comm_safety_tb_wrappers.sv. Each f_*
+  // signal is this participant's OWN view of an exchange: the condition under
+  // which its FSM treats the message as done in this cycle.
+  // The FSM commits on ar_valid_i alone (it does not look at ar_ready_o), so
+  // an AR presented while ar_ready_o is low would be counted here but never
+  // handshaken: the harness compares this against the wire-level handshake.
+  wire f_ar_rcv = (state == IDLE) && ar_valid_i;
+  wire f_r_snd  = (state == SEND_R) && r_valid_o && r_ready_i;
+  wire f_busy   = (state != IDLE);
+`endif
+
 
 endmodule
 
