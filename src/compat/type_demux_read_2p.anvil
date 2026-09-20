@@ -44,10 +44,19 @@ interface demux_r_main (
                             )
 ); #1
 
-interface master_itfc(mux_ep_ar : right demux_ch, demux_ep_r : left demux_ch) = mux_ep_ar.rdy; mux_ep_ar.req; rec X .( demux_ep_r.rdy; ^(demux_ep_r.res,*:#1;X)) ; #1
+// Each channel stream repeats independently in the pool.
+interface master_request_itfc(mux_ep_ar : right mast_ch<ar_pack_t>) =
+    mux_ep_ar.rdy; mux_ep_ar.req; #1
 
-interface slave_itfc(slv_ep_ar : left slv_ar_ch<ar_pack_t> , slv_ep_r : left slv_r_ch<r_pack_t>) =
-        F slv_ep_ar.ar_req;slv_ep_ar.gnt ; slv_ep_r.r_res; #1
+interface master_response_itfc(demux_ep_r : left mast_ch<r_pack_t>) =
+    (rec X . (demux_ep_r.rdy; ^(demux_ep_r.res, *: #1; X))); #1
+
+
+interface slave_request_itfc(slv_ep_ar : left slv_ar_ch<ar_pack_t>) =
+    F slv_ep_ar.ar_req; slv_ep_ar.gnt; #1
+
+interface slave_response_itfc(slv_ep_r : left slv_r_ch<r_pack_t>) =
+    slv_ep_r.r_res; #1
 
 
 pool demux_read_pool {
@@ -64,10 +73,67 @@ pool demux_read_pool {
     fifo_insert_ep -- fifo_insert_ep_ri : fifo_insert_ch<select_t>,
     fifo_dequeue_ep -- fifo_dequeue_ep_ri : fifo_dequeue_ch<select_t>;
 
-    slave : slave_itfc(slv_ep_ar , slv_ep_r),
-    master1 : master_itfc(mst_ep1_ar_ri, mst_ep1_r_ri),
-    master2 : master_itfc(mst_ep2_ar_ri, mst_ep2_r_ri),
+    slave_request : slave_request_itfc(slv_ep_ar),
+    slave_response : slave_response_itfc(slv_ep_r),
+    master1_request : master_request_itfc(mst_ep1_ar_ri),
+    master1_response : master_response_itfc(mst_ep1_r_ri),
+    master2_request : master_request_itfc(mst_ep2_ar_ri),
+    master2_response : master_response_itfc(mst_ep2_r_ri),
     demux_ar : demux_ar_main(fifo_insert_ep, slv_ep_ar, mst_ep1_ar, mst_ep2_ar),
     demux_r : demux_r_main(fifo_dequeue_ep, slv_ep_r, mst_ep1_r, mst_ep2_r),
     fifo : fifo_itfc(fifo_insert_ep_ri, fifo_dequeue_ep_ri)
+}
+
+// Channel alphabets and payloads used by this standalone benchmark.
+chan fifo_insert_ch<Tp : type> {
+    right push : (Tp@#1),
+    left full : (void@#1)
+}
+
+chan fifo_dequeue_ch<Tp : type> {
+    left pop : (Tp@#1) ,
+    left empty : (void@#1)
+}
+
+type prot_t = logic;
+type resp_t = logic;
+
+type select_t = logic[2];
+type A = logic[32];
+type T = logic[32];
+type byte = logic[32];
+
+struct ar_pack_t {
+    addr : A,
+    prot : prot_t
+}
+
+struct r_pack_t {
+    data : T,
+    resp : resp_t
+}
+
+struct ar_ch {
+    ar_pack : ar_pack_t,
+    select : select_t
+}
+
+chan slv_ar_ch<Tp : type> {
+    right ar_req : (Tp@#1),
+    left gnt : (void@#1)
+}
+
+chan slv_r_ch<Tp : type> {
+    left r_res : (Tp@#1)
+}
+
+chan mast_ch<Tp : type> {
+    left rdy : (void@#1),
+    right req : (Tp@#1),
+    right res : (Tp@#1)
+}
+
+chan mast_r_ch<Tp : type> {
+    right rdy : (void@#1),
+    right res : (Tp@#1)
 }

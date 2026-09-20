@@ -1,10 +1,23 @@
 import "mux_commons.anvilh"
 
 
-interface master_write_itfc(mst_ep_aw : right w_mst_ch<aw_pack_t>, mst_ep_w : right w_mst_ch<w_pack_t>, mst_ep_b : left mst_res_ch<b_pack_t>) = F mst_ep_aw.rdy ; mst_ep_aw.req ; #2; mst_ep_w.rdy ; mst_ep_w.req;#2;mst_ep_b.rdy;mst_ep_b.res;#1
+interface master_write_address_itfc(mst_ep_aw : right w_mst_ch<aw_pack_t>) =
+    F mst_ep_aw.rdy; mst_ep_aw.req; #1
 
-interface slave_write_itfc(write_req_ep : left w_slv_ch<aw_pack_t>, write_data_ep : left slv_w_ch<w_pack_t>, write_res_ep  : left slv_res_ch<b_pack_t>) =
-            F write_req_ep.req ; write_req_ep.gnt;#2; rec X . (write_data_ep.rdy; ^(write_data_ep.data, * : #1; X) ); rec Y . (write_res_ep.rdy; ^(write_res_ep.res, * : #1; Y)); #1
+interface master_write_data_itfc(mst_ep_w : right w_mst_ch<w_pack_t>) =
+    F mst_ep_w.rdy; mst_ep_w.req; #1
+
+interface master_write_response_itfc(mst_ep_b : left mst_res_ch<b_pack_t>) =
+    F mst_ep_b.rdy; mst_ep_b.res; #1
+
+interface slave_write_address_itfc(write_req_ep : left w_slv_ch<aw_pack_t>) =
+    F write_req_ep.req; write_req_ep.gnt; #1
+
+interface slave_write_data_itfc(write_data_ep : left slv_w_ch<w_pack_t>) =
+    F (rec X . (write_data_ep.rdy; ^(write_data_ep.data, *: #1; X))); #1
+
+interface slave_write_response_itfc(write_res_ep : left slv_res_ch<b_pack_t>) =
+    F (rec X . (write_res_ep.rdy; ^(write_res_ep.res, *: #1; X))); #1
 
 interface w_rr_arbiter_itfc(slv_ep1 : right w_slv_ch<T>, slv_ep2 : right w_slv_ch<T>, slv_ep3 : right w_slv_ch<T>, slv_ep4 : right w_slv_ch<T>, aw_req_ep : left w_mux_ch<T1>) =
 ^( 
@@ -89,11 +102,21 @@ pool mux_write_transaction_pool {
     b_fifo_push -- b_fifo_push_ri : fifo_insert_ch<select_t>,
     b_fifo_pop -- b_fifo_pop_ri : fifo_dequeue_ch<select_t>;
 
-    islv1 : slave_write_itfc(w_slv_ep1, w_slv_data_ep1, w_slv_res_ep1),
-    islv2 : slave_write_itfc(w_slv_ep2, w_slv_data_ep2, w_slv_res_ep2),
-    islv3 : slave_write_itfc(w_slv_ep3, w_slv_data_ep3, w_slv_res_ep3),
-    islv4 : slave_write_itfc(w_slv_ep4, w_slv_data_ep4, w_slv_res_ep4),
-    imst : master_write_itfc(w_mst_ep_aw, w_mst_ep_w, w_mst_ep_b),
+    islv1_address : slave_write_address_itfc(w_slv_ep1),
+    islv1_data : slave_write_data_itfc(w_slv_data_ep1),
+    islv1_response : slave_write_response_itfc(w_slv_res_ep1),
+    islv2_address : slave_write_address_itfc(w_slv_ep2),
+    islv2_data : slave_write_data_itfc(w_slv_data_ep2),
+    islv2_response : slave_write_response_itfc(w_slv_res_ep2),
+    islv3_address : slave_write_address_itfc(w_slv_ep3),
+    islv3_data : slave_write_data_itfc(w_slv_data_ep3),
+    islv3_response : slave_write_response_itfc(w_slv_res_ep3),
+    islv4_address : slave_write_address_itfc(w_slv_ep4),
+    islv4_data : slave_write_data_itfc(w_slv_data_ep4),
+    islv4_response : slave_write_response_itfc(w_slv_res_ep4),
+    imst_address : master_write_address_itfc(w_mst_ep_aw),
+    imst_data : master_write_data_itfc(w_mst_ep_w),
+    imst_response : master_write_response_itfc(w_mst_ep_b),
     iarb : w_rr_arbiter_itfc(w_arb_ep1, w_arb_ep2, w_arb_ep3, w_arb_ep4, w_aw_req_ep),
     iaw : mux_aw_main(w_mux_aw_req_ep, w_mux_ep_aw, w_fifo_push),
     iw : mux_w_main(w_mux_data_ep1, w_mux_data_ep2, w_mux_data_ep3, w_mux_data_ep4, w_fifo_pop, b_fifo_push, w_mux_ep_w),

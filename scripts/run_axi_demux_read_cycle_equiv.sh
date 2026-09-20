@@ -23,6 +23,7 @@ normalize_logic_log() {
 
   grep '^\[Cycle' "$in_file" \
     | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//' \
+    | sort -s -k2,2n -k3,99 \
     > "$out_file"
 }
 

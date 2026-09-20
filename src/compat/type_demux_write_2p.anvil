@@ -18,11 +18,26 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fif
                                                     )
 
 
-interface master_itfc(mux_ep_aw : right mast_ch<aw_pack_t>, demux_ep_w : right mast_ch<w_pack_t>, demux_ep_b : right mast_rdy_ch<b_pack_t>) =
-        mux_ep_aw.rdy; mux_ep_aw.req ;  rec X . (demux_ep_w.rdy;^(demux_ep_w.res, * : #1;X)) ; rec Y . (demux_ep_b.rdy;^(demux_ep_b.res, * : #1;Y));#1
+// Each channel stream repeats independently in the pool.
+interface master_address_itfc(mux_ep_aw : right mast_ch<aw_pack_t>) =
+    mux_ep_aw.rdy; mux_ep_aw.req; #1
 
-interface slave_itfc(slv_ep_aw : left slv_ch<aw_ch> , slv_ep_w : left slv_ch<w_pack_t> , slv_ep_b : left slv_res_ch<b_pack_t>) =
-         F ((slv_ep_aw.req;slv_ep_aw.gnt); (slv_ep_w.req;slv_ep_w.gnt)) ; slv_ep_b.res;#1
+interface master_data_itfc(demux_ep_w : right mast_ch<w_pack_t>) =
+    (rec X . (demux_ep_w.rdy; ^(demux_ep_w.res, *: #1; X))); #1
+
+interface master_response_itfc(demux_ep_b : right mast_rdy_ch<b_pack_t>) =
+    (rec Y . (demux_ep_b.rdy; ^(demux_ep_b.res, *: #1; Y))); #1
+
+
+interface slave_address_itfc(slv_ep_aw : left slv_ch<aw_ch>) =
+    F slv_ep_aw.req; slv_ep_aw.gnt; #1
+
+interface slave_data_itfc(slv_ep_w : left slv_ch<w_pack_t>) =
+    F slv_ep_w.req; slv_ep_w.gnt; #1
+
+interface slave_response_itfc(slv_ep_b : left slv_res_ch<b_pack_t>) =
+    slv_ep_b.res; #1
+
 
 interface demux_aw_main (
     w_fifo_ep : left fifo_insert_ch<select_t>,
@@ -87,12 +102,77 @@ pool axi_type_demux_write_pool {
     b_fifo_pop -- b_fifo_pop_ri : fifo_dequeue_ch<select_t>;
 
 
-    i1 : slave_itfc(slv_ep_aw, slv_ep_w, slv_ep_b),
-    i2 : master_itfc(mst_ep1_aw_ri, mst_ep1_w_ri, mst_ep1_b_ri),
-    i3 : master_itfc(mst_ep2_aw_ri, mst_ep2_w_ri, mst_ep2_b_ri),
+    i1_address : slave_address_itfc(slv_ep_aw),
+    i1_data : slave_data_itfc(slv_ep_w),
+    i1_response : slave_response_itfc(slv_ep_b),
+    i2_address : master_address_itfc(mst_ep1_aw_ri),
+    i2_data : master_data_itfc(mst_ep1_w_ri),
+    i2_response : master_response_itfc(mst_ep1_b_ri),
+    i3_address : master_address_itfc(mst_ep2_aw_ri),
+    i3_data : master_data_itfc(mst_ep2_w_ri),
+    i3_response : master_response_itfc(mst_ep2_b_ri),
     i4 : demux_aw_main(w_fifo_push, slv_ep_aw_ri, mst_ep1_aw, mst_ep2_aw),
     i5 : demux_w_main(w_fifo_pop, b_fifo_push, slv_ep_w_ri, mst_ep1_w, mst_ep2_w),
     i6 : demux_b_main(b_fifo_pop, slv_ep_b_ri, mst_ep1_b, mst_ep2_b),
     i7 : fifo_itfc(w_fifo_push_ri, w_fifo_pop_ri),
     i8 : fifo_itfc(b_fifo_push_ri, b_fifo_pop_ri)
+}
+
+// Channel alphabets and payloads used by this standalone benchmark.
+chan fifo_insert_ch<Tp : type> {
+    right push : (Tp@#1),
+    left full : (void@#1)
+}
+
+chan fifo_dequeue_ch<Tp : type> {
+    left pop : (Tp@#1) ,
+    left empty : (void@#1)
+}
+
+type prot_t = logic;
+type resp_t = logic;
+type strb_t = logic;
+
+type select_t = logic[2];
+type A = logic[32];
+type T = logic[32];
+type byte = logic[32];
+
+struct aw_pack_t {
+    addr : A,
+    prot : prot_t
+}
+
+struct w_pack_t {
+    data : T,
+    strb : strb_t
+}
+
+struct b_pack_t {
+    resp : resp_t
+}
+
+struct aw_ch {
+    aw_pack : aw_pack_t,
+    select : select_t
+}
+
+chan slv_ch<Tp : type> {
+    right req : (Tp@#1),
+    left gnt : (void@#1)
+}
+
+chan slv_res_ch<Tp : type> {
+    left res : (Tp@#1)
+}
+
+chan mast_ch<Tp : type> {
+    left rdy : (void@#1),
+    right req : (Tp@#1),
+    right res : (Tp@#1)
+}
+
+chan mast_rdy_ch<Tp : type> {
+    right rdy : (void@#1),
+    right res : (Tp@#1)
 }

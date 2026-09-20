@@ -142,17 +142,29 @@ proc manager<T : type, U : type, id : int>(manager_itfc){
     reg next_id : logic;
     reg cyc : logic[8];
     loop{
-        send manager_ep.rdy(()) >>
-        let req = recv manager_crossbar_ep.req >>
-        let trace_cyc = *cyc + 8'd1 >>
-        dprint "[Cycle %d] Manager %d received request from client %d\n" (trace_cyc, id, req.id) >>
-        set next_id := req.id >>
-        cycle 1 >>
-        send manager_crossbar_d_ep.req(*next_id) >>
-        send manager_crossbar_d_ep.res(id[0+:8]) >>
-        let trace_cyc = *cyc + 8'd1 >>
-        dprint "[Cycle %d] Manager %d sent response: %d to client %d\n" (trace_cyc, id, id[0+:8], *next_id) >>
-        cycle 1
+        // Readiness must remain available until a request is accepted.
+        rec WaitRequest {
+            send manager_ep.rdy(()) >>
+            try req = recv manager_crossbar_ep.req {
+                let trace_cyc = *cyc + 8'd1 >>
+                dprint "[Cycle %d] Manager %d received request from client %d\n" (trace_cyc, id, req.id) >>
+                set next_id := req.id >>
+                cycle 1 >>
+                // Retry the routing request too when the payload is not accepted.
+                rec WaitResponse {
+                    send manager_crossbar_d_ep.req(*next_id) >>
+                    try send manager_crossbar_d_ep.res(id[0+:8]) {
+                        let trace_cyc = *cyc + 8'd1 >>
+                        dprint "[Cycle %d] Manager %d sent response: %d to client %d\n" (trace_cyc, id, id[0+:8], *next_id) >>
+                        cycle 1
+                    } else {
+                        cycle 1 >> recurse WaitResponse
+                    }
+                }
+            } else {
+                cycle 1 >> recurse WaitRequest
+            }
+        }
     }
     loop{
         set cyc := *cyc + 8'd1

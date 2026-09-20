@@ -29,10 +29,20 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fif
                                                     )
 
 
-interface master_itfc(mst_ep_ar : right mst_ch<ar_pack_t>, mst_ep_r : left mst_r_ch<r_pack_t>) = mst_ep_ar.rdy;mst_ep_ar.req ;#1;mst_ep_r.rdy;mst_ep_r.res;#1
+// Each channel stream repeats independently in the pool.
+interface master_request_itfc(mst_ep_ar : right mst_ch<ar_pack_t>) =
+    mst_ep_ar.rdy; mst_ep_ar.req; #1
 
-interface slave_itfc(read_req_ep :left slv_ch<ar_pack_t>, read_res_ep : left slv_r_ch<r_pack_t>) =
-            F read_req_ep.req ; read_req_ep.gnt;rec X . (read_res_ep.rdy ; ^(read_res_ep.gnt : read_res_ep.res,*:#1;X)); #1
+interface master_response_itfc(mst_ep_r : left mst_r_ch<r_pack_t>) =
+    mst_ep_r.rdy; mst_ep_r.res; #1
+
+
+interface slave_request_itfc(read_req_ep : left slv_ch<ar_pack_t>) =
+    F read_req_ep.req; read_req_ep.gnt; #1
+
+interface slave_response_itfc(read_res_ep : left slv_r_ch<r_pack_t>) =
+    (rec X . (read_res_ep.rdy; ^(read_res_ep.gnt: read_res_ep.res, *: #1; X))); #1
+
 
 interface rr_arbiter_itfc(slv_ep1 : right slv_ch<ar_pack_t>, slv_ep2 : right slv_ch<ar_pack_t>, ar_req_ep : left mux_ch<ar_sel_pack_t>) =
 
@@ -79,14 +89,78 @@ pool mux_read_transaction_pool {
     fifo_push_ep -- fifo_push_ep_ri : fifo_insert_ch<select_t>,
     fifo_pop_ep -- fifo_pop_ep_ri : fifo_dequeue_ch<select_t>;
 
-    islv1 : slave_itfc(slv_ep1, slv_res_ep1),
-    islv2 : slave_itfc(slv_ep2, slv_res_ep2),
+    islv1_request : slave_request_itfc(slv_ep1),
+    islv1_response : slave_response_itfc(slv_res_ep1),
+    islv2_request : slave_request_itfc(slv_ep2),
+    islv2_response : slave_response_itfc(slv_res_ep2),
     
 
     iarb : rr_arbiter_itfc(arb_ep1, arb_ep2, ar_req_mux_ep),
     
-    imst : master_itfc(mux_mst_ep, mux_r_ep),
+    imst_request : master_request_itfc(mux_mst_ep),
+    imst_response : master_response_itfc(mux_r_ep),
     imux_ar : mux_ar_main(arb_ar_ep, mst_ar_ep,  fifo_push_ep),
     imux_r : mux_r_main(mst_r_ep, fifo_pop_ep, mux_res_ep1, mux_res_ep2),
     ififo : fifo_itfc(fifo_push_ep_ri, fifo_pop_ep_ri)    
 }
+
+// Channel alphabets and payloads used by this standalone benchmark.
+chan fifo_insert_ch<Tp : type> {
+    right push : (Tp@#1),
+    left full : (void@#1)
+}
+
+chan fifo_dequeue_ch<Tp : type> {
+    left pop : (Tp@#1) ,
+    left empty : (void@#1)
+}
+
+type prot_t = logic;
+type resp_t = logic;
+
+type select_t = logic[2];
+type A = logic[32];
+type T = logic[32];
+
+struct ar_pack_t {
+    addr : A,
+    prot : prot_t
+}
+
+struct r_pack_t {
+    data : T,
+    resp : resp_t
+}
+
+struct ar_sel_pack_t {
+    ar_pack : ar_pack_t,
+    select : select_t
+}
+
+chan slv_ch<Tp : type> {
+    right req : (Tp@#1),
+    left gnt : (void@#1)
+}
+
+chan mux_ch<Tp : type> {
+    right req : (Tp@#1),
+    left gnt : (void@#1)
+}
+
+chan mst_ch<Tp : type> {
+    left rdy : (void@#1),
+    right req : (Tp@#1)
+}
+
+chan slv_r_ch<Tp : type> {
+    right rdy : (void@#1),
+    left gnt : (void@#1),
+    left res : (Tp@#1)
+}
+
+chan mst_r_ch<Tp : type> {
+    right rdy : (void@#1),
+    right res : (Tp@#1)
+}
+
+type byte = logic[32];

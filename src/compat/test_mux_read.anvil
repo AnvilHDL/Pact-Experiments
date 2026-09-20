@@ -175,20 +175,36 @@ proc mux_r_main(mux_r_main){
     }
 }
 
-proc master_read(master_read_itfc){
+proc master_read(master_read_request_itfc, master_read_response_itfc){
     reg data : logic[32];
     reg cyc : logic[32];
+    reg ready_at : logic[16][32];
+    reg write_ptr : logic[5];
+    reg read_ptr : logic[5];
     loop{
+        rec WaitSlot {
+            if ((*write_ptr - *read_ptr) == 5'd16) {
+                cycle 1 >> recurse WaitSlot
+            } else { () }
+        } >>
         send mst_ep_ar.rdy(()) >>
         let req = recv mst_ep_ar.req >>
         dprint "[Cycle %d] Master received ar req with addr %d" (*cyc, req.addr) >>
-        cycle 1 >>
-        cycle 1 >>
+        set ready_at[(*write_ptr)[0+:4]] := *cyc + 32'd2 >>
+        set write_ptr := *write_ptr + 5'd1 >>
+        cycle 2
+    }
+    loop{
+        rec WaitResponse {
+            if ((*read_ptr != *write_ptr) && (*ready_at[(*read_ptr)[0+:4]] <= *cyc)) { () }
+            else { cycle 1 >> recurse WaitResponse }
+        } >>
         let r = r_pack_t::{data = *data; resp = 1'b0} >>
         send mst_ep_r.rdy(()) >>
         dprint "[Cycle %d] Master sent r res with data %d" (*cyc, r.data) >>
         send mst_ep_r.res(r) >>
         set data := *data + 32'd1 >>
+        set read_ptr := *read_ptr + 5'd1 >>
         cycle 1
     }
     loop{
@@ -196,7 +212,7 @@ proc master_read(master_read_itfc){
     }
 }
 
-proc slave_read<id : int>(slave_read_itfc){
+proc slave_read<id : int>(slave_read_request_itfc, slave_read_response_itfc){
     reg cyc : logic[32];
     reg next_req : logic[32];
     loop{
@@ -220,6 +236,10 @@ proc slave_read<id : int>(slave_read_itfc){
         send read_req_ep.req(req) >>
         let _ = recv read_req_ep.gnt >>
         dprint "[Cycle %d] Slave %d read req selected with addr %d" (*cyc, id[0+:2], req.addr) >>
+        cycle 2 >>
+        cycle 1
+    }
+    loop{
         rec X {
             send read_res_ep.rdy(()) >>
             try r = recv read_res_ep.res{
@@ -241,11 +261,11 @@ proc test_mux_read(){
 
     pool p : mux_read_transaction_pool;
 
-    spawn slave_read<0>[p.islv1];
-    spawn slave_read<1>[p.islv2];
-    spawn slave_read<2>[p.islv3];
-    spawn slave_read<3>[p.islv4];
-    spawn master_read[p.imst];
+    spawn slave_read<0>[p.islv1_request, p.islv1_response];
+    spawn slave_read<1>[p.islv2_request, p.islv2_response];
+    spawn slave_read<2>[p.islv3_request, p.islv3_response];
+    spawn slave_read<3>[p.islv4_request, p.islv4_response];
+    spawn master_read[p.imst_request, p.imst_response];
     spawn arbiter<ar_pack_t, ar_sel_pack_t>[p.iarb];
     spawn mux_ar_main[p.imux_ar];
     spawn mux_r_main[p.imux_r];

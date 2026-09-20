@@ -29,10 +29,26 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fif
                                                     )
 
 
-interface master_itfc(mst_ep_aw : right mst_ch<aw_pack_t>, mst_ep_w : right mst_ch<w_pack_t>, mst_ep_b : left mst_res_ch<b_pack_t>) = mst_ep_aw.rdy ; mst_ep_aw.req ; mst_ep_w.req;#1;mst_ep_b.res;#1
+// Each channel stream repeats independently in the pool.
+interface master_address_itfc(mst_ep_aw : right mst_ch<aw_pack_t>) =
+    mst_ep_aw.rdy; mst_ep_aw.req; #1
 
-interface slave_itfc(write_req_ep : left slv_ch<aw_pack_t>, write_data_ep : left slv_r_ch<w_pack_t>, write_res_ep  : left slv_res_ch<b_pack_t>) =
-            write_req_ep.req ; write_req_ep.gnt; rec X .(write_data_ep.rdy; ^(write_data_ep.data : write_data_ep.gnt, * : #1; X)) ; rec Y . (write_res_ep.rdy; ^(write_res_ep.gnt : write_res_ep.res, * : #1; Y)); #1
+interface master_data_itfc(mst_ep_w : right mst_ch<w_pack_t>) =
+    mst_ep_w.req; #1
+
+interface master_response_itfc(mst_ep_b : left mst_res_ch<b_pack_t>) =
+    mst_ep_b.res; #1
+
+
+interface slave_address_itfc(write_req_ep : left slv_ch<aw_pack_t>) =
+    write_req_ep.req; write_req_ep.gnt; #1
+
+interface slave_data_itfc(write_data_ep : left slv_r_ch<w_pack_t>) =
+    (rec X . (write_data_ep.rdy; ^(write_data_ep.data: write_data_ep.gnt, *: #1; X))); #1
+
+interface slave_response_itfc(write_res_ep : left slv_res_ch<b_pack_t>) =
+    (rec Y . (write_res_ep.rdy; ^(write_res_ep.gnt: write_res_ep.res, *: #1; Y))); #1
+
 
 interface rr_arbiter_itfc(slv_ep1 : right slv_ch<aw_pack_t>, slv_ep2 : right slv_ch<aw_pack_t>, aw_req_ep : left mux_ch<aw_sel_pack_t>) =
 ^( 
@@ -100,9 +116,15 @@ pool mux_write_transaction_pool {
     b_fifo_push -- b_fifo_push_ri : fifo_insert_ch<select_t>,
     b_fifo_pop -- b_fifo_pop_ri : fifo_dequeue_ch<select_t>;
 
-    islv1 : slave_itfc(slv_ep1, slv_data_ep1, slv_res_ep1),
-    islv2 : slave_itfc(slv_ep2, slv_data_ep2, slv_res_ep2),
-    imst : master_itfc(mux_ep_aw, mux_ep_w, mst_ep_b),
+    islv1_address : slave_address_itfc(slv_ep1),
+    islv1_data : slave_data_itfc(slv_data_ep1),
+    islv1_response : slave_response_itfc(slv_res_ep1),
+    islv2_address : slave_address_itfc(slv_ep2),
+    islv2_data : slave_data_itfc(slv_data_ep2),
+    islv2_response : slave_response_itfc(slv_res_ep2),
+    imst_address : master_address_itfc(mux_ep_aw),
+    imst_data : master_data_itfc(mux_ep_w),
+    imst_response : master_response_itfc(mst_ep_b),
     iarb : rr_arbiter_itfc(arb_ep1, arb_ep2, aw_req_ep),
     iaw : mux_aw_main(mux_aw_req_ep, mst_ep_aw, w_fifo_push),
     iw : mux_w_main(mux_data_ep1, mux_data_ep2, w_fifo_pop, b_fifo_push, mst_ep_w),
@@ -110,3 +132,89 @@ pool mux_write_transaction_pool {
     iwf : fifo_itfc(w_fifo_push_ri, w_fifo_pop_ri),
     ibf : fifo_itfc(b_fifo_push_ri, b_fifo_pop_ri)
 }
+
+// Channel alphabets and payloads used by this standalone benchmark.
+chan fifo_insert_ch<Tp : type> {
+    right push : (Tp@#1),
+    left full : (void@#1)
+}
+
+chan fifo_dequeue_ch<Tp : type> {
+    left pop : (Tp@#1) ,
+    left empty : (void@#1)
+}
+
+
+
+
+
+type prot_t = logic;
+type resp_t = logic;
+type strb_t = logic;
+
+type select_t = logic[2];
+type A = logic[32];
+type T = logic[32];
+
+
+struct aw_pack_t {
+    addr : A,
+    prot : prot_t
+}
+
+struct w_pack_t {
+    data : T,
+    strb : strb_t
+}
+
+struct b_pack_t {
+    resp : resp_t
+}
+
+struct ar_pack_t {
+    addr : A,
+    prot : prot_t
+}
+
+struct r_pack_t {
+    data : T,
+    resp : resp_t
+}
+
+struct aw_sel_pack_t {
+    aw_pack : aw_pack_t,
+    select : select_t
+}
+
+
+chan slv_ch<Tp : type> {
+    right req : (Tp@#1),
+    left gnt : (void@#1)
+}
+chan mux_ch<Tp : type> {
+    right req : (Tp@#1),
+    left gnt : (void@#1)
+}
+
+chan slv_r_ch<Tp : type> {
+    left rdy : (void@#1),
+    right data : (Tp@#1),
+    left gnt : (void@#1)
+}
+
+chan mst_ch<Tp : type> {
+    left rdy : (void@#1),
+    right req : (Tp@#1)
+}
+
+chan slv_res_ch<Tp : type> {
+    right rdy : (void@#1),
+    left gnt : (void@#1),
+    left res : (Tp@#1)
+}
+
+chan mst_res_ch<Tp : type> {
+    right rdy : (void@#1),
+    right res : (Tp@#1)
+}
+type byte = logic[32];
