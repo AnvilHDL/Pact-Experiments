@@ -66,7 +66,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd0)
+                isend fifo_ep.push(32'd0)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
@@ -77,7 +77,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd1)
+                isend fifo_ep.push(32'd1)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
@@ -88,7 +88,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd0)
+                isend fifo_ep.push(32'd0)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
@@ -99,7 +99,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd1)
+                isend fifo_ep.push(32'd1)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
@@ -110,7 +110,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd0)
+                isend fifo_ep.push(32'd0)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
@@ -121,7 +121,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd1)
+                isend fifo_ep.push(32'd1)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
@@ -132,7 +132,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd0)
+                isend fifo_ep.push(32'd0)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
@@ -143,7 +143,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd1)
+                isend fifo_ep.push(32'd1)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
@@ -154,7 +154,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd0)
+                isend fifo_ep.push(32'd0)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
@@ -165,7 +165,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd1)
+                isend fifo_ep.push(32'd1)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
@@ -176,7 +176,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd0)
+                isend fifo_ep.push(32'd0)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
@@ -187,7 +187,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd1)
+                isend fifo_ep.push(32'd1)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
@@ -198,7 +198,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd0)
+                isend fifo_ep.push(32'd0)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
@@ -209,7 +209,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd1)
+                isend fifo_ep.push(32'd1)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
@@ -220,7 +220,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd0)
+                isend fifo_ep.push(32'd0)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
@@ -231,7 +231,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd1)
+                isend fifo_ep.push(32'd1)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
@@ -242,7 +242,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd0)
+                isend fifo_ep.push(32'd0)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
@@ -253,7 +253,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd1)
+                isend fifo_ep.push(32'd1)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
@@ -264,7 +264,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd0)
+                isend fifo_ep.push(32'd0)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
@@ -275,7 +275,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd1)
+                isend fifo_ep.push(32'd1)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
@@ -286,7 +286,7 @@ proc fifo_master(master_itfc){
                 recurse X
             }
             else {
-                send fifo_ep.push(32'd0)
+                isend fifo_ep.push(32'd0)
             }
         } >>
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
@@ -306,7 +306,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd3, x)
             }
         } >>
@@ -317,7 +317,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd8, x)
             }
         } >>
@@ -328,7 +328,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd15, x)
             }
         } >>
@@ -339,7 +339,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd22, x)
             }
         } >>
@@ -350,7 +350,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd29, x)
             }
         } >>
@@ -361,7 +361,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd33, x)
             }
         } >>
@@ -372,7 +372,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd36, x)
             }
         } >>
@@ -383,7 +383,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd43, x)
             }
         } >>
@@ -394,7 +394,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd50, x)
             }
         } >>
@@ -405,7 +405,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd57, x)
             }
         } >>
@@ -416,7 +416,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd64, x)
             }
         } >>
@@ -427,7 +427,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd71, x)
             }
         } >>
@@ -438,7 +438,7 @@ proc fifo_slave(slave_itfc){
                 recurse X
             }
             else {
-                let x = recv fifo_ep.pop >>
+                let x = irecv fifo_ep.pop >>
                 dprint "[Cycle %d] Popped %d\n" (8'd78, x)
             }
         } >>

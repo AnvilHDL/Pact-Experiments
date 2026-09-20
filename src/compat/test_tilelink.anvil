@@ -5,8 +5,8 @@ proc tilelink_arb(arbiter_ifc){
         let _ = recv server_ep.rdy >>
         let prio = *prio >>
         xoffer prio{
-            _ = recv ep1.req => (set prio := *prio + 1),
-            _ = recv ep2.req => (set prio := *prio + 1),
+            _ = irecv ep1.req => (set prio := *prio + 1),
+            _ = irecv ep2.req => (set prio := *prio + 1),
             # => (set prio := *prio)
         }
     }
@@ -17,29 +17,29 @@ proc tilelink_arb(arbiter_ifc){
 proc crossbar_A<T : type, U : type>(crossbar_itfc_A){
     loop{
         offer{
-            x = recv client_ep1.req => (
+            x = irecv client_ep1.req => (
                 if (x == 1'd0){
                     try send arb_cl_ep_le11.req(()) {
-                        let data = recv client_ep1.data >>
-                        send server1_ep.req(data_pack_t::{data = data; id = 1'd0})
+                        let data = irecv client_ep1.data >>
+                        isend server1_ep.req(data_pack_t::{data = data; id = 1'd0})
                     }
                 }else{
                     try send arb_cl_ep_le21.req(()) {
-                        let data = recv client_ep1.data >>
-                        send server2_ep.req(data_pack_t::{data = data; id = 1'd0})
+                        let data = irecv client_ep1.data >>
+                        isend server2_ep.req(data_pack_t::{data = data; id = 1'd0})
                     }
                 }
             ),
-            y = recv client_ep2.req => (
+            y = irecv client_ep2.req => (
                 if (y == 1'd0){
                     try send arb_cl_ep_le12.req(()) {
-                        let data = recv client_ep2.data >>
-                        send server1_ep.req(data_pack_t::{data = data; id = 1'd0})
+                        let data = irecv client_ep2.data >>
+                        isend server1_ep.req(data_pack_t::{data = data; id = 1'd1})
                     }
                 }else{
                     try send arb_cl_ep_le22.req(()) {
-                        let data = recv client_ep2.data >>
-                        send server2_ep.req(data_pack_t::{data = data; id = 1'd0})
+                        let data = irecv client_ep2.data >>
+                        isend server2_ep.req(data_pack_t::{data = data; id = 1'd1})
                     }
                 }
             ),
@@ -55,27 +55,29 @@ proc crossbar_A<T : type, U : type>(crossbar_itfc_A){
 proc crossbar_D<T : type>(crossbar_itfc_D){
     loop{
         offer{
-            a = recv server1_ep.req => (
+            a = irecv server1_ep.req => (
                 if (a == 1'd0){
                     try send arb_cl_ep_le11.req(()) {
-                        let data = recv server1_ep.res >>
-                        send client_ep1.res(data)
+                        let data = irecv server1_ep.res >>
+                        isend client_ep1.res(data)
                     }
                 }else{
                     try send arb_cl_ep_le21.req(()) {
-                        let data = recv server1_ep.res >>
-                        send client_ep2.res(data)
+                        let data = irecv server1_ep.res >>
+                        isend client_ep2.res(data)
                     }
                 }
             ),
-            b = recv server2_ep.req => (
+            b = irecv server2_ep.req => (
                 if (b == 1'd0){
-                    let _ = recv server2_ep.res >>
-                    ()
+                    try send arb_cl_ep_le12.req(()) {
+                        let data = irecv server2_ep.res >>
+                        isend client_ep1.res(data)
+                    }
                 }else{
                     try send arb_cl_ep_le22.req(()) {
-                        let data = recv server2_ep.res >>
-                        send client_ep2.res(data)
+                        let data = irecv server2_ep.res >>
+                        isend client_ep2.res(data)
                     }
                 }
             ),
@@ -137,44 +139,20 @@ proc client<T : type, id : int>(client_itfc){
 
 
 proc manager<T : type, U : type, id : int>(manager_itfc){
-    reg data : logic[8];
     reg next_id : logic;
     reg cyc : logic[8];
     loop{
-        {
-            (
-                send manager_ep.rdy(()) >>
-                try x = recv manager_crossbar_ep.req {
-                    let trace_cyc = *cyc + 8'd1 >>
-                    dprint "[Cycle %d] Manager %d received request from client %d\n" (trace_cyc, id, x.id) >>
-                    (
-                        set data := id[0+:8];
-                        set next_id := 1'd0
-                    ) >>
-                    cycle 1
-                }
-                else{
-                    cycle 1
-                }
-            );
-            (
-                if (*cyc[0+:2] == 2'd2) {
-                    send manager_crossbar_d_ep.req(*next_id) >>
-                    let next_data = id[0+:8] >>
-                    try send manager_crossbar_d_ep.res(next_data) {
-                        let trace_cyc = *cyc + 8'd1 >>
-                        dprint "[Cycle %d] Manager %d sent response: %d to client %d\n" (trace_cyc, id, next_data, *next_id) >>
-                        cycle 1
-                    }
-                    else{
-                        cycle 1
-                    }
-                }
-                else{
-                    cycle 1
-                }
-            )
-        }
+        send manager_ep.rdy(()) >>
+        let req = recv manager_crossbar_ep.req >>
+        let trace_cyc = *cyc + 8'd1 >>
+        dprint "[Cycle %d] Manager %d received request from client %d\n" (trace_cyc, id, req.id) >>
+        set next_id := req.id >>
+        cycle 1 >>
+        send manager_crossbar_d_ep.req(*next_id) >>
+        send manager_crossbar_d_ep.res(id[0+:8]) >>
+        let trace_cyc = *cyc + 8'd1 >>
+        dprint "[Cycle %d] Manager %d sent response: %d to client %d\n" (trace_cyc, id, id[0+:8], *next_id) >>
+        cycle 1
     }
     loop{
         set cyc := *cyc + 8'd1

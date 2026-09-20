@@ -38,7 +38,7 @@ module ccu_fsm_tb(
   // Timing parameters
   localparam int unsigned ClkPeriod        = 10;
   localparam int unsigned RstCycles        = 5;
-  localparam int unsigned SimCycles        = 256;
+  localparam int unsigned SimCycles        = 1024;
 
   // ========================
   // Type Definitions - Matching ccu_fsm
@@ -310,32 +310,7 @@ module ccu_fsm_tb(
     end
   end
 
-`ifdef ACE_TB_TRACE
-  initial begin : replay_reference_trace
-    string ref_log_path;
-    string line;
-    int fd;
-    int got_line;
-    int unsigned ref_cycle;
 
-    if (!$value$plusargs("ACE_TB_REF_LOG=%s", ref_log_path)) begin
-      $fatal(1, "ACE_TB_TRACE requires +ACE_TB_REF_LOG=<path>");
-    end
-
-    fd = $fopen(ref_log_path, "r");
-    if (fd == 0) begin
-      $fatal(1, "Could not open ACE_TB_REF_LOG '%s'", ref_log_path);
-    end
-
-    while (!$feof(fd)) begin
-      got_line = $fgets(line, fd);
-      if (got_line != 0 && $sscanf(line, "[Cycle %d]", ref_cycle) == 1) begin
-        $write("%s", line);
-      end
-    end
-    $fclose(fd);
-  end
-`endif
 
 endmodule
 // ========================
@@ -860,6 +835,20 @@ module ace_slave #(
     end
   end
   
+`ifdef ACE_TB_DUT_TRACE
+  always_ff @(posedge clk_i) begin
+    if (rst_ni && req_state_q == REQ_WAIT_R && resp_i.r_valid && req_o.r_ready && resp_i.r.last) begin
+      $display("[Cycle %0d] Client %0d response op %0d addr %0d data %0d ack %0d",
+               cycle_count + 1, SlaveId, tx_type_count, req_addr[7:0], resp_i.r.data,
+               current_tx_type == TX_CLEAN_UNIQUE);
+    end
+    if (rst_ni && req_state_q == REQ_WAIT_B && resp_i.b_valid && req_o.b_ready) begin
+      $display("[Cycle %0d] Client %0d response op %0d addr %0d data 0 ack 1",
+               cycle_count + 1, SlaveId, tx_type_count, req_addr[7:0]);
+    end
+  end
+`endif
+
   // Beat counter
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

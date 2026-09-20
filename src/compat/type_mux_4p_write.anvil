@@ -1,10 +1,10 @@
 import "mux_commons.anvilh"
 
 
-interface master_write_itfc(mst_ep_aw : right w_mst_ch<aw_pack_t>, mst_ep_w : right w_mst_ch<w_pack_t>, mst_ep_b : left mst_res_ch<b_pack_t>) = F mst_ep_aw.rdy ; mst_ep_aw.req ; #1; mst_ep_w.rdy ; mst_ep_w.req;#1;mst_ep_b.rdy;mst_ep_b.res;#1
+interface master_write_itfc(mst_ep_aw : right w_mst_ch<aw_pack_t>, mst_ep_w : right w_mst_ch<w_pack_t>, mst_ep_b : left mst_res_ch<b_pack_t>) = F mst_ep_aw.rdy ; mst_ep_aw.req ; #2; mst_ep_w.rdy ; mst_ep_w.req;#2;mst_ep_b.rdy;mst_ep_b.res;#1
 
 interface slave_write_itfc(write_req_ep : left w_slv_ch<aw_pack_t>, write_data_ep : left slv_w_ch<w_pack_t>, write_res_ep  : left slv_res_ch<b_pack_t>) =
-            F write_req_ep.req ; write_req_ep.gnt; rec X . (write_data_ep.rdy; ^(write_data_ep.data, * : #1; X) ); rec Y . (write_res_ep.rdy; ^(write_res_ep.res, * : #1; Y)); #1
+            F write_req_ep.req ; write_req_ep.gnt;#2; rec X . (write_data_ep.rdy; ^(write_data_ep.data, * : #1; X) ); rec Y . (write_res_ep.rdy; ^(write_res_ep.res, * : #1; Y)); #1
 
 interface w_rr_arbiter_itfc(slv_ep1 : right w_slv_ch<T>, slv_ep2 : right w_slv_ch<T>, slv_ep3 : right w_slv_ch<T>, slv_ep4 : right w_slv_ch<T>, aw_req_ep : left w_mux_ch<T1>) =
 ^( 
@@ -30,8 +30,8 @@ interface mux_w_main (
     b_fifo_ep : left fifo_insert_ch<select_t>,
     w_mst_ep : left w_mst_ch<w_pack_t>
 ) =&(
-        w_fifo_ep.empty,
-        b_fifo_ep.full,
+        #w_fifo_ep.empty,
+        #b_fifo_ep.full,
         * : ^(w_mst_ep.rdy :  #w_fifo_ep.pop;#b_fifo_ep.push; rec X . ^(
                                                         slv_ep1.rdy : ((#slv_ep1.data;#w_mst_ep.req) + (#1;X)),
                                                         slv_ep2.rdy : ((#slv_ep2.data;#w_mst_ep.req) + (#1;X)),

@@ -16,10 +16,8 @@ proc master(master_read_itfc, master_write_itfc){
         send mst_ep_ar.rdy(()) >>
         let req = recv mst_ep_ar.req >>
         dprint "[Cycle %d] Master received ar req with addr %d\n" (*cyc, req.addr) >>
-        (
-            set addr := req.addr;
-            set data := *mem[req.addr] 
-        )>>
+        set data := *mem[req.addr] >>
+        cycle 1 >>
         send mst_ep_r.rdy(()) >>
 
         let r = r_pack_t::{data = *data; resp = 1'b1} >>
@@ -36,11 +34,13 @@ proc master(master_read_itfc, master_write_itfc){
         send mst_ep_aw.rdy(()) >>
         let req = recv mst_ep_aw.req >>
         dprint "[Cycle %d] Master received aw req with addr %d\n" (*cyc, req.addr) >>
-        set addr := req.addr >>
+        set addr := req.addr[0+:8] >>
+        cycle 1 >>
         send mst_ep_w.rdy(()) >>
         let wdata = recv mst_ep_w.req >>
         dprint "[Cycle %d] Master received w req with data %d\n" (*cyc, wdata.data) >>
         set mem[*addr] := wdata.data >>
+        cycle 1 >>
         send mst_ep_b.rdy (()) >>
         send mst_ep_b.res(b_pack_t::{resp = 1'b1}) >>
         cycle 1

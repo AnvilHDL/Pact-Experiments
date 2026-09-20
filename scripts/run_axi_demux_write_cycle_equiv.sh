@@ -18,7 +18,7 @@ ANVIL_LOGIC_LOG="$LOG_DIR/test_demux_write.anvil.logic.log"
 DIFF_LOG="$LOG_DIR/logic.diff"
 ANVIL_CHECK_ARGS=()
 
-if [[ "${ANVIL_CHECKS:-0}" != "1" ]]; then
+if [[ "${ANVIL_CHECKS:-1}" != "1" ]]; then
   ANVIL_CHECK_ARGS+=(SESSIONOFF=1 COMPATOFF=1)
 fi
 
@@ -71,7 +71,7 @@ normalize_logic_log "$SV_LOG" "$SV_LOGIC_LOG"
 echo "[2/2] Running Anvil compat test_demux_write"
 (
   cd "$ANVIL_DIR"
-  env -u DEBUG OBJCACHE= make run MODULE_NAME=test_demux_write LTOFF=1 COMPAT=1 SILENT=1 TIMEOUT="$ANVIL_TIMEOUT" "${ANVIL_CHECK_ARGS[@]}"
+  env -u DEBUG OBJCACHE= make -B run MODULE_NAME=test_demux_write LTOFF=1 COMPATOFF=1 SILENT=1 TIMEOUT="$ANVIL_TIMEOUT" "${ANVIL_CHECK_ARGS[@]}"
 ) | tee "$ANVIL_LOG"
 normalize_logic_log "$ANVIL_LOG" "$ANVIL_LOGIC_LOG"
 

@@ -10,7 +10,7 @@ proc arbiter<T : type, T1 : type> (r_rr_arbiter_itfc){
                 let data = ar_sel_pack_t::{ar_pack = x; select = 2'd0} >>
                 send ar_req_ep.req(data) >>
                 let _ = recv ar_req_ep.gnt >>
-                send slv_ep1.gnt(()) >>
+                isend slv_ep1.gnt(()) >>
                 if (ready slv_ep2.req) {
                     set prio := 2'd1
                 }
@@ -28,7 +28,7 @@ proc arbiter<T : type, T1 : type> (r_rr_arbiter_itfc){
                 let data = ar_sel_pack_t::{ar_pack = x; select = 2'd1} >>
                 send ar_req_ep.req(data) >>
                 let _ = recv ar_req_ep.gnt >>
-                send slv_ep2.gnt(()) >>
+                isend slv_ep2.gnt(()) >>
                 if (ready slv_ep3.req) {
                     set prio := 2'd2
                 }
@@ -46,7 +46,7 @@ proc arbiter<T : type, T1 : type> (r_rr_arbiter_itfc){
                 let data = ar_sel_pack_t::{ar_pack = x; select = 2'd2} >>
                 send ar_req_ep.req(data) >>
                 let _ = recv ar_req_ep.gnt >>
-                send slv_ep3.gnt(()) >>
+                isend slv_ep3.gnt(()) >>
                 if (ready slv_ep4.req) {
                     set prio := 2'd3
                 }
@@ -64,7 +64,7 @@ proc arbiter<T : type, T1 : type> (r_rr_arbiter_itfc){
                 let data = ar_sel_pack_t::{ar_pack = x; select = 2'd3} >>
                 send ar_req_ep.req(data) >>
                 let _ = recv ar_req_ep.gnt >>
-                send slv_ep4.gnt(()) >>
+                isend slv_ep4.gnt(()) >>
                 if (ready slv_ep1.req) {
                     set prio := 2'd0
                 }
@@ -93,9 +93,9 @@ proc mux_ar_main(mux_ar_main){
                 recurse X
             }
             else {
-                send fifo_ep.push(x.select) >>
-                send ar_mst_ep.req(x.ar_pack) >>
-                send ar_req_ep.gnt(())
+                isend fifo_ep.push(x.select) >>
+                isend ar_mst_ep.req(x.ar_pack) >>
+                isend ar_req_ep.gnt(())
             }
         } >>
         cycle 1
@@ -112,14 +112,14 @@ proc mux_r_main(mux_r_main){
         try _ = recv fifo_ep.empty { ()}
         else{
             try _ = recv r_res_ep.rdy {
-                let rentry = recv fifo_ep.pop >>
+                let rentry = irecv fifo_ep.pop >>
                 rec X{
                     let rprio = (if(*rset == 1'd0){rentry} else {*rentry}) >>
                     xoffer rprio{
-                        _ = recv slv_ep1.rdy => (
+                        _ = irecv slv_ep1.rdy => (
                             if (rprio == 2'd0){
-                                let r = recv r_res_ep.res >>
-                                send slv_ep1.res(r)
+                                let r = irecv r_res_ep.res >>
+                                isend slv_ep1.res(r)
                             }
                             else{
                                 dprint "Something went wrong! | rprio = %d vs id = 2'd0" (rprio) >>
@@ -127,10 +127,10 @@ proc mux_r_main(mux_r_main){
                                 recurse X
                             }
                         ),
-                        _ = recv slv_ep2.rdy => (
+                        _ = irecv slv_ep2.rdy => (
                             if (rprio == 2'd1){
-                                let r = recv r_res_ep.res >>
-                                send slv_ep2.res(r)
+                                let r = irecv r_res_ep.res >>
+                                isend slv_ep2.res(r)
                             }
                             else{
                                 dprint "Something went wrong! | rprio = %d vs id = 2'd1" (rprio) >>
@@ -138,10 +138,10 @@ proc mux_r_main(mux_r_main){
                                 recurse X
                             }
                         ),
-                        _ = recv slv_ep3.rdy => (
+                        _ = irecv slv_ep3.rdy => (
                             if (rprio == 2'd2){
-                                let r = recv r_res_ep.res >>
-                                send slv_ep3.res(r)
+                                let r = irecv r_res_ep.res >>
+                                isend slv_ep3.res(r)
                             }
                             else{
                                 dprint "Something went wrong! | rprio = %d vs id = 2'd2" (rprio) >>
@@ -149,10 +149,10 @@ proc mux_r_main(mux_r_main){
                                 recurse X
                             }
                         ),
-                        _ = recv slv_ep4.rdy => (
+                        _ = irecv slv_ep4.rdy => (
                             if (rprio == 2'd3){
-                                let r = recv r_res_ep.res >>
-                                send slv_ep4.res(r)
+                                let r = irecv r_res_ep.res >>
+                                isend slv_ep4.res(r)
                             }
                             else{
                                 dprint "Something went wrong! | rprio = %d vs id = 2'd3" (rprio) >>

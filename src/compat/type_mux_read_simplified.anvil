@@ -33,10 +33,10 @@ interface mux_r_main (
 ) =^(
         fifo_ep.empty ,
         * : ^(r_res_ep.rdy : #fifo_ep.pop ; rec X . ^(
-                                        slv_ep1.rdy : ((#r_res_ep.res;#slv_ep1.res) + (#1;X)),
-                                        slv_ep2.rdy : ((#r_res_ep.res;#slv_ep2.res) + (#1;X)),
-                                        slv_ep3.rdy : ((#r_res_ep.res;#slv_ep3.res) + (#1;X)),
-                                        slv_ep4.rdy : ((#r_res_ep.res;#slv_ep4.res) + (#1;X)),
+                                        #slv_ep1.rdy : ((#r_res_ep.res;#slv_ep1.res) + (#1;X)),
+                                        #slv_ep2.rdy : ((#r_res_ep.res;#slv_ep2.res) + (#1;X)),
+                                        #slv_ep3.rdy : ((#r_res_ep.res;#slv_ep3.res) + (#1;X)),
+                                        #slv_ep4.rdy : ((#r_res_ep.res;#slv_ep4.res) + (#1;X)),
                                         * : #1;X
                                 ),
                 *

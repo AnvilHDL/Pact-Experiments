@@ -14,9 +14,9 @@ proc demux_ar_main(demux_ar_main){
                     recurse X
                 }
                 else {
-                    send fifo_ep.push(sel) >>
-                    send mst_ep1.req(req.ar_pack) >>
-                    send slv_ep.gnt(())
+                    isend fifo_ep.push(sel) >>
+                    isend mst_ep1.req(req.ar_pack) >>
+                    isend slv_ep.gnt(())
                 }
             }
         }
@@ -28,9 +28,9 @@ proc demux_ar_main(demux_ar_main){
                     recurse X
                 }
                 else {
-                    send fifo_ep.push(sel) >>
-                    send mst_ep2.req(req.ar_pack) >>
-                    send slv_ep.gnt(())
+                    isend fifo_ep.push(sel) >>
+                    isend mst_ep2.req(req.ar_pack) >>
+                    isend slv_ep.gnt(())
                 }
             }
         }
@@ -42,9 +42,9 @@ proc demux_ar_main(demux_ar_main){
                     recurse X
                 }
                 else {
-                    send fifo_ep.push(sel) >>
-                    send mst_ep3.req(req.ar_pack) >>
-                    send slv_ep.gnt(())
+                    isend fifo_ep.push(sel) >>
+                    isend mst_ep3.req(req.ar_pack) >>
+                    isend slv_ep.gnt(())
                 }
             }
         }
@@ -56,9 +56,9 @@ proc demux_ar_main(demux_ar_main){
                     recurse X
                 }
                 else {
-                    send fifo_ep.push(sel) >>
-                    send mst_ep4.req(req.ar_pack) >>
-                    send slv_ep.gnt(())
+                    isend fifo_ep.push(sel) >>
+                    isend mst_ep4.req(req.ar_pack) >>
+                    isend slv_ep.gnt(())
                 }
             }
         } >>
@@ -76,15 +76,15 @@ proc demux_r_main(demux_r_main){
     loop{
         try _ = recv fifo_ep.empty { () }
         else{
-            let rentry = recv fifo_ep.pop >>
+            let rentry = irecv fifo_ep.pop >>
             rec X {
                 let rprio = (if(*rset == 1'd0){rentry} else {*rentry} ) >>
 
                 xoffer rprio{
-                    _  = recv mst_ep1.rdy => (
+                    _  = irecv mst_ep1.rdy => (
                         if (rprio == 2'd0){
-                            let r = recv mst_ep1.res >>
-                            send slv_ep.r_res(r)
+                            let r = irecv mst_ep1.res >>
+                            isend slv_ep.r_res(r)
                         }                    
                         else{
                             dprint "[Cycle %d] Something went wrong! | rentry = %d vs id = 2'd0" (*cyc, rentry) >>
@@ -92,10 +92,10 @@ proc demux_r_main(demux_r_main){
                             recurse X
                         }
                     ),
-                    _ = recv mst_ep2.rdy => (
+                    _ = irecv mst_ep2.rdy => (
                         if (rprio == 2'd1){
-                            let r = recv mst_ep2.res >>
-                            send slv_ep.r_res(r)
+                            let r = irecv mst_ep2.res >>
+                            isend slv_ep.r_res(r)
                         }                    
                         else{
                             dprint "[Cycle %d] Something went wrong! | rentry = %d vs id = 2'd1" (*cyc, rentry) >>
@@ -103,10 +103,10 @@ proc demux_r_main(demux_r_main){
                             recurse X
                         }
                     ),
-                    _ = recv mst_ep3.rdy => (
+                    _ = irecv mst_ep3.rdy => (
                         if (rprio == 2'd2){
-                            let r = recv mst_ep3.res >>
-                            send slv_ep.r_res(r)
+                            let r = irecv mst_ep3.res >>
+                            isend slv_ep.r_res(r)
                         }                    
                         else{
                             dprint "[Cycle %d] Something went wrong! | rentry = %d vs id = 2'd2" (*cyc, rentry) >>
@@ -114,10 +114,10 @@ proc demux_r_main(demux_r_main){
                             recurse X
                         }
                     ),
-                    _ = recv mst_ep4.rdy => (
+                    _ = irecv mst_ep4.rdy => (
                         if (rprio == 2'd3){
-                            let r = recv mst_ep4.res >>
-                            send slv_ep.r_res(r)
+                            let r = irecv mst_ep4.res >>
+                            isend slv_ep.r_res(r)
                         }
                         else{
                             dprint "[Cycle %d] Something went wrong! | rentry = %d vs id = 2'd3" (*cyc, rentry) >>
@@ -126,7 +126,6 @@ proc demux_r_main(demux_r_main){
                         }
                     ),
                     # =>(
-                        dprint "[Cycle %d] No master was ready! | rentry = %d" (*cyc, rentry) >>
                         (
 
                             set rset := 1'b1;

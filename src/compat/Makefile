@@ -1,5 +1,6 @@
 MODULE_NAME ?= top
 TOP_MODULE ?= $(MODULE_NAME)
+ANVIL ?= dune exec --root $(abspath ../../../Pact) pact --
 VERILATOR_FLAGS ?= --top $(MODULE_NAME) -j 1
 
 TEST_DRIVER = sim_main.cpp
@@ -7,6 +8,7 @@ TEST_DRIVER = sim_main.cpp
 all: obj_dir/V$(MODULE_NAME)
 
 .PHONY: run clean debug
+.DELETE_ON_ERROR:
 
 ANVIL_FLAGS=
 ifdef LTOFF
@@ -50,11 +52,11 @@ endif
 
 $(MODULE_NAME).anvil.sv: $(MODULE_NAME).anvil
 ifdef SILENT
-	anvil $(ANVIL_FLAGS) $< > $@ 2>/dev/null
+	$(ANVIL) $(ANVIL_FLAGS) $(abspath $<) > $@ 2> $@.log || { cat $@.log >&2; exit 1; }
 else ifdef LOG
-	anvil $(ANVIL_FLAGS) $< > $@ 2> compile.log
+	$(ANVIL) $(ANVIL_FLAGS) $(abspath $<) > $@ 2> compile.log
 else
-	anvil $(ANVIL_FLAGS) $< > $@
+	$(ANVIL) $(ANVIL_FLAGS) $(abspath $<) > $@
 endif
 
 obj_dir/V$(MODULE_NAME): $(MODULE_NAME)_driver.cpp $(MODULE_NAME).anvil.sv

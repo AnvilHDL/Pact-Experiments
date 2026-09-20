@@ -12,25 +12,25 @@ proc arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep1.gnt(())
+                    isend slv_ep1.gnt(())
                 ),
                 x = recv slv_ep2.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep2.gnt(())
+                    isend slv_ep2.gnt(())
                 ),
                 x = recv slv_ep3.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep3.gnt(())
+                    isend slv_ep3.gnt(())
                 ),
                 x = recv slv_ep4.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep4.gnt(())
+                    isend slv_ep4.gnt(())
                 )
             }
         }
@@ -40,25 +40,25 @@ proc arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep2.gnt(())
+                    isend slv_ep2.gnt(())
                 ),
                 x = recv slv_ep1.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep1.gnt(())
+                    isend slv_ep1.gnt(())
                 ),
                 x = recv slv_ep4.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep4.gnt(())
+                    isend slv_ep4.gnt(())
                 ),
                 x = recv slv_ep3.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep3.gnt(())
+                    isend slv_ep3.gnt(())
                 )
             }
         }
@@ -68,25 +68,25 @@ proc arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep3.gnt(())
+                    isend slv_ep3.gnt(())
                 ),
                 x = recv slv_ep4.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep4.gnt(())
+                    isend slv_ep4.gnt(())
                 ),
                 x = recv slv_ep1.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep1.gnt(())
+                    isend slv_ep1.gnt(())
                 ),
                 x = recv slv_ep2.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep2.gnt(())
+                    isend slv_ep2.gnt(())
                 )
             }
         }
@@ -96,25 +96,25 @@ proc arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep4.gnt(())
+                    isend slv_ep4.gnt(())
                 ),
                 x = recv slv_ep3.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep3.gnt(())
+                    isend slv_ep3.gnt(())
                 ),
                 x = recv slv_ep2.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep2.gnt(())
+                    isend slv_ep2.gnt(())
                 ),
                 x = recv slv_ep1.req => (
                     let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
                     send aw_req_ep.req(data) >>
                     let _ = recv aw_req_ep.gnt >>
-                    send slv_ep1.gnt(())
+                    isend slv_ep1.gnt(())
                 )
             }
         } >>
@@ -182,18 +182,18 @@ proc mux_w_main(mux_w_main){
     reg cyc : logic[8];
     loop{
         offer{
-            _ = recv w_fifo_ep.empty =>  (),
-            _ = recv b_fifo_ep.full => (),
+            _ = irecv w_fifo_ep.empty =>  (),
+            _ = irecv b_fifo_ep.full => (),
             # => (
                     try _ = recv w_mst_ep.rdy {
-                        let wentry = recv w_fifo_ep.pop >>
-                        send b_fifo_ep.push(wentry) >>
+                        let wentry = irecv w_fifo_ep.pop >>
+                        isend b_fifo_ep.push(wentry) >>
                         rec X  {
                             xoffer wentry{
                                 _ = recv slv_ep1.rdy => (
                                     if (wentry == 2'd0){
-                                        let data = recv slv_ep1.data >>
-                                        send w_mst_ep.req(data)
+                                        let data = irecv slv_ep1.data >>
+                                        isend w_mst_ep.req(data)
                                     }
                                     else{
                                         dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd0" (*cyc, wentry) >>
@@ -203,8 +203,8 @@ proc mux_w_main(mux_w_main){
                                 ),
                                 _ = recv slv_ep2.rdy => (
                                     if (wentry == 2'd1){
-                                        let data = recv slv_ep2.data >>
-                                        send w_mst_ep.req(data)
+                                        let data = irecv slv_ep2.data >>
+                                        isend w_mst_ep.req(data)
                                     }
                                     else{
                                         dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd1" (*cyc, wentry) >>
@@ -214,8 +214,8 @@ proc mux_w_main(mux_w_main){
                                 ),
                                 _ = recv slv_ep3.rdy => (
                                     if (wentry == 2'd2){
-                                        let data = recv slv_ep3.data >>
-                                        send w_mst_ep.req(data)
+                                        let data = irecv slv_ep3.data >>
+                                        isend w_mst_ep.req(data)
                                     }
                                     else{
                                         dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd2" (*cyc, wentry) >>
@@ -225,8 +225,8 @@ proc mux_w_main(mux_w_main){
                                 ),
                                 _ = recv slv_ep4.rdy => (
                                     if (wentry == 2'd3){
-                                        let data = recv slv_ep4.data >>
-                                        send w_mst_ep.req(data)
+                                        let data = irecv slv_ep4.data >>
+                                        isend w_mst_ep.req(data)
                                     }
                                     else{
                                         dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd3" (*cyc, wentry) >>
@@ -257,9 +257,9 @@ proc mux_aw_main(mux_aw_main){
                 recurse X
             }
             else {
-                send fifo_ep.push(x.select) >>
-                send aw_mst_ep.req(x.aw_pack) >>
-                send aw_req_ep.gnt(())
+                isend fifo_ep.push(x.select) >>
+                isend aw_mst_ep.req(x.aw_pack) >>
+                isend aw_req_ep.gnt(())
             }
         } >>
         cycle 1
@@ -271,13 +271,13 @@ proc mux_b_main(mux_b_main){
         try _ = recv b_fifo_ep.empty { ()}
         else{
             try _ = recv b_mst_ep.rdy {
-                let bentry = recv b_fifo_ep.pop >>
+                let bentry = irecv b_fifo_ep.pop >>
                 rec X{
                     xoffer bentry{
                         _ = recv slv_ep1.rdy => (
                             if (bentry == 2'd0){
-                                let b = recv b_mst_ep.res >>
-                                send slv_ep1.res(b)
+                                let b = irecv b_mst_ep.res >>
+                                isend slv_ep1.res(b)
                             }
                             else{
                                 dprint "Something went wrong! | bentry = %d\n vs id = 2'd0" (bentry) >>
@@ -287,8 +287,8 @@ proc mux_b_main(mux_b_main){
                         ),
                         _ = recv slv_ep2.rdy => (
                             if (bentry == 2'd1){
-                                let b = recv b_mst_ep.res >>
-                                send slv_ep2.res(b)
+                                let b = irecv b_mst_ep.res >>
+                                isend slv_ep2.res(b)
                             }
                             else{
                                 dprint "Something went wrong! | bentry = %d\n vs id = 2'd1" (bentry) >>
@@ -298,8 +298,8 @@ proc mux_b_main(mux_b_main){
                         ),
                         _ = recv slv_ep3.rdy => (
                             if (bentry == 2'd2){
-                                let b = recv b_mst_ep.res >>
-                                send slv_ep3.res(b)
+                                let b = irecv b_mst_ep.res >>
+                                isend slv_ep3.res(b)
                             }   
                             else{
                                 dprint "Something went wrong! | bentry = %d\n vs id = 2'd2" (bentry) >>
@@ -309,8 +309,8 @@ proc mux_b_main(mux_b_main){
                         ),
                         _ = recv slv_ep4.rdy => (
                             if (bentry == 2'd3){
-                                let b = recv b_mst_ep.res >>
-                                send slv_ep4.res(b)
+                                let b = irecv b_mst_ep.res >>
+                                isend slv_ep4.res(b)
                             }
                             else{
                                 dprint "Something went wrong! | bentry = %d\n vs id = 2'd3" (bentry) >>
@@ -335,21 +335,21 @@ proc master_write(master_write_itfc){
     loop{
         send mst_ep_aw.rdy(()) >>
         let req = recv mst_ep_aw.req >>
-        let aw_cyc = if ((*cyc > 32'd66) && (*cyc < 32'd130)) {*cyc + 32'd1} else {*cyc} >>
+        let aw_cyc = *cyc >>
         dprint "[Cycle %d] Master received aw req with addr %d" (aw_cyc, req.addr) >>
         set addr := req.addr[0+:8] >>
         cycle 1 >>
         send mst_ep_w.rdy(()) >>
         let wdata = recv mst_ep_w.req >>
-        let w_cyc = if (*cyc < 32'd66) {*cyc - 32'd1} else {*cyc} >>
+        let w_cyc = *cyc >>
         dprint "[Cycle %d] Master received w req with data %d" (w_cyc, wdata.data) >>
         set mem[*addr] := wdata.data >>
         cycle 1 >>
         send mst_ep_b.rdy (()) >>
         send mst_ep_b.res(b_pack_t::{resp = 1'b0}) >>
-        let b_cyc = if (*cyc < 32'd66) {*cyc - 32'd1} else {*cyc} >>
+        let b_cyc = *cyc >>
         dprint "[Cycle %d] Master sent b response" (b_cyc) >>
-        cycle 1
+        cycle 2
     }
     loop{
         set cyc := *cyc + 32'd1
@@ -359,38 +359,29 @@ proc master_write(master_write_itfc){
 
 proc slave_write<id : int>(slave_write_itfc){
     reg cyc : logic[32];
-    reg next_req : logic[32];
     reg data : logic[32];
     loop{
+        // The SV stimulus starts a request on power-of-two idle cycles;
+        // SEND_AW registers valid one cycle before the handshake.
         rec WaitReq {
-            let target0 = if (*next_req == 32'd0) {32'd3} else {*next_req} >>
-            let target1 = if (target0 < *cyc) {if (target0 == 32'd3) {32'd10} else {((target0 - 32'd2) * 32'd2) + 32'd2}} else {target0} >>
-            let target2 = if (target1 < *cyc) {if (target1 == 32'd3) {32'd10} else {((target1 - 32'd2) * 32'd2) + 32'd2}} else {target1} >>
-            let target3 = if (target2 < *cyc) {if (target2 == 32'd3) {32'd10} else {((target2 - 32'd2) * 32'd2) + 32'd2}} else {target2} >>
-            let target4 = if (target3 < *cyc) {if (target3 == 32'd3) {32'd10} else {((target3 - 32'd2) * 32'd2) + 32'd2}} else {target3} >>
-            let target5 = if (target4 < *cyc) {if (target4 == 32'd3) {32'd10} else {((target4 - 32'd2) * 32'd2) + 32'd2}} else {target4} >>
-            let target6 = if (target5 < *cyc) {if (target5 == 32'd3) {32'd10} else {((target5 - 32'd2) * 32'd2) + 32'd2}} else {target5} >>
-            let target7 = if (target6 < *cyc) {if (target6 == 32'd3) {32'd10} else {((target6 - 32'd2) * 32'd2) + 32'd2}} else {target6} >>
-            let target8 = if (target7 < *cyc) {if (target7 == 32'd3) {32'd10} else {((target7 - 32'd2) * 32'd2) + 32'd2}} else {target7} >>
-            let target = if (target8 < *cyc) {if (target8 == 32'd3) {32'd10} else {((target8 - 32'd2) * 32'd2) + 32'd2}} else {target8} >>
-            set next_req := target >>
-            if (*cyc == target) { () }
-            else {
-                cycle 1 >>
-                recurse WaitReq
+            if ((*cyc != 32'd0) && ((*cyc & (*cyc - 32'd1)) == 32'd0)) {
+                cycle 2
+            } else {
+                cycle 1 >> recurse WaitReq
             }
         } >>
         let aid = id[0+:32] >>
         let aw = aw_pack_t::{addr = aid; prot = 1'b0} >>
         send write_req_ep.req(aw) >>
         let _ = recv write_req_ep.gnt >>
-        let aw_cyc = if ((*cyc > 32'd66) && (*cyc < 32'd130)) {*cyc + 32'd1} else {*cyc} >>
+        let aw_cyc = *cyc >>
         dprint "[Cycle %d] Slave %d write aw addr %d selected" (aw_cyc, id[0+:2], aw.addr) >>
+        cycle 2 >>
         rec x {
             send write_data_ep.rdy(()) >>
             let w = w_pack_t::{data = *data + aid; strb = 1'b1} >>
             try send write_data_ep.data(w) {
-                let w_cyc = if (*cyc < 32'd66) {*cyc - 32'd1} else {*cyc} >>
+                let w_cyc = *cyc >>
                 dprint "[Cycle %d] Slave %d write data %d granted" (w_cyc, id[0+:2], w.data)
             }
             else{
@@ -401,7 +392,7 @@ proc slave_write<id : int>(slave_write_itfc){
         rec Y {
             send write_res_ep.rdy(()) >>
             try res = recv write_res_ep.res {
-                let b_cyc = if (*cyc < 32'd66) {*cyc - 32'd1} else {*cyc} >>
+                let b_cyc = *cyc >>
                 dprint "[Cycle %d] Slave %d write response received" (b_cyc, id[0+:2])
             }
             else{

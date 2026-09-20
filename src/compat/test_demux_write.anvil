@@ -14,9 +14,9 @@ proc demux_aw_main(demux_aw_main){
                     recurse X
                 }
                 else {
-                    send w_fifo_ep.push(sel) >>
-                    send mst_ep1.req(req.aw_pack) >>
-                    send slv_ep.gnt(())
+                    isend w_fifo_ep.push(sel) >>
+                    isend mst_ep1.req(req.aw_pack) >>
+                    isend slv_ep.gnt(())
                 }
             }
         }
@@ -28,9 +28,9 @@ proc demux_aw_main(demux_aw_main){
                     recurse X
                 }
                 else {
-                    send w_fifo_ep.push(sel) >>
-                    send mst_ep2.req(req.aw_pack) >>
-                    send slv_ep.gnt(())
+                    isend w_fifo_ep.push(sel) >>
+                    isend mst_ep2.req(req.aw_pack) >>
+                    isend slv_ep.gnt(())
                 }
             }
         }
@@ -42,9 +42,9 @@ proc demux_aw_main(demux_aw_main){
                     recurse X
                 }
                 else {
-                    send w_fifo_ep.push(sel) >>
-                    send mst_ep3.req(req.aw_pack) >>
-                    send slv_ep.gnt(())
+                    isend w_fifo_ep.push(sel) >>
+                    isend mst_ep3.req(req.aw_pack) >>
+                    isend slv_ep.gnt(())
                 }
             }
         }
@@ -56,9 +56,9 @@ proc demux_aw_main(demux_aw_main){
                     recurse X
                 }
                 else {
-                    send w_fifo_ep.push(sel) >>
-                    send mst_ep4.req(req.aw_pack) >>
-                    send slv_ep.gnt(())
+                    isend w_fifo_ep.push(sel) >>
+                    isend mst_ep4.req(req.aw_pack) >>
+                    isend slv_ep.gnt(())
                 }
             }
         } >>
@@ -75,19 +75,19 @@ proc demux_w_main(demux_w_main){
     reg wset : logic;
     loop{
         offer{
-            _ = recv w_fifo_ep.empty =>(),
-            _ = recv b_fifo_ep.full =>(),
+            _ = irecv w_fifo_ep.empty =>(),
+            _ = irecv b_fifo_ep.full =>(),
             # => (
                 try x = recv slv_ep.req {
-                    let wentry = recv w_fifo_ep.pop >>
-                    send b_fifo_ep.push(wentry) >>
+                    let wentry = irecv w_fifo_ep.pop >>
+                    isend b_fifo_ep.push(wentry) >>
                     rec X  {
                         let wprio = if(*wset) {*wentry} else {wentry} >>
                         xoffer wprio{
-                            _ = recv mst_ep1.rdy => (
+                            _ = irecv mst_ep1.rdy => (
                                 if (wprio == 2'd0){
-                                    send mst_ep1.req(x) >>
-                                    send slv_ep.gnt(())
+                                    isend mst_ep1.req(x) >>
+                                    isend slv_ep.gnt(())
                                 }
                                 else{
                                     dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd0" (*cyc, wentry) >>
@@ -95,10 +95,10 @@ proc demux_w_main(demux_w_main){
                                     recurse X
                                 }
                             ),
-                            _ = recv mst_ep2.rdy => (
+                            _ = irecv mst_ep2.rdy => (
                                 if (wprio == 2'd1){
-                                    send mst_ep2.req(x) >>
-                                    send slv_ep.gnt(())
+                                    isend mst_ep2.req(x) >>
+                                    isend slv_ep.gnt(())
                                 }
                                 else{
                                     dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd1" (*cyc, wentry) >>
@@ -106,10 +106,10 @@ proc demux_w_main(demux_w_main){
                                     recurse X
                                 }
                             ),
-                            _ = recv mst_ep3.rdy => (
+                            _ = irecv mst_ep3.rdy => (
                                 if (wprio == 2'd2){
-                                    send mst_ep3.req(x) >>
-                                    send slv_ep.gnt(())
+                                    isend mst_ep3.req(x) >>
+                                    isend slv_ep.gnt(())
                                 }
                                 else{
                                     dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd2" (*cyc, wentry) >>
@@ -117,10 +117,10 @@ proc demux_w_main(demux_w_main){
                                     recurse X
                                 }
                             ),
-                            _ = recv mst_ep4.rdy => (
+                            _ = irecv mst_ep4.rdy => (
                                 if (wprio == 2'd3){
-                                    send mst_ep4.req(x) >>
-                                    send slv_ep.gnt(())
+                                    isend mst_ep4.req(x) >>
+                                    isend slv_ep.gnt(())
                                 }
                                 else{
                                     dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd3" (*cyc, wentry) >>
@@ -153,14 +153,14 @@ proc demux_b_main(demux_b_main){
     loop{
         try _ = recv b_fifo_ep.empty { () }
         else{
-            let bentry = recv b_fifo_ep.pop >>
+            let bentry = irecv b_fifo_ep.pop >>
             rec X {
                 let bprio = if(*bset) {*bentry} else {bentry} >>
                 xoffer bprio{
-                    _ = recv mst_ep1.rdy => (
+                    _ = irecv mst_ep1.rdy => (
                         if (bprio == 2'd0){
-                            let b = recv mst_ep1.res >>
-                            send slv_ep.res(b)
+                            let b = irecv mst_ep1.res >>
+                            isend slv_ep.res(b)
                         }
                         else{
                             dprint "Something went wrong! | bentry = %d vs id = 2'd0" (bentry) >>
@@ -168,10 +168,10 @@ proc demux_b_main(demux_b_main){
                             recurse X
                         }
                     ),
-                    _ = recv mst_ep2.rdy => (
+                    _ = irecv mst_ep2.rdy => (
                         if (bprio == 2'd1){
-                            let b = recv mst_ep2.res >>
-                            send slv_ep.res(b)
+                            let b = irecv mst_ep2.res >>
+                            isend slv_ep.res(b)
                         }
                         else{
                             dprint "Something went wrong! | bentry = %d vs id = 2'd1" (bentry) >>
@@ -179,10 +179,10 @@ proc demux_b_main(demux_b_main){
                             recurse X
                         }
                     ),
-                    _ = recv mst_ep3.rdy => (
+                    _ = irecv mst_ep3.rdy => (
                         if (bprio == 2'd2){
-                            let b = recv mst_ep3.res >>
-                            send slv_ep.res(b)
+                            let b = irecv mst_ep3.res >>
+                            isend slv_ep.res(b)
                         }
                         else{
                             dprint "Something went wrong! | bentry = %d vs id = 2'd2" (bentry) >>
@@ -190,10 +190,10 @@ proc demux_b_main(demux_b_main){
                             recurse X
                         }
                     ),
-                    _ = recv mst_ep4.rdy => (
+                    _ = irecv mst_ep4.rdy => (
                         if (bprio == 2'd3){
-                            let b = recv mst_ep4.res >>
-                            send slv_ep.res(b)
+                            let b = irecv mst_ep4.res >>
+                            isend slv_ep.res(b)
                         }
                         else{
                             dprint "Something went wrong! | bentry = %d\n vs id = 2'd3" (bentry) >>
@@ -204,14 +204,14 @@ proc demux_b_main(demux_b_main){
                     # =>(
                         (
                             set bset := 1'b1;
-                            set bentry := bentry
+                            set bentry := bprio
                         ) >>
                         recurse X
                     )
                 }
             }
         } >>
-        cycle 1
+        set bset := 1'b0
     }
 
 }

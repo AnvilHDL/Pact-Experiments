@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-ANVIL_DIR=../anvil
+ANVIL_DIR=../Pact
 BASE_DIR=$(pwd)
 INPUT_FILE=""
 OUTPUT_FILE=""
@@ -43,7 +43,7 @@ fi
 
 cd "$ANVIL_DIR" || exit 1
 if [ -z "$OUTPUT_FILE" ]; then
-    dune exec anvil -- $FLAGS "$BASE_DIR/$INPUT_FILE"
+    dune exec pact -- $FLAGS "$BASE_DIR/$INPUT_FILE"
 else
-    dune exec anvil -- $FLAGS "$BASE_DIR/$INPUT_FILE" > "$BASE_DIR/$OUTPUT_FILE" 2>&1
+    dune exec pact -- $FLAGS "$BASE_DIR/$INPUT_FILE" > "$BASE_DIR/$OUTPUT_FILE" 2>&1
 fi

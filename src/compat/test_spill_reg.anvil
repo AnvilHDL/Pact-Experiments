@@ -25,10 +25,10 @@ proc spill_reg <T: type> (spill_register_itfc){
             // dprint "[Cycle %d] Spill Register: Sent data %d, waiting for spill signal" (*cyc, out) >>
             (
             offer {
-                in_data = recv inp_ep.req => (
+                in_data = irecv inp_ep.req => (
                     set a := in_data
                 ),
-                _ = recv out_ep.spill => (
+                _ = irecv out_ep.spill => (
                     cycle 1
                 ),
                 # => (
@@ -75,7 +75,7 @@ proc spill_reg <T: type> (spill_register_itfc){
             rec X  {
                 let out = *b >>
                 try send out_ep.data(out) {()} >>
-                try _ = recv out_ep.spill{
+                try _ = irecv out_ep.spill{
                     set b := *a;
                     set afull := 1'b0;
                     set bfull := 1'b1
@@ -145,27 +145,27 @@ proc spill_slave<T : type>(slave_itfc){
         cycle 4 >>
         let r0 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r0) >>
-        send reg_ep.spill(()) >>
+        isend reg_ep.spill(()) >>
         cycle 12 >>
         let r1 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r1) >>
-        send reg_ep.spill(()) >>
+        isend reg_ep.spill(()) >>
         cycle 18 >>
         let r2 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r2) >>
-        send reg_ep.spill(()) >>
+        isend reg_ep.spill(()) >>
         cycle 3 >>
         let r3 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r3) >>
-        send reg_ep.spill(()) >>
+        isend reg_ep.spill(()) >>
         cycle 21 >>
         let r4 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r4) >>
-        send reg_ep.spill(()) >>
+        isend reg_ep.spill(()) >>
         cycle 21 >>
         let r5 = recv reg_ep.data >>
         dprint "[Cycle %d] Received data %d\n" (*cyc, r5) >>
-        send reg_ep.spill(()) >>
+        isend reg_ep.spill(()) >>
         cycle 10
     }
     loop{

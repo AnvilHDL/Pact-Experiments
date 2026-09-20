@@ -55,6 +55,7 @@ typedef enum logic {IDLE, WAITING} state_t;
 state_t state;
 logic [31:0] cycle_count;
 
+// Each master has one local source ID; the crossbar remaps 0 to global 1/0.
 // Accept D channel responses every cycle
 assign d_ready = 1'b1;
 
@@ -80,7 +81,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         a_bits_opcode <= 3'b0;
         a_bits_param <= 3'b0;
         a_bits_size <= 2'b0;
-        a_bits_source <= id;
+        a_bits_source <= 2'd0;
         a_bits_address <= 16'b0;
         a_bits_mask <= 1'b1;
         a_bits_data <= 8'b0;
@@ -100,7 +101,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
                 if (cycle_count % 2 == 0) begin
                     a_valid <= 1;
                     a_bits_opcode <= 3'b000; // Get
-                    a_bits_source <= id;
+                    a_bits_source <= 2'd0;
                     a_bits_address <= {14'b0, id};
                     a_bits_data <= {6'b0, id};
                     state <= WAITING;
@@ -230,7 +231,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         if (a_valid && a_ready) begin
 `ifdef TILELINK_CROSSBAR_TB_TRACE
             $display("[Cycle %0d] Manager %0d received request from client %0d",
-                     cycle_count, id, a_bits_source);
+                     cycle_count, id, 2'd1 - a_bits_source);
 `endif
             pending_source <= a_bits_source;
             state <= RESPONDING;
@@ -248,7 +249,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
                 if (d_valid && d_ready) begin
 `ifdef TILELINK_CROSSBAR_TB_TRACE
                     $display("[Cycle %0d] Manager %0d sent response: %0d to client %0d",
-                             cycle_count, id, d_bits_data, d_bits_source);
+                             cycle_count, id, d_bits_data, 2'd1 - d_bits_source);
 `endif
                     d_valid <= 0;
                     state <= IDLE;

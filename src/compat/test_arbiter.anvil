@@ -5,24 +5,24 @@ proc arbiter<Tp : type>(rr_arbiter_itfc){
     loop{
         let prio = *prio >>
         xoffer prio {
-            _ = recv slv_ep1.req => (
+            _ = irecv slv_ep1.req => (
                 send mst_ep.req(32'd1) >>
-                send slv_ep1.gnt(()) >>
+                isend slv_ep1.gnt(()) >>
                 set prio := 2'd1
             ),
-            _ = recv slv_ep2.req => (
+            _ = irecv slv_ep2.req => (
                 send mst_ep.req(32'd1) >>
-                send slv_ep2.gnt(()) >>
+                isend slv_ep2.gnt(()) >>
                 set prio := 2'd2
             ),
-            _ = recv slv_ep3.req => (
+            _ = irecv slv_ep3.req => (
                 send mst_ep.req(32'd1) >>
-                send slv_ep3.gnt(()) >>
+                isend slv_ep3.gnt(()) >>
                 set prio := 2'd3
             ),
-            _ = recv slv_ep4.req => (
+            _ = irecv slv_ep4.req => (
                 send mst_ep.req(32'd1) >>
-                send slv_ep4.gnt(()) >>
+                isend slv_ep4.gnt(()) >>
                 set prio := 2'd0
             ),
             # => (

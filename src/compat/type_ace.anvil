@@ -1,5 +1,3 @@
-
-
 pool cache_coherence_pool {
     req_ep -- req_ep_ri : main_req_ch,
     cs_ep_1 -- cs_ep_1_ri : snoop_ch,
@@ -11,8 +9,6 @@ pool cache_coherence_pool {
     cache_ep2 -- cache_ep2_ri : cache_req_ch,
     cache_ep3 -- cache_ep3_ri : cache_req_ch,
     cache_ep4 -- cache_ep4_ri : cache_req_ch;
-
-
 
     i_main : ace_itfc(req_ep_ri, cs_ep_1_ri, cs_ep_2_ri, cs_ep_3_ri, cs_ep_4_ri, mem_ep),
 
@@ -31,127 +27,71 @@ pool cache_coherence_pool {
     imem :  mem_itfc(mem_ep_ri)
 }
 
-
-interface arb_itfc(cache_ep1 : right cache_req_ch, 
-                    cache_ep2 : right cache_req_ch, 
-                    cache_ep3 : right cache_req_ch, 
-                    cache_ep4 : right cache_req_ch, 
-                    req_ep : left main_req_ch) =
-
-                    req_ep.rdy; ^(
-                       cache_ep1.req : #1;((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep1.res,
-                       cache_ep2.req : #1;((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep2.res,
-                       cache_ep3.req : #1;((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep3.res,
-                       cache_ep4.req : #1;((#req_ep.ar_req) + (#req_ep.aw_req;req_ep.w_data)); ^(req_ep.r_res,req_ep.invalid_res);cache_ep4.res
-                    ); #1
-
-interface snoop_itfc(cs_ep : left snoop_ch) = ^(
-           cs_ep.read_req : #1;cs_ep.read_res;#1;(^(cs_ep.snoop_data,*) + ()),
-           cs_ep.snoop_invalidate : #1;cs_ep.snoop_invalidate_res;(^(cs_ep.snoop_data,*) + ())
-           ); #1
-
-interface client_itfc(cache_ep : left cache_req_ch) = F cache_ep.req; cache_ep.res;#1
-
-interface mem_itfc(mem_ep : right mem_ch) = ^(mem_ep.aw_req : #1;mem_ep.w_req ; #1; mem_ep.b_res , mem_ep.ar_req : #1;mem_ep.r_res,*); #1
-
-
-interface ace_itfc(
-    req_ep : right main_req_ch,
-    cs_ep_1 : right snoop_ch,
-    cs_ep_2 : right snoop_ch,
-    cs_ep_3 : right snoop_ch,
-    cs_ep_4 : right snoop_ch,
-    mem_ep : left mem_ch
-) =     req_ep.rdy; ^(
-            req_ep.ar_req : #1;(
-                                (
-                                    mem_ep.ar_req;#1;mem_ep.r_res;#req_ep.r_res
-                                )
-                                                    +
-                                (
-                                    (cs_ep_1.read_req || cs_ep_2.read_req||cs_ep_3.read_req || cs_ep_4.read_req); #1; (#cs_ep_1.read_res || #cs_ep_2.read_res || #cs_ep_3.read_res || #cs_ep_4.read_res);#1;
-                                    ^(cs_ep_1.snoop_data : #req_ep.r_res, cs_ep_2.snoop_data : #req_ep.r_res, cs_ep_3.snoop_data : #req_ep.r_res, cs_ep_4.snoop_data : #req_ep.r_res, * : mem_ep.ar_req ; #1; mem_ep.r_res; #req_ep.r_res)
-                                ) 
-                                                    + 
-                                (
-                                    (cs_ep_1.snoop_invalidate || cs_ep_2.snoop_invalidate||cs_ep_3.snoop_invalidate || cs_ep_4.snoop_invalidate);#1;(#cs_ep_1.snoop_invalidate_res || #cs_ep_2.snoop_invalidate_res || #cs_ep_3.snoop_invalidate_res || #cs_ep_4.snoop_invalidate_res);#1
-                                    ;(
-                                        ^(#cs_ep_1.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res, 
-                                          #cs_ep_2.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res, 
-                                          #cs_ep_3.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res, 
-                                          #cs_ep_4.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res, 
-                                          * 
-                                        )
-                                        ;
-                                        (
-                                            (#1;mem_ep.ar_req;#1;mem_ep.r_res;#req_ep.r_res)
-                                            +
-                                            (#req_ep.invalid_res)
-                                        ) 
-                                    )
-                                )
-                            );#1, 
-            req_ep.aw_req : #1;#req_ep.w_data
-                            ;(
-                                (cs_ep_1.snoop_invalidate || cs_ep_2.snoop_invalidate||cs_ep_3.snoop_invalidate || cs_ep_4.snoop_invalidate);#1;(#cs_ep_1.snoop_invalidate_res || #cs_ep_2.snoop_invalidate_res || #cs_ep_3.snoop_invalidate_res || #cs_ep_4.snoop_invalidate_res);#1;
-                                (
-                                    ^(cs_ep_1.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res;#1 , cs_ep_2.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res;#1 , cs_ep_3.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res;#1 , cs_ep_4.snoop_data : mem_ep.aw_req;#1;#mem_ep.w_req;#1;mem_ep.b_res;#1, * : #1 )
-                                )
-                                ;mem_ep.aw_req;#1;mem_ep.w_req;#1;mem_ep.b_res;
-                                (
-                                    (#1;mem_ep.ar_req;#1;mem_ep.r_res;#req_ep.r_res)
-                                    +
-                                    (#req_ep.invalid_res)
-                                )
-                            );#1
-        )
-
-
 struct req_pack_t {
-    src : logic[2],
-    addr : byte,
-    data : byte,
-    is_write : logic,
-    is_atom : logic,
-    clean : logic,
-    is_unique : logic,
-    no_snoop : logic
+    src : logic[2], addr : logic[8], is_write : logic,
+    clean : logic, is_unique : logic, no_snoop : logic
 }
-struct res_pack_t {
-    data : byte,
-    ack : logic
-}
-    
-chan cache_req_ch{
+struct res_pack_t { data : logic[8], ack : logic }
+struct mem_write_t { addr : logic[8], line : logic }
+chan cache_req_ch {
     right req : (req_pack_t@#1),
+    right w_data : (logic[8]@#1),
     left res : (res_pack_t@#1)
 }
-
-
-chan main_req_ch{
+chan main_req_ch {
     left rdy : (void@#1),
-    right ar_req : (req_pack_t@#1),
-    right aw_req : (req_pack_t@#1),
-    right w_data : (byte@#1),
-    left r_res : (byte@#1),
-    left invalid_res : (void@#1)
+    right req : (req_pack_t@#1),
+    right w_data : (logic[8]@#1),
+    left res : (res_pack_t@#1)
 }
-
-chan snoop_ch{
-    left read_req : (byte@#1),
-    right read_res : (logic@#1),
-    left snoop_invalidate : (byte@#1),
-    right snoop_invalidate_res : (logic@#1),
-    right snoop_data : (byte@#1)
+chan snoop_ch {
+    left req : (req_pack_t@#1),
+    right res : (logic@#1),
+    right data : (logic[8]@#1)
 }
-
-chan mem_ch{
-    right aw_req : (byte@#1),
-    right w_req : (byte@#1),
+chan mem_ch {
+    right aw_req : (mem_write_t@#1),
+    right w_req : (logic[8]@#1),
     left b_res : (void@#1),
-    right ar_req : (byte@#1),
-    left r_res : (byte@#1)
+    right ar_req : (logic[8]@#1),
+    left r_res : (logic[8]@#1)
 }
-
-
-type byte = logic[8];
+interface client_itfc(cache_ep : left cache_req_ch) =
+    F cache_ep.req; ((cache_ep.w_data; cache_ep.res) + cache_ep.res); #1
+interface snoop_itfc(cs_ep : left snoop_ch) =
+    cs_ep.req; #1; cs_ep.res; #1; ((cs_ep.data; #1; cs_ep.data; #1) + ())
+interface mem_itfc(mem_ep : right mem_ch) =
+    ^(mem_ep.ar_req : #2; mem_ep.r_res; #1,
+      mem_ep.aw_req : #1; mem_ep.w_req; #1; ((mem_ep.w_req; #1) + ()); mem_ep.b_res; #1)
+interface arb_itfc(cache_ep1 : right cache_req_ch, cache_ep2 : right cache_req_ch,
+                   cache_ep3 : right cache_req_ch, cache_ep4 : right cache_req_ch,
+                   req_ep : left main_req_ch) =
+    ^(
+        cache_ep1.req : #1; req_ep.rdy; #1; req_ep.req; ((cache_ep1.w_data; req_ep.w_data) + ()); req_ep.res; cache_ep1.res,
+        cache_ep2.req : #1; req_ep.rdy; #1; req_ep.req; ((cache_ep2.w_data; req_ep.w_data) + ()); req_ep.res; cache_ep2.res,
+        cache_ep3.req : #1; req_ep.rdy; #1; req_ep.req; ((cache_ep3.w_data; req_ep.w_data) + ()); req_ep.res; cache_ep3.res,
+        cache_ep4.req : #1; req_ep.rdy; #1; req_ep.req; ((cache_ep4.w_data; req_ep.w_data) + ()); req_ep.res; cache_ep4.res
+    ); #1
+interface ace_itfc(req_ep : right main_req_ch,
+                   cs_ep_1 : right snoop_ch, cs_ep_2 : right snoop_ch,
+                   cs_ep_3 : right snoop_ch, cs_ep_4 : right snoop_ch,
+                   mem_ep : left mem_ch) =
+    req_ep.rdy; req_ep.req; #2; ((cs_ep_1.req + ()) || (cs_ep_2.req + ()) || (cs_ep_3.req + ()) ||
+        (cs_ep_4.req + ())); #2; (((cs_ep_1.res; #1) + #1) || ((cs_ep_2.res; #1) + #1) || ((cs_ep_3.res;
+        #1) + #1) || ((cs_ep_4.res; #1) + #1));
+    (
+        (req_ep.res; ((#1; mem_ep.aw_req; #1;
+            &(cs_ep_1.data : #1, cs_ep_2.data : #1, cs_ep_3.data : #1, cs_ep_4.data : #1); (mem_ep.w_req ||
+            &(cs_ep_1.data : #1, cs_ep_2.data : #1, cs_ep_3.data : #1, cs_ep_4.data : #1)); mem_ep.w_req; #1;
+            mem_ep.b_res) + ()); #1)
+        + (#1; (
+            (((mem_ep.aw_req; #1; &(cs_ep_1.data : #1, cs_ep_2.data : #1, cs_ep_3.data : #1, cs_ep_4.data : #1);
+                (mem_ep.w_req || &(cs_ep_1.data : #1, cs_ep_2.data : #1, cs_ep_3.data : #1, cs_ep_4.data : #1));
+                mem_ep.w_req; #1; mem_ep.b_res; #1) + ()); mem_ep.aw_req; #1; req_ep.w_data; mem_ep.w_req; #1;
+                mem_ep.b_res; req_ep.res; #1)
+            + ((mem_ep.ar_req; #1; mem_ep.r_res; req_ep.res; #1)
+               + (&(cs_ep_1.data : #1, cs_ep_2.data : #1, cs_ep_3.data : #1, cs_ep_4.data : #1);
+                   (&(cs_ep_1.data : #1, cs_ep_2.data : #1, cs_ep_3.data : #1, cs_ep_4.data : #1) || ((req_ep.res;
+                   #1) + (#1; req_ep.res; #1)))))
+        ))
+    )

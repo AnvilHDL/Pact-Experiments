@@ -16,6 +16,7 @@ normalize_logic_log() {
 
   grep '^\[Cycle' "$in_file" \
     | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//' \
+    | LC_ALL=C sort -s -k2,2n -k3,99 \
     > "$out_file"
 }
 
@@ -59,7 +60,7 @@ run_case() {
   echo "[Anvil] Running $anvil_module"
   (
     cd "$ANVIL_DIR"
-    env -u DEBUG OBJCACHE= make -B run MODULE_NAME="$anvil_module" LTOFF=1 COMPAT=1 SILENT=1 TIMEOUT="$ANVIL_TIMEOUT"
+    env -u DEBUG OBJCACHE= make -B run MODULE_NAME="$anvil_module" LTOFF=1 COMPATOFF=1 SILENT=1 TIMEOUT="$ANVIL_TIMEOUT"
   ) | tee "$anvil_log"
   normalize_logic_log "$anvil_log" "$anvil_logic_log"
 

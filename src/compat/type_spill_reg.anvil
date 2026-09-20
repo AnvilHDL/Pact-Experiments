@@ -1,7 +1,7 @@
 interface spill_register_itfc(inp_ep : right reg_req<T>, out_ep : left reg_res<T>) =
-    ((inp_ep.req ; #1) + 
-     (^(out_ep.data, *); (&(inp_ep.req , out_ep.spill, *);#1) || (#1))  
-     + (rec X . (^(out_ep.data,*) ; ^(out_ep.spill, *: #1;X)))
+    ((inp_ep.req ; #1) +
+     (^(out_ep.data, *); (&(#inp_ep.req , #out_ep.spill, *);#1) || (#1))
+     + (rec X . (^(out_ep.data,*) ; ^(#out_ep.spill, *: #1;X)))
     )
 
 
