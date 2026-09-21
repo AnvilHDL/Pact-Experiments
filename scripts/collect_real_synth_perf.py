@@ -1,25 +1,6 @@
 #!/usr/bin/env python3
-"""Real standard-cell synthesis + timing/power collection, layered on top of
-collect_yosys_perf.py's output.
-
-Where collect_yosys_perf.py maps to Yosys's generic internal cells ($_DFF_*,
-$_MUX_*, ...) - a proxy for relative size only, with no real area/timing/power
-meaning - this script re-synthesizes the SAME already-generated/sanitized SV
-(from synthesis_reports/yosys_perf_results/generated/<case>/) against a real
-sky130 standard-cell Liberty file (via Yosys's dfflibmap + abc -liberty), then
-runs OpenSTA (via podman, openroad/opensta image) against the resulting
-gate-level netlist for real worst-case timing slack and Liberty-based power.
-
-Prerequisites (see pact.md and the OVERHEAD_FINDINGS.md tooling note):
-  - `pip install --user volare && volare enable --pdk sky130 <version>`
-  - `podman pull docker.io/openroad/opensta:latest`
-  - collect_yosys_perf.py must have already been run for the cases in
-    question, so generated/<case>/anvil.yosys.sv and the SV sources exist.
-
-This intentionally reuses collect_yosys_perf.py's manifest and its already-
-sanitized generated SV rather than re-deriving anvil codegen or module
-discovery - it only adds a second synthesis target (real cells instead of
-generic) and a real STA/power step on top.
+"""Map generated case-study RTL to Liberty cells and collect OpenSTA reports.
+See synthesis/README.md for inputs, dependencies, and commands.
 """
 import argparse
 import csv
@@ -54,7 +35,7 @@ def newest_yosys_perf_generated_dir():
             return newest / "generated"
     return YOSYS_PERF_RESULTS_BASE / "generated"
 DEFAULT_PDK_LIB = Path(
-    "/home/aditya/.volare/volare/sky130/versions/"
+    str(Path.home() / ".volare/volare/sky130/versions") + "/" +
     "c6d73a35f524070e85faff4a6a9eef49553ebc2b/sky130A/libs.ref/sky130_fd_sc_hd/lib/"
     "sky130_fd_sc_hd__tt_025C_1v80.lib"
 )
@@ -108,7 +89,7 @@ def parse_args() -> RunConfig:
         description="Real sky130-cell synthesis + OpenSTA timing/power, layered on collect_yosys_perf.py output."
     )
     parser.add_argument("--case", dest="case_names", action="append", help="Run one named case; repeatable")
-    parser.add_argument("--variant", choices=["anvil", "sv", "both"], default="both")
+    parser.add_argument("--variant", choices=["pact", "sv", "both"], default="both")
     parser.add_argument(
         "--results-dir",
         default=None,
@@ -411,30 +392,30 @@ def process_module(
     return row
 
 
-def rows_for_anvil_case(config: RunConfig, case: dict, defaults: dict) -> list[dict]:
+def rows_for_pact_case(config: RunConfig, case: dict, defaults: dict) -> list[dict]:
     case_name = case["name"]
-    anvil_sv = config.generated_dir / case_name / "anvil.yosys.sv"
-    if not anvil_sv.exists():
-        return [{**{f: "" for f in CSV_FIELDS}, "case": case_name, "row_type": "module", "variant": "anvil", "module": "aggregate", "status": "MISSING_GENERATED_SV", "status_detail": f"run collect_yosys_perf.py --case {case_name} --variant anvil first"}]
+    pact_sv = config.generated_dir / case_name / "pact.yosys.sv"
+    if not pact_sv.exists():
+        return [{**{f: "" for f in CSV_FIELDS}, "case": case_name, "row_type": "module", "variant": "pact", "module": "aggregate", "status": "MISSING_GENERATED_SV", "status_detail": f"run collect_yosys_perf.py --case {case_name} --variant pact first"}]
 
-    modules = discover_modules(anvil_sv)
-    core_patterns = case.get("anvil_core_patterns", [])
+    modules = discover_modules(pact_sv)
+    core_patterns = case.get("pact_core_patterns", [])
     selected = [m for m in modules if matches_any(m, core_patterns)]
     include_dirs = [ROOT / d for d in defaults.get("include_dirs", [])]
     defines = defaults.get("defines", [])
 
-    isolated_dir = config.results_dir / case_name / "anvil_isolated"
+    isolated_dir = config.results_dir / case_name / "pact_isolated"
     rows = []
     for module in selected:
-        module_text = extract_module_text(anvil_sv, module)
+        module_text = extract_module_text(pact_sv, module)
         if module_text is None:
-            files = [anvil_sv]
+            files = [pact_sv]
         else:
             isolated_dir.mkdir(parents=True, exist_ok=True)
             isolated_path = isolated_dir / f"{module}.sv"
             isolated_path.write_text(module_text)
             files = [isolated_path]
-        rows.append(process_module(config, case_name, "anvil", module, files, defines, include_dirs, "clk_i"))
+        rows.append(process_module(config, case_name, "pact", module, files, defines, include_dirs, "clk_i"))
     return rows
 
 
@@ -476,17 +457,17 @@ def aggregate_row(case_name: str, variant: str, module_rows: list[dict]) -> dict
     return aggregate
 
 
-def comparison_row(case_name: str, anvil_agg: dict | None, sv_agg: dict | None) -> dict | None:
-    if anvil_agg is None or sv_agg is None:
+def comparison_row(case_name: str, pact_agg: dict | None, sv_agg: dict | None) -> dict | None:
+    if pact_agg is None or sv_agg is None:
         return None
-    row = base_row(case_name, "comparison", "comparison", "anvil_over_sv")
-    if anvil_agg["status"] != "PASS" or sv_agg["status"] != "PASS":
+    row = base_row(case_name, "comparison", "comparison", "pact_over_sv")
+    if pact_agg["status"] != "PASS" or sv_agg["status"] != "PASS":
         row["status"] = "UNAVAILABLE"
-        row["status_detail"] = f"anvil={anvil_agg['status']};sv={sv_agg['status']}"
+        row["status_detail"] = f"pact={pact_agg['status']};sv={sv_agg['status']}"
         return row
     row["status"] = "PASS"
     for field in SUM_FIELDS + MIN_FIELDS:
-        numerator, denominator = anvil_agg.get(field), sv_agg.get(field)
+        numerator, denominator = pact_agg.get(field), sv_agg.get(field)
         if numerator in ("", None) or denominator in ("", None) or float(denominator) == 0.0:
             continue
         row[f"{field}_ratio"] = f"{float(numerator) / float(denominator):.6f}"
@@ -522,7 +503,7 @@ def add_aggregates_and_comparisons(all_rows: list[dict], cases: list[dict]) -> l
         case_name = case["name"]
         case_rows = [r for r in all_rows if r["case"] == case_name and r["row_type"] == "module"]
         aggregates = {}
-        for variant in ("anvil", "sv"):
+        for variant in ("pact", "sv"):
             variant_rows = [r for r in case_rows if r["variant"] == variant]
             if not variant_rows:
                 continue
@@ -538,7 +519,7 @@ def add_aggregates_and_comparisons(all_rows: list[dict], cases: list[dict]) -> l
         if "sv" in aggregates and case.get("sv_subtract"):
             apply_sv_subtract(case, aggregates["sv"], sv_aggregates_by_case)
         result.extend(aggregates.values())
-        comp = comparison_row(case_name, aggregates.get("anvil"), aggregates.get("sv"))
+        comp = comparison_row(case_name, aggregates.get("pact"), aggregates.get("sv"))
         if comp is not None:
             result.append(comp)
     return result
@@ -569,7 +550,7 @@ def write_markdown(rows: list[dict], md_path: Path) -> None:
                 area = format_num(row.get("area_um2_ratio"))
                 slack = format_num(row.get("worst_slack_setup_ns_ratio"))
                 power = format_num(row.get("total_power_w_ratio"))
-                notes = "ratios are Anvil/SV"
+                notes = "ratios are PACT/SV"
             else:
                 cells = format_num(row.get("total_cells"))
                 seq = format_num(row.get("seq_cells"))
@@ -620,8 +601,8 @@ def main() -> int:
     all_rows = []
     for case in selected_cases:
         print(f"[{case['name']}] real-cell synth + STA ({config.variant})", flush=True)
-        if config.variant in ("anvil", "both"):
-            all_rows.extend(rows_for_anvil_case(config, case, defaults))
+        if config.variant in ("pact", "both"):
+            all_rows.extend(rows_for_pact_case(config, case, defaults))
         if config.variant in ("sv", "both"):
             all_rows.extend(rows_for_sv_case(config, case, defaults))
 

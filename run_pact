@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+input=""
+output=""
+flags=(-disable-lt-checks)
+usage() { echo "Usage: run_pact [-jc] [-d MODE] [-v] [-out FILE] INPUT"; }
+while (($#)); do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    -jc) flags+=(-just-check -disable-compat-checks); shift ;;
+    -v) flags+=(-verbose); shift ;;
+    -d|-out)
+      if (($# < 2)); then usage >&2; exit 2; fi
+      if [[ "$1" == -d ]]; then flags+=(-debug-choice "$2"); else output="$2"; fi
+      shift 2 ;;
+    -*) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
+    *)
+      if [[ -n "$input" ]]; then usage >&2; exit 2; fi
+      input="$1"; shift ;;
+  esac
+done
+if [[ -z "$input" ]]; then usage >&2; exit 2; fi
+input=$(realpath -- "$input")
+if [[ -n "$output" ]]; then
+  "$ROOT/scripts/pact" "${flags[@]}" "$input" > "$output" 2>&1
+else
+  exec "$ROOT/scripts/pact" "${flags[@]}" "$input"
+fi

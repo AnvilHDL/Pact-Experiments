@@ -767,7 +767,7 @@ module ace_slave #(
   // Request FSM
   // ========================
   
-  // Cycle counter for matching the Anvil cache_client cycle waits.
+  // Cycle counter for matching the PACT cache_client cycle waits.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       cycle_count <= 0;

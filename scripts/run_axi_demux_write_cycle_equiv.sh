@@ -3,23 +3,23 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-ANVIL_DIR="$ROOT/src/compat"
+PACT_SRC_DIR="$ROOT/src/compat"
 AXI_DIR="$ROOT/axi"
 TB_DIR="$ROOT/src/testbenches"
-LOG_DIR="$AXI_DIR/logs/demux_write_cycle_equiv"
-SV_OBJ_DIR="$AXI_DIR/build/tb_axi_write_demux_obj"
-SV_DRIVER="$AXI_DIR/build/tb_axi_write_demux_driver.cpp"
+LOG_DIR="$ROOT/logs/equiv/axi/demux_write_cycle_equiv"
+SV_OBJ_DIR="$ROOT/src/build/axi/tb_axi_write_demux_obj"
+SV_DRIVER="$ROOT/src/build/axi/tb_axi_write_demux_driver.cpp"
 SV_TIMEOUT="${SV_TIMEOUT:-280}"
-ANVIL_TIMEOUT="${ANVIL_TIMEOUT:-300}"
+PACT_TIMEOUT="${PACT_TIMEOUT:-300}"
 SV_LOG="$LOG_DIR/axi_lite_demux_write_tb.sv.log"
-ANVIL_LOG="$LOG_DIR/test_demux_write.anvil.log"
+PACT_LOG="$LOG_DIR/test_demux_write.pact.log"
 SV_LOGIC_LOG="$LOG_DIR/axi_lite_demux_write_tb.sv.logic.log"
-ANVIL_LOGIC_LOG="$LOG_DIR/test_demux_write.anvil.logic.log"
+PACT_LOGIC_LOG="$LOG_DIR/test_demux_write.pact.logic.log"
 DIFF_LOG="$LOG_DIR/logic.diff"
-ANVIL_CHECK_ARGS=()
+PACT_CHECK_ARGS=()
 
-if [[ "${ANVIL_CHECKS:-1}" != "1" ]]; then
-  ANVIL_CHECK_ARGS+=(SESSIONOFF=1 COMPATOFF=1)
+if [[ "${PACT_CHECKS:-1}" != "1" ]]; then
+  PACT_CHECK_ARGS+=(SESSIONOFF=1 COMPATOFF=1)
 fi
 
 normalize_logic_log() {
@@ -28,23 +28,15 @@ normalize_logic_log() {
 
   grep '^\[Cycle' "$in_file" \
     | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//' \
-    | sort -s -k2,2n -k3,99 \
+    | LC_ALL=C sort -s -k2,2n -k3,99 \
     > "$out_file"
 }
 
-mkdir -p "$LOG_DIR" "$AXI_DIR/build" "$TB_DIR"
+mkdir -p "$LOG_DIR" "$ROOT/src/build/axi" "$TB_DIR"
 
-echo "[1/2] Building and running axi/src/axi_lite_demux_write_tb.sv"
+echo "[1/2] Building and running src/testbenches/axi_lite_demux_write_tb.sv"
 
-# axi/ is an untracked-content submodule (its testbench .sv files are not
-# committed anywhere in the submodule's own history), so refresh the tracked
-# copy under src/testbenches/ on every run rather than building straight out
-# of the submodule working tree - otherwise these sources only exist on
-# whichever machine last edited them.
-"$ROOT/scripts/refresh_testbench.sh" "$AXI_DIR/src/axi_lite_demux_write.sv" "$TB_DIR/axi_lite_demux_write.sv"
-"$ROOT/scripts/refresh_testbench.sh" "$AXI_DIR/src/axi_lite_demux_write_tb.sv" "$TB_DIR/axi_lite_demux_write_tb.sv"
-
-sed 's/Vtop/Vtb_axi_write_demux/g' "$ANVIL_DIR/sim_main.cpp" > "$SV_DRIVER"
+sed 's/Vtop/Vtb_axi_write_demux/g' "$PACT_SRC_DIR/sim_main.cpp" > "$SV_DRIVER"
 
 env OBJCACHE= verilator \
   --cc \
@@ -69,14 +61,14 @@ env OBJCACHE= verilator \
 "$SV_OBJ_DIR/Vtb_axi_write_demux" "$SV_TIMEOUT" | tee "$SV_LOG"
 normalize_logic_log "$SV_LOG" "$SV_LOGIC_LOG"
 
-echo "[2/2] Running Anvil compat test_demux_write"
+echo "[2/2] Running PACT compat test_demux_write"
 (
-  cd "$ANVIL_DIR"
-  env -u DEBUG OBJCACHE= make -B run MODULE_NAME=test_demux_write LTOFF=1 COMPATOFF=1 SILENT=1 TIMEOUT="$ANVIL_TIMEOUT" "${ANVIL_CHECK_ARGS[@]}"
-) | tee "$ANVIL_LOG"
-normalize_logic_log "$ANVIL_LOG" "$ANVIL_LOGIC_LOG"
+  cd "$PACT_SRC_DIR"
+  env -u DEBUG OBJCACHE= make -B run MODULE_NAME=test_demux_write LTOFF=1 COMPATOFF=1 SILENT=1 TIMEOUT="$PACT_TIMEOUT" "${PACT_CHECK_ARGS[@]}"
+) | tee "$PACT_LOG"
+normalize_logic_log "$PACT_LOG" "$PACT_LOGIC_LOG"
 
-diff -u "$SV_LOGIC_LOG" "$ANVIL_LOGIC_LOG" > "$DIFF_LOG"
+diff -u "$SV_LOGIC_LOG" "$PACT_LOGIC_LOG" > "$DIFF_LOG"
 
 echo "Logs written to $LOG_DIR"
 echo "Logical logs match"

@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
-"""Lines-of-code and assertion/signature-size comparison for each case.
+"""Measure process-source lines, interface sizes, RTL lines, and formal assertions.
 
-Anvil side: lines of code of the full test_<case>.anvil implementation, plus
-the character/line length of its interface(...) = <session type> declaration
-(the closest Anvil analog to a type signature).
-
-SV side: lines of code of the DUT file only (src/testbenches/, not the
-submodule copies under axi/src etc. - per instruction, prefer the tracked
-non-submodule variant), plus the size of the comm-safety formal wrapper/
-assertion block for that case (module comm_<case>_formal ... endmodule in
-formal/comm_safety/sv/{comm_safety_common,comm_safety_tb_wrappers}.sv) -
-line count and assert/assume count. No SV "type signature" is collected
-(SV has no session-type equivalent).
+RTL measurements use the tracked references in src/testbenches. Formal counts
+come from the corresponding comm_<case>_formal harness.
 """
 import argparse
 import csv
@@ -33,9 +24,9 @@ DEFAULT_RESULTS_BASE = ROOT / "formal" / "comm_safety" / "results"
 @dataclass(frozen=True)
 class Case:
     name: str
-    anvil_test: str
-    anvil_type_file: str  # interface(s) live in type_*.anvil, not test_*.anvil
-    anvil_interfaces: tuple  # DUT's own interface name(s), not driver/master/slave
+    pact_test: str
+    pact_type_file: str  # interface(s) live in type_*.anvil, not test_*.anvil
+    pact_interfaces: tuple  # DUT's own interface name(s), not driver/master/slave
     sv_dut: str
     harness_module: str
 
@@ -61,13 +52,13 @@ def count_lines(path):
     return len(text.splitlines())
 
 
-def find_interface_span(anvil_path, interface_name):
+def find_interface_span(pact_path, interface_name):
     """Best-effort: the `interface <name>(...) = <session type>` declaration,
     from its own line up to (but not including) the next top-level
     interface/proc/chan/pool/import/type/struct declaration or EOF."""
-    if not anvil_path.exists():
+    if not pact_path.exists():
         return None
-    text = anvil_path.read_text(errors="ignore")
+    text = pact_path.read_text(errors="ignore")
     lines = text.splitlines()
     start = None
     for i, line in enumerate(lines):
@@ -145,17 +136,17 @@ def main():
 
     rows = []
     for case in selected_cases(args.case_names):
-        anvil_path = COMPAT_DIR / case.anvil_test
-        type_path = COMPAT_DIR / case.anvil_type_file
+        pact_path = COMPAT_DIR / case.pact_test
+        type_path = COMPAT_DIR / case.pact_type_file
         sv_path = TESTBENCH_DIR / case.sv_dut
 
-        anvil_loc = count_lines(anvil_path)
+        pact_loc = count_lines(pact_path)
         sv_loc = count_lines(sv_path)
 
         iface_lines = 0
         iface_chars = 0
         iface_found = []
-        for iface_name in case.anvil_interfaces:
+        for iface_name in case.pact_interfaces:
             span = find_interface_span(type_path, iface_name)
             if span:
                 iface_lines += span["lines"]
@@ -166,13 +157,13 @@ def main():
 
         row = {
             "case": case.name,
-            "anvil_file": str(anvil_path.relative_to(ROOT)) if anvil_path.exists() else f"MISSING:{case.anvil_test}",
-            "anvil_loc": anvil_loc if anvil_loc is not None else "",
-            "anvil_type_file": str(type_path.relative_to(ROOT)) if type_path.exists() else f"MISSING:{case.anvil_type_file}",
-            "anvil_interfaces": ",".join(case.anvil_interfaces),
-            "anvil_interfaces_found": ",".join(iface_found),
-            "anvil_interface_lines": iface_lines if iface_found else "",
-            "anvil_interface_chars": iface_chars if iface_found else "",
+            "pact_file": str(pact_path.relative_to(ROOT)) if pact_path.exists() else f"MISSING:{case.pact_test}",
+            "pact_loc": pact_loc if pact_loc is not None else "",
+            "pact_type_file": str(type_path.relative_to(ROOT)) if type_path.exists() else f"MISSING:{case.pact_type_file}",
+            "pact_interfaces": ",".join(case.pact_interfaces),
+            "pact_interfaces_found": ",".join(iface_found),
+            "pact_interface_lines": iface_lines if iface_found else "",
+            "pact_interface_chars": iface_chars if iface_found else "",
             "sv_file": str(sv_path.relative_to(ROOT)) if sv_path.exists() else f"MISSING:{case.sv_dut}",
             "sv_loc": sv_loc if sv_loc is not None else "",
             "sv_harness_module": case.harness_module,
@@ -182,15 +173,15 @@ def main():
         }
         rows.append(row)
         print(
-            f"[{case.name}] anvil_loc={row['anvil_loc']} iface_lines={row['anvil_interface_lines']} "
+            f"[{case.name}] pact_loc={row['pact_loc']} iface_lines={row['pact_interface_lines']} "
             f"sv_loc={row['sv_loc']} harness_lines={row['sv_harness_lines']} "
             f"asserts={row['sv_harness_asserts']} assumes={row['sv_harness_assumes']}"
         )
 
     fieldnames = [
         "case",
-        "anvil_file", "anvil_loc", "anvil_type_file", "anvil_interfaces", "anvil_interfaces_found",
-        "anvil_interface_lines", "anvil_interface_chars",
+        "pact_file", "pact_loc", "pact_type_file", "pact_interfaces", "pact_interfaces_found",
+        "pact_interface_lines", "pact_interface_chars",
         "sv_file", "sv_loc", "sv_harness_module", "sv_harness_lines", "sv_harness_asserts", "sv_harness_assumes",
     ]
     with csv_path.open("w", newline="") as f:

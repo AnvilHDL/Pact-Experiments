@@ -27,7 +27,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOGS_ROOT = os.path.join(BASE_DIR, "logs", "compat")
 ERROR_DIR = os.path.join(BASE_DIR, "error_logs")
 TEST_CASES_DIR = os.path.join(BASE_DIR, "src/compat")
-COMPILER_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "Pact"))
+COMPILER_DIR = os.path.abspath(os.environ.get("PACT_DIR", os.path.join(BASE_DIR, "..", "Pact")))
 COMPILER_PATH = os.path.join(COMPILER_DIR, "_build", "default", "bin", "main.exe")
 
 # Every invocation of this script gets its own timestamped directory so
@@ -131,8 +131,8 @@ def get_type_files(only=None):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Run Anvil compatibility checks.")
-    parser.add_argument("mode", help="Compatibility mode: 2, 3, or 4")
+    parser = argparse.ArgumentParser(description="Run PACT compatibility checks.")
+    parser.add_argument("mode", choices=["2", "3", "4"], help="2: fast closed product; 3: simultaneous product; 4: sequential residual composition")
     parser.add_argument(
         "--only",
         help="Comma-separated list of compat files to run, e.g. type_fifo.anvil,type_stream_fifo.anvil",

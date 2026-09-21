@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
-"""Add (or re-add) the `FORMAL_COMM_SAFETY` self-report blocks to the stub
-modules of the cycle-equivalence testbenches under src/testbenches/.
+"""Maintain FORMAL_COMM_SAFETY instrumentation in tracked RTL testbenches.
 
-The blocks are what formal/comm_safety/sv/*.sv read hierarchically; they are
-inert for Verilator (the define is never set there). The script is idempotent:
-a module that already carries its block is left alone, so it is safe to run
-after every refresh of a tracked copy from a submodule working tree (see
-scripts/refresh_testbench.sh).
-
-    python3 scripts/instrument_comm_safety.py                  # all known files
-    python3 scripts/instrument_comm_safety.py FILE...          # only these
-    python3 scripts/instrument_comm_safety.py --check [FILE..] # report, no write
-    python3 scripts/instrument_comm_safety.py --if-known FILE  # ignore unknown files
+Run with --check to inspect without writing, or pass filenames to update
+selected testbenches. Existing instrumentation is retained.
 """
 import re
 import sys

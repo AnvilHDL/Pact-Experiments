@@ -8,15 +8,15 @@ smtbmc yices
 
 [script]
 plugin -i slang
-read_slang --single-unit --top comm_ace_formal -D FORMAL_COMM_SAFETY -D COMMON_CELLS_ASSERTS_OFF -Iaxi/include -Iace/include axi/src/axi_pkg.sv ace/src/ace_pkg.sv ace/src/snoop_pkg.sv ace/src/ccu_fsm.sv src/testbenches/ccu_fsm_tb.sv formal/comm_safety/sv/comm_safety_tb_wrappers.sv
+read_slang --single-unit --top comm_ace_formal -D FORMAL_COMM_SAFETY -D COMMON_CELLS_ASSERTS_OFF -Iaxi/include -Iace/include axi/src/axi_pkg.sv src/testbenches/ace_pkg.sv src/testbenches/snoop_pkg.sv src/testbenches/ccu_fsm.sv src/testbenches/ccu_fsm_tb.sv formal/comm_safety/sv/comm_safety_tb_wrappers.sv
 prep -top comm_ace_formal
 
 [files]
 axi/include axi/include
 ace/include ace/include
 axi/src/axi_pkg.sv axi/src/axi_pkg.sv
-ace/src/ace_pkg.sv ace/src/ace_pkg.sv
-ace/src/snoop_pkg.sv ace/src/snoop_pkg.sv
-ace/src/ccu_fsm.sv ace/src/ccu_fsm.sv
+src/testbenches/ace_pkg.sv src/testbenches/ace_pkg.sv
+src/testbenches/snoop_pkg.sv src/testbenches/snoop_pkg.sv
+src/testbenches/ccu_fsm.sv src/testbenches/ccu_fsm.sv
 src/testbenches/ccu_fsm_tb.sv src/testbenches/ccu_fsm_tb.sv
 formal/comm_safety/sv/comm_safety_tb_wrappers.sv formal/comm_safety/sv/comm_safety_tb_wrappers.sv

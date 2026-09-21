@@ -42,7 +42,7 @@ class Case:
     name: str
     phase: str
     sby: str
-    anvil_type: str
+    pact_type: str
     harness_module: str
 
 
@@ -100,7 +100,7 @@ def harness_assertion_counts(module_name):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Time communication-safety SBY and Anvil checks.")
+    parser = argparse.ArgumentParser(description="Time communication-safety SBY and PACT checks.")
     parser.add_argument("--phase", choices=["short", "big", "all"], default="short")
     parser.add_argument("--mode", choices=["2", "3", "4"], default="2")
     parser.add_argument(
@@ -111,7 +111,7 @@ def parse_args():
     )
     parser.add_argument("--case", dest="case_names", action="append", help="Run one named case; repeatable")
     parser.add_argument("--skip-yosys", action="store_true")
-    parser.add_argument("--skip-anvil", action="store_true")
+    parser.add_argument("--skip-pact", action="store_true")
     parser.add_argument("--checker", choices=["sby", "ebmc", "both"], default="sby")
     parser.add_argument("--ebmc-bound", type=int, help="Override the bound used for EBMC k-induction")
     parser.add_argument("--ebmc-solver", choices=["yices", "z3", "boolector", "cvc4", "mathsat"], default="yices")
@@ -124,7 +124,7 @@ def parse_args():
         "--timeout",
         type=float,
         default=None,
-        help="Wall-clock seconds to allow each individual sby/ebmc/anvil subprocess before killing it "
+        help="Wall-clock seconds to allow each individual sby/ebmc/pact subprocess before killing it "
         "(each of the up-to-3 steps per case gets its own budget, not a shared one). "
         "Default: none (run to completion).",
     )
@@ -132,7 +132,7 @@ def parse_args():
         "--jobs",
         type=int,
         default=1,
-        help="Number of cases to run concurrently (each case's own sby/ebmc/anvil steps still run "
+        help="Number of cases to run concurrently (each case's own sby/ebmc/pact steps still run "
         "sequentially within that case). Default: 1 (sequential, original behavior).",
     )
     return parser.parse_args()
@@ -268,6 +268,8 @@ def run_sby(case, results_dir, setup_only=False, timeout_seconds=None):
     command.extend(["-d", str(workdir), str(ROOT / case.sby)])
     rc, elapsed = run_logged(command, log_path, timeout_seconds=timeout_seconds)
     status = "EXTERNAL_TIMEOUT" if rc is None else sby_status_from_retcode(rc)
+    if setup_only and rc == 0:
+        status = "SETUP"
     return {
         "yosys_mode": "setup_only" if setup_only else "model_check",
         "yosys_status": status,
@@ -296,7 +298,7 @@ def run_ebmc(case, results_dir, bound_override=None, solver="yices", timeout_sec
     }
 
 
-def read_single_anvil_csv(path):
+def read_single_pact_csv(path):
     with open(path, newline="") as csv_file:
         rows = list(csv.DictReader(csv_file))
     if not rows:
@@ -304,38 +306,36 @@ def read_single_anvil_csv(path):
     return rows[0].get("result", "Error"), rows[0].get("elapsed_seconds", "")
 
 
-def run_anvil(case, mode, results_dir, timeout_seconds=None):
-    log_path = results_dir / f"{case.name}.anvil.log"
-    csv_path = results_dir / f"{case.name}.anvil.csv"
-    # run_compat.py only writes this CSV once, after its whole run completes -
-    # remove any stale file first so a killed/timed-out subprocess can't be
-    # mistaken for a fresh result below.
+def run_pact(case, mode, results_dir, timeout_seconds=None):
+    log_path = results_dir / f"{case.name}.pact.log"
+    csv_path = results_dir / f"{case.name}.pact.csv"
+    # A timed-out subprocess must not reuse a previous result.
     csv_path.unlink(missing_ok=True)
     command = [
         sys.executable,
         "run_compat.py",
         str(mode),
         "--only",
-        case.anvil_type,
+        case.pact_type,
         "--csv",
         str(csv_path),
     ]
     rc, elapsed = run_logged(command, log_path, timeout_seconds=timeout_seconds)
     if rc is None:
         return {
-            "anvil_status": "EXTERNAL_TIMEOUT",
-            "anvil_seconds": f"{elapsed:.6f}",
-            "anvil_log": str(log_path.relative_to(ROOT)),
+            "pact_status": "EXTERNAL_TIMEOUT",
+            "pact_seconds": f"{elapsed:.6f}",
+            "pact_log": str(log_path.relative_to(ROOT)),
         }
     if csv_path.exists():
-        result, compat_elapsed = read_single_anvil_csv(csv_path)
+        result, compat_elapsed = read_single_pact_csv(csv_path)
     else:
         result, compat_elapsed = "Error", ""
     status = result if rc == 0 else f"{result}/FAIL({rc})"
     return {
-        "anvil_status": status,
-        "anvil_seconds": compat_elapsed or f"{elapsed:.6f}",
-        "anvil_log": str(log_path.relative_to(ROOT)),
+        "pact_status": status,
+        "pact_seconds": compat_elapsed or f"{elapsed:.6f}",
+        "pact_log": str(log_path.relative_to(ROOT)),
     }
 
 
@@ -346,7 +346,7 @@ def run_case(case, args, results_dir):
         "case": case.name,
         "phase": case.phase,
         "sby": case.sby,
-        "anvil_type": case.anvil_type,
+        "pact_type": case.pact_type,
         "harness_module": case.harness_module,
         "kinduction_depth": sby_depth(ROOT / case.sby),
         "harness_lines": harness_lines,
@@ -369,15 +369,15 @@ def run_case(case, args, results_dir):
         else:
             row.update({"ebmc_status": "SKIPPED", "ebmc_seconds": "", "ebmc_log": ""})
 
-    if args.skip_anvil:
-        row.update({"anvil_status": "SKIPPED", "anvil_seconds": "", "anvil_log": ""})
+    if args.skip_pact:
+        row.update({"pact_status": "SKIPPED", "pact_seconds": "", "pact_log": ""})
     else:
-        row.update(run_anvil(case, args.mode, results_dir, timeout_seconds=args.timeout))
+        row.update(run_pact(case, args.mode, results_dir, timeout_seconds=args.timeout))
 
     print(
         f"[{case.name}] done: yosys={row['yosys_status']} {row['yosys_seconds']}s "
         f"ebmc={row['ebmc_status']} {row['ebmc_seconds']}s "
-        f"anvil={row['anvil_status']} {row['anvil_seconds']}s",
+        f"pact={row['pact_status']} {row['pact_seconds']}s",
         flush=True,
     )
     return row
@@ -427,15 +427,15 @@ def main():
                 "harness_lines",
                 "harness_asserts",
                 "harness_assumes",
-                "anvil_status",
-                "anvil_seconds",
+                "pact_status",
+                "pact_seconds",
                 "ebmc_status",
                 "ebmc_seconds",
                 "sby",
-                "anvil_type",
+                "pact_type",
                 "yosys_log",
                 "ebmc_log",
-                "anvil_log",
+                "pact_log",
             ],
         )
         writer.writeheader()

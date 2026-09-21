@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+PACT_DIR="${PACT_DIR:-$ROOT/../Pact}"
+if [[ ! -f "$PACT_DIR/dune-project" ]]; then
+  echo "PACT checkout not found: $PACT_DIR. Set PACT_DIR to its directory." >&2
+  exit 1
+fi
+PACT_DIR=$(cd "$PACT_DIR" && pwd)
+dune build --root "$PACT_DIR" bin/main.exe >&2
+exec "$PACT_DIR/_build/default/bin/main.exe" "$@"

@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "scripts" / "yosys_perf_manifest.json"
 DEFAULT_RESULTS_BASE = ROOT / "synthesis_reports" / "yosys_perf_results"
-ANVIL_DIR = ROOT / "src" / "compat"
+PACT_SRC_DIR = ROOT / "src" / "compat"
 RESET_ONLY_FF_RE = re.compile(
     r"(?P<head>always_ff @\(posedge clk_i or negedge rst_ni\) begin : [^\n]+\n)"
     r"(?P<ifline>\s*if \(~rst_ni\) begin\n)"
@@ -80,11 +80,11 @@ class RunConfig:
 
 def parse_args() -> RunConfig:
     parser = argparse.ArgumentParser(
-        description="Collect Yosys-only core performance metrics for Anvil and SV components."
+        description="Collect Yosys-only core performance metrics for PACT and SV components."
     )
     parser.add_argument("--phase", choices=["short", "big", "all"], default="short")
     parser.add_argument("--case", dest="case_names", action="append", help="Run one named case; repeatable")
-    parser.add_argument("--variant", choices=["anvil", "sv", "both"], default="both")
+    parser.add_argument("--variant", choices=["pact", "sv", "both"], default="both")
     parser.add_argument("--include-neighbors", action="store_true")
     parser.add_argument("--strict", action="store_true")
     parser.add_argument(
@@ -99,7 +99,7 @@ def parse_args() -> RunConfig:
         "--timeout-seconds",
         type=int,
         default=180,
-        help="Per Anvil/Yosys/ABC command timeout. Use 0 to disable.",
+        help="Per PACT/Yosys/ABC command timeout. Use 0 to disable.",
     )
     args = parser.parse_args()
 
@@ -180,7 +180,7 @@ def discover_modules(sv_path: Path) -> list[str]:
 def extract_module_text(sv_path: Path, module_name: str) -> str | None:
     """The single `module <module_name> ( ... ) ... endmodule` block, verbatim.
 
-    Anvil's generated SV is flat (no file-scope packages/typedefs, no
+    PACT's generated SV is flat (no file-scope packages/typedefs, no
     submodule instantiation between the manifest's core-pattern modules -
     each is an independent leaf), so isolating exactly one module's own text
     is a complete, self-contained compilation unit on its own. This sidesteps
@@ -214,14 +214,14 @@ def write_precheck_log(log_path: Path, command: list[str], stdout_path: Path | N
             log_file.write(f"# stdout: {rel(stdout_path)}\n")
 
 
-def generate_anvil(case: dict, config: RunConfig) -> tuple[str, Path | None, Path]:
+def generate_pact(case: dict, config: RunConfig) -> tuple[str, Path | None, Path]:
     case_name = case["name"]
     generated_dir = config.results_dir / "generated" / case_name
     generated_dir.mkdir(parents=True, exist_ok=True)
-    out_path = generated_dir / "anvil.sv"
-    yosys_path = generated_dir / "anvil.yosys.sv"
-    log_path = config.results_dir / "logs" / case_name / "anvil" / "generate.log"
-    command = ["anvil", "-disable-lt-checks", "-disable-compat-checks", "-disable-session-checks","-O", "3", case["anvil_test"]]
+    out_path = generated_dir / "pact.sv"
+    yosys_path = generated_dir / "pact.yosys.sv"
+    log_path = config.results_dir / "logs" / case_name / "pact" / "generate.log"
+    command = [str(ROOT / "scripts" / "pact"), "-disable-lt-checks", "-disable-compat-checks", "-disable-session-checks","-O", "3", case["pact_test"]]
 
     if out_path.exists() and not config.keep_generated:
         out_path.unlink()
@@ -232,7 +232,7 @@ def generate_anvil(case: dict, config: RunConfig) -> tuple[str, Path | None, Pat
         try:
             proc = subprocess.run(
                 command,
-                cwd=ANVIL_DIR,
+                cwd=PACT_SRC_DIR,
                 stdout=stdout_file,
                 stderr=stderr_file,
                 check=False,
@@ -251,11 +251,11 @@ def generate_anvil(case: dict, config: RunConfig) -> tuple[str, Path | None, Pat
         return f"PRECHECK_FAIL({returncode})", None, log_path
     if not out_path.exists() or out_path.stat().st_size == 0:
         return "PRECHECK_FAIL(empty-output)", None, log_path
-    sanitize_anvil_sv_for_yosys(out_path, yosys_path, log_path)
+    sanitize_pact_sv_for_yosys(out_path, yosys_path, log_path)
     return "PASS", yosys_path, log_path
 
 
-def sanitize_anvil_sv_for_yosys(in_path: Path, out_path: Path, log_path: Path) -> None:
+def sanitize_pact_sv_for_yosys(in_path: Path, out_path: Path, log_path: Path) -> None:
     text = in_path.read_text()
     replacements = 0
     debug_statements = 0
@@ -635,9 +635,9 @@ def apply_sv_subtract(case: dict, sv_aggregate: dict, sv_aggregates_by_case: dic
     """Subtract other cases' own standalone SV aggregate cell counts from this
     case's flattened SV aggregate, count times each (in place).
 
-    Exists because an AXI mux/demux case's anvil_core_patterns no longer
+    Exists because an AXI mux/demux case's pact_core_patterns no longer
     include the FIFO/arbiter submodules it embeds (those are separately
-    measured as their own manifest cases already) - but unlike the Anvil
+    measured as their own manifest cases already) - but unlike the PACT
     side, the SV top is always synthesized as one flattened module that still
     includes its instantiated fifo_v3/spill_register/rr_arb_tree submodules
     (no hierarchy-preserving synth path was found to work for this design
@@ -661,21 +661,21 @@ def apply_sv_subtract(case: dict, sv_aggregate: dict, sv_aggregates_by_case: dic
 
 
 def comparison_row(case: dict, aggregate_rows_by_variant: dict[str, dict]) -> dict | None:
-    anvil = aggregate_rows_by_variant.get("anvil")
+    pact = aggregate_rows_by_variant.get("pact")
     sv = aggregate_rows_by_variant.get("sv")
-    if not anvil or not sv:
+    if not pact or not sv:
         return None
 
-    row = base_row(case, "comparison", "comparison", "anvil_over_sv", True)
+    row = base_row(case, "comparison", "comparison", "pact_over_sv", True)
     row["true_power"] = "UNAVAILABLE_YOSYS_ONLY"
-    if anvil["status"] != "PASS" or sv["status"] != "PASS":
+    if pact["status"] != "PASS" or sv["status"] != "PASS":
         row["status"] = "UNAVAILABLE"
-        row["status_detail"] = f"anvil={anvil['status']};sv={sv['status']}"
+        row["status_detail"] = f"pact={pact['status']};sv={sv['status']}"
         return row
 
     row["status"] = "PASS"
     for field in METRIC_FIELDS:
-        numerator = anvil.get(field)
+        numerator = pact.get(field)
         denominator = sv.get(field)
         if numerator in ("", None) or denominator in ("", None) or float(denominator) == 0.0:
             continue
@@ -687,17 +687,17 @@ def rows_failed(rows: list[dict]) -> bool:
     return any(row.get("status") not in ("PASS", "") for row in rows if row.get("variant") != "comparison")
 
 
-def rows_for_anvil_case(case: dict, defaults: dict, config: RunConfig) -> list[dict]:
+def rows_for_pact_case(case: dict, defaults: dict, config: RunConfig) -> list[dict]:
     rows = []
-    status, generated_sv, generate_log = generate_anvil(case, config)
+    status, generated_sv, generate_log = generate_pact(case, config)
     if status != "PASS":
-        detail = "Anvil code generation timed out." if status.startswith("TIMEOUT") else "Anvil code generation failed."
-        rows.append(precheck_failure_row(case, "anvil", status, generate_log, detail))
+        detail = "PACT code generation timed out." if status.startswith("TIMEOUT") else "PACT code generation failed."
+        rows.append(precheck_failure_row(case, "pact", status, generate_log, detail))
         return rows
 
     modules = discover_modules(generated_sv)
-    core_patterns = compile_patterns(case.get("anvil_core_patterns", []))
-    ignore_patterns = compile_patterns(defaults.get("anvil_ignore_patterns", []))
+    core_patterns = compile_patterns(case.get("pact_core_patterns", []))
+    ignore_patterns = compile_patterns(defaults.get("pact_ignore_patterns", []))
 
     selected_modules = []
     for module in modules:
@@ -706,7 +706,7 @@ def rows_for_anvil_case(case: dict, defaults: dict, config: RunConfig) -> list[d
         if is_core or (config.include_neighbors and is_ignored):
             selected_modules.append((module, is_core))
 
-    isolated_dir = config.results_dir / "generated" / case["name"] / "anvil_isolated"
+    isolated_dir = config.results_dir / "generated" / case["name"] / "pact_isolated"
     for module, is_core in selected_modules:
         module_text = extract_module_text(generated_sv, module)
         if module_text is None:
@@ -719,8 +719,8 @@ def rows_for_anvil_case(case: dict, defaults: dict, config: RunConfig) -> list[d
             isolated_path = isolated_dir / f"{module}.sv"
             isolated_path.write_text(module_text)
             files = [isolated_path]
-        rows.append(synthesize_module(case, defaults, config, "anvil", module, files, is_core))
-    rows.append(aggregate_rows(case, "anvil", rows))
+        rows.append(synthesize_module(case, defaults, config, "pact", module, files, is_core))
+    rows.append(aggregate_rows(case, "pact", rows))
     return rows
 
 
@@ -774,7 +774,7 @@ def write_summary_files(rows: list[dict], results_dir: Path) -> None:
         for row in aggregate_rows_only:
             notes = row.get("status_detail", "")
             if row["row_type"] == "comparison":
-                notes = "ratios are Anvil/SV"
+                notes = "ratios are PACT/SV"
             md_file.write(
                 "| {case} | {variant} | {status} | {total} | {seq} | {comb} | {levels} | {notes} |\n".format(
                     case=row["case"],
@@ -810,8 +810,8 @@ def main() -> int:
     for case in selected_cases:
         print(f"[{case['name']}] collecting {config.variant}", flush=True)
         case_rows = []
-        if config.variant in ("anvil", "both"):
-            case_rows.extend(rows_for_anvil_case(case, defaults, config))
+        if config.variant in ("pact", "both"):
+            case_rows.extend(rows_for_pact_case(case, defaults, config))
         if config.variant in ("sv", "both"):
             case_rows.extend(rows_for_sv_case(case, defaults, config))
         per_case_rows[case["name"]] = case_rows
@@ -830,7 +830,7 @@ def main() -> int:
         aggregates = {
             row["variant"]: row
             for row in case_rows
-            if row["row_type"] == "aggregate" and row["variant"] in ("anvil", "sv")
+            if row["row_type"] == "aggregate" and row["variant"] in ("pact", "sv")
         }
         if "sv" in aggregates and case.get("sv_subtract"):
             apply_sv_subtract(case, aggregates["sv"], sv_aggregates_by_case)

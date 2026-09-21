@@ -1,18 +1,12 @@
 [submodule "axi"]
 	path = axi
 	url = https://github.com/pulp-platform/axi.git
-[submodule "opentitan"]
-	path = opentitan
-	url = git@github.com:lowRISC/opentitan.git
-[submodule "cva6_ariane"]
-	path = cva6_ariane
-	url = https://github.com/openhwgroup/cva6.git
 [submodule "common_cells"]
 	path = common_cells
 	url = https://github.com/pulp-platform/common_cells.git
 [submodule "tilelink"]
 	path = tilelink
-	url = git@github.com:chipsalliance/tilelink.git
+	url = https://github.com/chipsalliance/tilelink.git
 [submodule "ace"]
 	path = ace
-	url = git@github.com:pulp-platform/ace.git
+	url = https://github.com/pulp-platform/ace.git

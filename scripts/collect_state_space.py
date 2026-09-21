@@ -9,9 +9,9 @@ top module, same file list, comm_safety harness included where the .sby
 already includes it) - state_space and model-checking data line up 1:1 for
 the same synthesized design.
 
-Anvil side: synthesizes the same case's full src/compat/test_<case>.anvil
+PACT side: synthesizes the same case's full src/compat/test_<case>.anvil
 file (not type_<case>.anvil, which has no proc bodies) with --top set to the
-outermost driver process module, which genuinely instantiates every other
+outermost driver process module, which instantiates every other
 process as a real submodule - so -flatten captures the whole test's state,
 not just one isolated process.
 """
@@ -28,7 +28,7 @@ from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-ANVIL_DIR = ROOT / "src" / "compat"
+PACT_SRC_DIR = ROOT / "src" / "compat"
 
 # Simulation-only constructs that read_slang can't synthesize; safe to strip
 # since they don't affect any register/state - unlike collect_yosys_perf.py's
@@ -42,8 +42,8 @@ DEFAULT_RESULTS_BASE = ROOT / "formal" / "comm_safety" / "results" / "state_spac
 class Case:
     name: str
     sby: str
-    anvil_test: str
-    anvil_top: str
+    pact_test: str
+    pact_top: str
 
 
 CASES = [
@@ -61,7 +61,7 @@ CASES = [
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Naive state-space (2**seq_cells) for full-test Anvil vs SV.")
+    parser = argparse.ArgumentParser(description="Naive state-space (2**seq_cells) for full-test PACT vs SV.")
     parser.add_argument("--case", dest="case_names", action="append", help="Run one named case; repeatable")
     parser.add_argument(
         "--results-dir",
@@ -134,7 +134,7 @@ def sv_yosys_command(case):
     return ["yosys", "-m", "slang", "-p", script], top
 
 
-def anvil_yosys_command(sv_path, top):
+def pact_yosys_command(sv_path, top):
     script = "\n".join(
         [f"read_slang --single-unit --top {top} {sv_path.resolve()}"]
         + [line.format(top=top) for line in STATE_SPACE_RECIPE]
@@ -203,17 +203,17 @@ def count_memory_bits(module_stat):
     return int(module_stat.get("num_memory_bits", 0))
 
 
-def generate_anvil_sv(case, results_dir, timeout_seconds):
-    out_path = results_dir / "generated" / f"{case.name}.anvil.sv"
-    log_path = results_dir / "logs" / case.name / "anvil_generate.log"
+def generate_pact_sv(case, results_dir, timeout_seconds):
+    out_path = results_dir / "generated" / f"{case.name}.pact.sv"
+    log_path = results_dir / "logs" / case.name / "pact_generate.log"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    command = ["anvil", "-disable-lt-checks", "-disable-compat-checks", "-disable-session-checks", "-O", "3", case.anvil_test]
+    command = [str(ROOT / "scripts" / "pact"), "-disable-lt-checks", "-disable-compat-checks", "-disable-session-checks", "-O", "3", case.pact_test]
     start = time.perf_counter()
     with out_path.open("w") as stdout_file, log_path.open("w") as log_file:
-        log_file.write("$ " + " ".join(command) + " (cwd=" + str(ANVIL_DIR) + ")\n")
+        log_file.write("$ " + " ".join(command) + " (cwd=" + str(PACT_SRC_DIR) + ")\n")
         try:
-            proc = subprocess.run(command, cwd=ANVIL_DIR, stdout=stdout_file, stderr=log_file, check=False, timeout=timeout_seconds or None)
+            proc = subprocess.run(command, cwd=PACT_SRC_DIR, stdout=stdout_file, stderr=log_file, check=False, timeout=timeout_seconds or None)
             rc = proc.returncode
         except subprocess.TimeoutExpired:
             rc = -124
@@ -222,7 +222,7 @@ def generate_anvil_sv(case, results_dir, timeout_seconds):
     if rc != 0 or not out_path.exists() or out_path.stat().st_size == 0:
         return None
 
-    sanitized_path = results_dir / "generated" / f"{case.name}.anvil.yosys.sv"
+    sanitized_path = results_dir / "generated" / f"{case.name}.pact.yosys.sv"
     sanitized_text, stripped = SIM_ONLY_RE.subn("", out_path.read_text())
     sanitized_path.write_text(sanitized_text)
     if stripped:
@@ -275,19 +275,19 @@ def main():
             sv_result = {"status": f"ERROR({err})", "seq_cells": "", "memory_bits": "", "state_space_2pow": "", "elapsed_seconds": ""}
         row.update({f"sv_{k}": v for k, v in sv_result.items()})
 
-        print(f"[{case.name}] anvil generate", flush=True)
-        anvil_sv = generate_anvil_sv(case, results_dir, args.timeout_seconds)
-        if anvil_sv is None:
-            anvil_result = {"status": "GENERATE_FAIL", "seq_cells": "", "memory_bits": "", "state_space_2pow": "", "elapsed_seconds": ""}
+        print(f"[{case.name}] pact generate", flush=True)
+        pact_sv = generate_pact_sv(case, results_dir, args.timeout_seconds)
+        if pact_sv is None:
+            pact_result = {"status": "GENERATE_FAIL", "seq_cells": "", "memory_bits": "", "state_space_2pow": "", "elapsed_seconds": ""}
         else:
-            print(f"[{case.name}] anvil synth", flush=True)
-            command = anvil_yosys_command(anvil_sv, case.anvil_top)
-            anvil_result = measure(command, ROOT, case.anvil_top, results_dir / "logs" / case.name / "anvil_synth.log", args.timeout_seconds)
-        row.update({f"anvil_{k}": v for k, v in anvil_result.items()})
+            print(f"[{case.name}] pact synth", flush=True)
+            command = pact_yosys_command(pact_sv, case.pact_top)
+            pact_result = measure(command, ROOT, case.pact_top, results_dir / "logs" / case.name / "pact_synth.log", args.timeout_seconds)
+        row.update({f"pact_{k}": v for k, v in pact_result.items()})
 
         print(
             f"[{case.name}] done: sv={row['sv_status']} seq={row['sv_seq_cells']} "
-            f"anvil={row['anvil_status']} seq={row['anvil_seq_cells']}",
+            f"pact={row['pact_status']} seq={row['pact_seq_cells']}",
             flush=True,
         )
         rows.append(row)
@@ -297,7 +297,7 @@ def main():
         fieldnames = [
             "case",
             "sv_status", "sv_seq_cells", "sv_memory_bits", "sv_state_space_2pow", "sv_elapsed_seconds",
-            "anvil_status", "anvil_seq_cells", "anvil_memory_bits", "anvil_state_space_2pow", "anvil_elapsed_seconds",
+            "pact_status", "pact_seq_cells", "pact_memory_bits", "pact_state_space_2pow", "pact_elapsed_seconds",
         ]
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()

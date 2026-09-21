@@ -3,12 +3,12 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-ANVIL_DIR="$ROOT/src/compat"
+PACT_SRC_DIR="$ROOT/src/compat"
 SV_DIR="$ROOT/src/testbenches"
-LOG_ROOT="$ROOT/src/logs/common_cells_cycle_equiv"
+LOG_ROOT="$ROOT/logs/equiv/common_cells"
 BUILD_ROOT="$ROOT/src/build/common_cells_cycle_equiv"
 SV_TIMEOUT="${SV_TIMEOUT:-180}"
-ANVIL_TIMEOUT="${ANVIL_TIMEOUT:-220}"
+PACT_TIMEOUT="${PACT_TIMEOUT:-220}"
 
 normalize_logic_log() {
   local in_file="$1"
@@ -25,21 +25,21 @@ run_case() {
   local sv_file="$2"
   local top_module="$3"
   local trace_define="$4"
-  local anvil_module="$5"
+  local pact_module="$5"
 
   local log_dir="$LOG_ROOT/$case_name"
   local obj_dir="$BUILD_ROOT/${case_name}_obj"
   local driver="$BUILD_ROOT/${case_name}_driver.cpp"
   local sv_log="$log_dir/${sv_file}.log"
-  local anvil_log="$log_dir/${anvil_module}.anvil.log"
+  local pact_log="$log_dir/${pact_module}.pact.log"
   local sv_logic_log="$log_dir/${sv_file}.logic.log"
-  local anvil_logic_log="$log_dir/${anvil_module}.anvil.logic.log"
+  local pact_logic_log="$log_dir/${pact_module}.pact.logic.log"
   local diff_log="$log_dir/logic.diff"
 
   mkdir -p "$log_dir" "$BUILD_ROOT"
 
   echo "[SV] Building and running $sv_file"
-  sed "s/Vtop/V${top_module}/g" "$ANVIL_DIR/sim_main.cpp" > "$driver"
+  sed "s/Vtop/V${top_module}/g" "$PACT_SRC_DIR/sim_main.cpp" > "$driver"
 
   env OBJCACHE= verilator \
     --cc \
@@ -57,14 +57,14 @@ run_case() {
   "$obj_dir/V${top_module}" "$SV_TIMEOUT" | tee "$sv_log"
   normalize_logic_log "$sv_log" "$sv_logic_log"
 
-  echo "[Anvil] Running $anvil_module"
+  echo "[PACT] Running $pact_module"
   (
-    cd "$ANVIL_DIR"
-    env -u DEBUG OBJCACHE= make -B run MODULE_NAME="$anvil_module" LTOFF=1 COMPATOFF=1 SILENT=1 TIMEOUT="$ANVIL_TIMEOUT"
-  ) | tee "$anvil_log"
-  normalize_logic_log "$anvil_log" "$anvil_logic_log"
+    cd "$PACT_SRC_DIR"
+    env -u DEBUG OBJCACHE= make -B run MODULE_NAME="$pact_module" LTOFF=1 COMPATOFF=1 SILENT=1 TIMEOUT="$PACT_TIMEOUT"
+  ) | tee "$pact_log"
+  normalize_logic_log "$pact_log" "$pact_logic_log"
 
-  diff -u "$sv_logic_log" "$anvil_logic_log" > "$diff_log"
+  diff -u "$sv_logic_log" "$pact_logic_log" > "$diff_log"
   echo "[OK] $case_name logical traces match"
 }
 
