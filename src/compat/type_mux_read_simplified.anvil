@@ -1,18 +1,10 @@
 import "mux_commons.anvilh"
 
 
-// Request and response streams repeat independently.
-interface master_read_request_itfc(mst_ep_ar : right r_mst_ch<ar_pack_t>) =
-    F mst_ep_ar.rdy; mst_ep_ar.req; #1
+interface master_read_itfc(mst_ep_ar : right r_mst_ch<ar_pack_t>, mst_ep_r : left mst_r_ch<r_pack_t>) = F mst_ep_ar.rdy;mst_ep_ar.req ;#2;mst_ep_r.rdy;mst_ep_r.res;#1
 
-interface master_read_response_itfc(mst_ep_r : left mst_r_ch<r_pack_t>) =
-    F mst_ep_r.rdy; mst_ep_r.res; #1
-
-interface slave_read_request_itfc(read_req_ep : left r_slv_ch<ar_pack_t>) =
-    F read_req_ep.req; read_req_ep.gnt; #1
-
-interface slave_read_response_itfc(read_res_ep : left slv_r_ch<r_pack_t>) =
-    F (rec X . (read_res_ep.rdy; ^(read_res_ep.res, *: #1; X))); #1
+interface slave_read_itfc(read_req_ep :left r_slv_ch<ar_pack_t>, read_res_ep : left slv_r_ch<r_pack_t>) =
+            F read_req_ep.req ; read_req_ep.gnt;rec X . (read_res_ep.rdy ; ^(read_res_ep.res,*:#1;X)); #1
 
 interface r_rr_arbiter_itfc(slv_ep1 : right r_slv_ch<ar_pack_t>, slv_ep2 : right r_slv_ch<ar_pack_t>,slv_ep3 : right r_slv_ch<ar_pack_t>, slv_ep4 : right r_slv_ch<ar_pack_t>, ar_req_ep : left r_mux_ch<ar_sel_pack_t>) =
 
@@ -70,20 +62,15 @@ pool mux_read_transaction_pool {
     fifo_push_ep -- fifo_push_ep_ri : fifo_insert_ch<select_t>,
     fifo_pop_ep -- fifo_pop_ep_ri : fifo_dequeue_ch<select_t>;
 
-    islv1_request : slave_read_request_itfc(slv_ep1),
-    islv1_response : slave_read_response_itfc(slv_res_ep1),
-    islv2_request : slave_read_request_itfc(slv_ep2),
-    islv2_response : slave_read_response_itfc(slv_res_ep2),
-    islv3_request : slave_read_request_itfc(slv_ep3),
-    islv3_response : slave_read_response_itfc(slv_res_ep3),
-    islv4_request : slave_read_request_itfc(slv_ep4),
-    islv4_response : slave_read_response_itfc(slv_res_ep4),
+    islv1 : slave_read_itfc(slv_ep1, slv_res_ep1),
+    islv2 : slave_read_itfc(slv_ep2, slv_res_ep2),
+    islv3 : slave_read_itfc(slv_ep3, slv_res_ep3),
+    islv4 : slave_read_itfc(slv_ep4, slv_res_ep4),
     
 
     iarb : r_rr_arbiter_itfc(arb_ep1, arb_ep2, arb_ep3, arb_ep4, ar_req_ep),
     
-    imst_request : master_read_request_itfc(mst_ep_ar),
-    imst_response : master_read_response_itfc(mst_ep_r),
+    imst : master_read_itfc(mst_ep_ar, mst_ep_r),
     imux_ar : mux_ar_main(mux_ar_req_ep, mux_ep_ar,  fifo_push_ep),
     imux_r : mux_r_main(mux_ep_r, fifo_pop_ep, mux_res_ep1, mux_res_ep2, mux_res_ep3, mux_res_ep4),
     ififo : fifo_itfc(fifo_push_ep_ri, fifo_pop_ep_ri)    

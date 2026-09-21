@@ -1,22 +1,10 @@
 import "mux_commons.anvilh"
 
-interface master_address_itfc(mux_ep_aw : right mast_ch<aw_pack_t>) =
-    F mux_ep_aw.rdy; mux_ep_aw.req; #1
+interface master_itfc(mux_ep_aw : right mast_ch<aw_pack_t>, demux_ep_w : right mast_ch<w_pack_t>, demux_ep_b : left mast_res_ch<b_pack_t>) =
+       F mux_ep_aw.rdy; mux_ep_aw.req ; #2; rec X . (demux_ep_w.rdy;^(demux_ep_w.req, * : #1;X)) ; #2; rec Y . (demux_ep_b.rdy;^(demux_ep_b.res, * : #1;Y));#1
 
-interface master_data_itfc(demux_ep_w : right mast_ch<w_pack_t>) =
-    F (rec X . (demux_ep_w.rdy; ^(demux_ep_w.req, *: #1; X))); #1
-
-interface master_response_itfc(demux_ep_b : left mast_res_ch<b_pack_t>) =
-    F demux_ep_b.rdy; demux_ep_b.res; #1
-
-interface slave_address_itfc(slv_ep_aw : left slv_ch<aw_ch>) =
-    F slv_ep_aw.req; slv_ep_aw.gnt; #1
-
-interface slave_data_itfc(slv_ep_w : left slv_ch<w_pack_t>) =
-    F slv_ep_w.req; slv_ep_w.gnt; #1
-
-interface slave_response_itfc(slv_ep_b : left slv_res_ch<b_pack_t>) =
-    F slv_ep_b.res; #1
+interface slave_itfc(slv_ep_aw : left slv_ch<aw_ch> , slv_ep_w : left slv_ch<w_pack_t> , slv_ep_b : left slv_res_ch<b_pack_t>) =
+        F slv_ep_aw.req;slv_ep_aw.gnt; slv_ep_w.req;slv_ep_w.gnt; slv_ep_b.res;#1
 
 interface demux_aw_main (
     w_fifo_ep : left fifo_insert_ch<select_t>,
@@ -101,21 +89,11 @@ pool axi_type_demux_write_pool {
     b_fifo_pop -- b_fifo_pop_ri : fifo_dequeue_ch<select_t>;
 
 
-    i1_address : slave_address_itfc(slv_ep_aw),
-    i1_data : slave_data_itfc(slv_ep_w),
-    i1_response : slave_response_itfc(slv_ep_b),
-    i2_address : master_address_itfc(mst_ep1_aw_ri),
-    i2_data : master_data_itfc(mst_ep1_w_ri),
-    i2_response : master_response_itfc(mst_ep1_b),
-    i3_address : master_address_itfc(mst_ep2_aw_ri),
-    i3_data : master_data_itfc(mst_ep2_w_ri),
-    i3_response : master_response_itfc(mst_ep2_b),
-    i4_address : master_address_itfc(mst_ep3_aw_ri),
-    i4_data : master_data_itfc(mst_ep3_w_ri),
-    i4_response : master_response_itfc(mst_ep3_b),
-    i5_address : master_address_itfc(mst_ep4_aw_ri),
-    i5_data : master_data_itfc(mst_ep4_w_ri),
-    i5_response : master_response_itfc(mst_ep4_b),
+    i1 : slave_itfc(slv_ep_aw, slv_ep_w, slv_ep_b),
+    i2 : master_itfc(mst_ep1_aw_ri, mst_ep1_w_ri, mst_ep1_b),
+    i3 : master_itfc(mst_ep2_aw_ri, mst_ep2_w_ri, mst_ep2_b),
+    i4 : master_itfc(mst_ep3_aw_ri, mst_ep3_w_ri, mst_ep3_b),
+    i5 : master_itfc(mst_ep4_aw_ri, mst_ep4_w_ri, mst_ep4_b),
     i6 : demux_aw_main(w_fifo_push, slv_ep_aw_ri, mst_ep1_aw, mst_ep2_aw, mst_ep3_aw, mst_ep4_aw),
     i7 : demux_w_main(w_fifo_pop, b_fifo_push, slv_ep_w_ri, mst_ep1_w, mst_ep2_w, mst_ep3_w, mst_ep4_w),
     i8 : demux_b_main(b_fifo_pop, slv_ep_b_ri, mst_ep1_b_ri, mst_ep2_b_ri, mst_ep3_b_ri, mst_ep4_b_ri),

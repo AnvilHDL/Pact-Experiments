@@ -1,102 +1,40 @@
-interface fifo_itfc(push_ep : right fifo_insert_ch<T>, pop_ep : right fifo_dequeue_ch<T>) =  
-                                                (
-                                                    rec X . (^(push_ep.full, *);^( pop_ep.pop : #1;&(push_ep.push , pop_ep.pop); #1,
-                                                                        * :  #1;X
-                                                            ))
-                                                )
-                                                                    + 
-                                                  (
-                                                    rec Y . (^(pop_ep.empty, *);^(
-                                                        push_ep.push : #1;&(push_ep.push , pop_ep.pop); #1,
-                                                        * : #1;Y
-                                                    ))
-                                                  )
-                                                     
-                                                                    + 
-                                                    (
-                                                        &(push_ep.push , pop_ep.pop) ; #1
-                                                    )
+interface fifo_itfc(push_ep : right fifo_insert_ch<T>, pop_ep : right fifo_dequeue_ch<T>) =
+    // Empty until a push; the next phase is full or neither full nor empty.
+    (rec Empty . (
+        ^(pop_ep.empty, *);
+        ^(push_ep.push: #1, *: #1; Empty)
+    ));
+    (
+        (rec Full . (
+            ^(push_ep.full, *);
+            ^(pop_ep.pop: #1, *: #1; Full)
+        ))
+        + (&(push_ep.push, pop_ep.pop); #1)
+    )
 
-
+// One-entry FIFO: each accepted push is followed by a pop before reuse.
 proc fifo<T : type>(fifo_itfc){
-    reg mem : T[8];
-    reg read_ptr : logic[3];
-    reg write_ptr : logic[3];
-    reg full : logic;
-    // reg cyc : logic[8]; // debug/bookkeeping only
+    reg entry : T;
     loop{
-        if(*full){
-            rec X {
-                try send push_ep.full(()) {()} >>
-                try send pop_ep.pop(*mem[*read_ptr]){
-                    (
-                        set read_ptr := *read_ptr + 3'd1;
-                        set full := 1'd0
-                    ) >>
-                    offer{
-                        y = recv push_ep.push => (
-                            let full = if(((*write_ptr + 3'd1) == *read_ptr)&&(~(probe pop_ep.pop))) {1'b1} else {1'b0} >>
-                            set write_ptr := *write_ptr + 3'd1;
-                            set mem[*write_ptr] := y;
-                            set full := full
-                        
-                        ),
-                        send pop_ep.pop(*mem[*read_ptr])=>(
-                            set read_ptr := *read_ptr + 3'd1
-                        )
-                    }
-                }
-                else{
-                    cycle 1 >>
-                    recurse X
-                }
+        rec Empty {
+            try send pop_ep.empty(()) {()} >>
+            try x = recv push_ep.push {
+                set entry := x
             }
-
-        }
-        else if(*read_ptr == *write_ptr){
-            rec Y {
-                try send pop_ep.empty(()) {()} >>
-                try x = recv push_ep.push {
-                    (
-                    set mem[*write_ptr] := x;
-                    set write_ptr := *write_ptr + 3'd1
-                    ) >>
-                    offer{
-                        y = recv push_ep.push => (
-                            let full = if(((*write_ptr + 3'd1) == *read_ptr)&&(~(probe pop_ep.pop))) {1'b1} else {1'b0} >>
-                            set write_ptr := *write_ptr + 3'd1;
-                            set mem[*write_ptr] := y;
-                            set full := full
-                        
-                        ),
-                        send pop_ep.pop(*mem[*read_ptr])=>(
-                            set read_ptr := *read_ptr + 3'd1
-                        )
-                    }
-                } 
-                else {
-                    cycle 1 >>
-                    recurse Y
-                }
+            else {
+                cycle 1 >>
+                recurse Empty
             }
-
-        }
-        else{
-            offer{
-                x = recv push_ep.push => (
-                    let full = if(((*write_ptr + 3'd1) == *read_ptr)&&(~(probe pop_ep.pop))) {1'b1} else {1'b0} >>
-                    set write_ptr := *write_ptr + 3'd1;
-                    set mem[*write_ptr] := x;
-                    set full := full
-                ),
-                send pop_ep.pop(*mem[*read_ptr])=>(
-                    set read_ptr := *read_ptr + 3'd1
-                )
+        } >>
+        rec Full {
+            try send push_ep.full(()) {()} >>
+            try send pop_ep.pop(*entry) {
+                cycle 1
+            }
+            else {
+                cycle 1 >>
+                recurse Full
             }
         }
-
     }
-    // loop{
-    //     set cyc := *cyc + 8'd1
-    // }
 }

@@ -139,7 +139,7 @@ proc demux_w_main(demux_w_main){
                     }
                 }
             )
-        } >> 
+        } >>
         set wset := 1'b0
     }
     loop{
@@ -216,75 +216,55 @@ proc demux_b_main(demux_b_main){
 
 }
 
-proc master<id : int>(master_address_itfc, master_data_itfc, master_response_itfc){
+proc master<id : int>(master_itfc){
     reg mem : byte[256];
-    reg cyc : logic[32];
-    reg addresses : logic[16][8];
-    reg data_ready_at : logic[16][32];
-    reg response_ready_at : logic[16][32];
-    reg address_write : logic[5];
-    reg data_read : logic[5];
-    reg response_read : logic[5];
+    reg addr : logic[8];
+    reg cyc : logic[8];
     loop{
-        rec WaitSlot {
-            if ((*address_write - *response_read) == 5'd16) {
-                cycle 1 >> recurse WaitSlot
-            } else { () }
-        } >>
         send mux_ep_aw.rdy(()) >>
-        let req = recv mux_ep_aw.req >>
-        dprint "[Cycle %d] Master %d received aw addr %d" (*cyc, id[0+:2], req.addr) >>
-        (
-            set addresses[(*address_write)[0+:4]] := req.addr[0+:8];
-            set data_ready_at[(*address_write)[0+:4]] := *cyc + 32'd2;
-            set address_write := *address_write + 5'd1
-        ) >>
-        cycle 5
-    }
-    loop{
-        rec WaitData {
-            if ((*data_read != *address_write) && (*data_ready_at[(*data_read)[0+:4]] <= *cyc)) { () }
-            else { cycle 1 >> recurse WaitData }
+        let aw = recv mux_ep_aw.req >>
+        set addr := aw.addr[0+:8] >>
+        cycle 1 >>
+        let aw_cyc = *cyc - 8'd2 >>
+        dprint "[Cycle %d] Master %d received aw addr %d" (aw_cyc, id[0+:2], aw.addr) >>
+        rec X {
+            send demux_ep_w.rdy(()) >>
+            try w = recv demux_ep_w.req {
+                set mem[*addr] := w.data >>
+                let w_cyc = *cyc - 8'd1 >>
+                dprint "[Cycle %d] Master %d received w data %d" (w_cyc, id[0+:2], w.data)
+            }
+            else{
+                cycle 1 >>
+                recurse X
+            }
         } >>
-        send demux_ep_w.rdy(()) >>
-        let wdata = recv demux_ep_w.req >>
-        dprint "[Cycle %d] Master %d received w data %d" (*cyc, id[0+:2], wdata.data) >>
-        (
-            set mem[*addresses[(*data_read)[0+:4]]] := wdata.data;
-            set response_ready_at[(*data_read)[0+:4]] := *cyc + 32'd2;
-            set data_read := *data_read + 5'd1
-        ) >>
-        cycle 1
-    }
-    loop{
-        rec WaitResponse {
-            if ((*response_read != *data_read) && (*response_ready_at[(*response_read)[0+:4]] <= *cyc)) { () }
-            else { cycle 1 >> recurse WaitResponse }
-        } >>
+        cycle 1 >>
         send demux_ep_b.rdy(()) >>
         send demux_ep_b.res(b_pack_t::{resp = 1'b0}) >>
-        dprint "[Cycle %d] Master %d sent b response" (*cyc, id[0+:2]) >>
-        set response_read := *response_read + 5'd1 >>
-        cycle 1
+        cycle 1 >>
+        let b_cyc = *cyc - 8'd1 >>
+        dprint "[Cycle %d] Master %d sent b response" (b_cyc, id[0+:2]) >>
+        ()
     }
     loop{
-        set cyc := *cyc + 32'd1
+        set cyc := *cyc + 8'd1
     }
 }
 
-proc slave(slave_address_itfc, slave_data_itfc, slave_response_itfc){
-    reg cyc : logic[32];
-    reg next_aw : logic[32];
+proc slave(slave_itfc){
+    reg cyc : logic[16];
+    reg next_aw : logic[16];
     reg data : logic[32];
     reg sel : logic[2];
-    reg pending_data : logic[16][32];
-    reg write_ptr : logic[5];
-    reg read_ptr : logic[5];
     loop{
-        let target = if (*next_aw == 32'd0) {32'd3} else {*next_aw} >>
+        let target = if (*next_aw == 16'd0) {16'd3} else {*next_aw} >>
         rec WaitAw {
-            if ((*cyc >= target) && ((*write_ptr - *read_ptr) != 5'd16)) { () }
-            else { cycle 1 >> recurse WaitAw }
+            if (*cyc == target) { () }
+            else {
+                cycle 1 >>
+                recurse WaitAw
+            }
         } >>
         let curr_sel = *sel >>
         let curr_addr = if (curr_sel == 2'd0) {32'd0} else if (curr_sel == 2'd1) {32'd64} else if (curr_sel == 2'd2) {32'd128} else {32'd192} >>
@@ -293,34 +273,23 @@ proc slave(slave_address_itfc, slave_data_itfc, slave_response_itfc){
         dprint "[Cycle %d] Slave write aw addr %d selected master %d" (*cyc, aw.addr, req.select) >>
         send slv_ep_aw.req(req) >>
         let _ = recv slv_ep_aw.gnt >>
-        let next_target = if (target == 32'd3) {32'd10} else {((target - 32'd2) * 32'd2) + 32'd2} >>
-        (
-            set pending_data[(*write_ptr)[0+:4]] := *data;
-            set write_ptr := *write_ptr + 5'd1;
-            set data := *data + 32'd1;
-            set sel := *sel + 2'd1;
-            set next_aw := next_target
-        )
-    }
-    loop{
-        rec WaitData {
-            if (*read_ptr != *write_ptr) { () }
-            else { cycle 1 >> recurse WaitData }
-        } >>
-        let w = w_pack_t::{data = *pending_data[(*read_ptr)[0+:4]]; strb = 1'b1} >>
+        let w = w_pack_t::{data = *data; strb = 1'b1} >>
         send slv_ep_w.req(w) >>
         let _ = recv slv_ep_w.gnt >>
         dprint "[Cycle %d] Slave write data %d granted" (*cyc, w.data) >>
-        set read_ptr := *read_ptr + 5'd1 >>
-        cycle 1
-    }
-    loop{
         let b = recv slv_ep_b.res >>
         dprint "[Cycle %d] Slave received b response %d" (*cyc, b.resp) >>
-        cycle 1
+        set data := *data + 32'd1 >>
+        set sel := *sel + 2'd1 >>
+        if (target == 16'd3) {
+            set next_aw := 16'd10
+        }
+        else {
+            set next_aw := ((target - 16'd2) * 16'd2) + 16'd2
+        }
     }
     loop{
-        set cyc := *cyc + 32'd1
+        set cyc := *cyc + 16'd1
     }
 }
 
@@ -328,11 +297,11 @@ proc test_demux_write(){
 
     pool p : axi_type_demux_write_pool;
 
-    spawn slave[p.i1_address, p.i1_data, p.i1_response];
-    spawn master<0>[p.i2_address, p.i2_data, p.i2_response];
-    spawn master<1>[p.i3_address, p.i3_data, p.i3_response];
-    spawn master<2>[p.i4_address, p.i4_data, p.i4_response];
-    spawn master<3>[p.i5_address, p.i5_data, p.i5_response];
+    spawn slave[p.i1];
+    spawn master<0>[p.i2];
+    spawn master<1>[p.i3];
+    spawn master<2>[p.i4];
+    spawn master<3>[p.i5];
     spawn demux_aw_main[p.i6];
     spawn demux_w_main[p.i7];
     spawn demux_b_main[p.i8];

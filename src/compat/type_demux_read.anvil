@@ -35,18 +35,10 @@ interface demux_r_main (
                             )
 ); #1
 
-// Request and response streams repeat independently.
-interface master_request_itfc(mux_ep_ar : right mast_ch<ar_pack_t>) =
-    F mux_ep_ar.rdy; mux_ep_ar.req; #1
+interface master_itfc(mux_ep_ar : right mast_ch<ar_pack_t>, demux_ep_r : left mast_r_ch<r_pack_t>) = F mux_ep_ar.rdy; mux_ep_ar.req; #2; rec X . (demux_ep_r.rdy; ^(demux_ep_r.res,*:#1;X)) ; #1
 
-interface master_response_itfc(demux_ep_r : left mast_r_ch<r_pack_t>) =
-    F demux_ep_r.rdy; (rec X . ^(demux_ep_r.res, *: #1; X)); #1
-
-interface slave_request_itfc(slv_ep_ar : left slv_ar_ch<ar_ch>) =
-    F slv_ep_ar.ar_req; slv_ep_ar.gnt; #1
-
-interface slave_response_itfc(slv_ep_r : left slv_r_ch<r_pack_t>) =
-    F slv_ep_r.r_res; #1
+interface slave_itfc(slv_ep_ar : left slv_ar_ch<ar_ch> , slv_ep_r : left slv_r_ch<r_pack_t>) =
+         F slv_ep_ar.ar_req;slv_ep_ar.gnt ; slv_ep_r.r_res;#1
 
 
 pool demux_read_pool {
@@ -69,16 +61,11 @@ pool demux_read_pool {
     fifo_insert_ep -- fifo_insert_ep_ri : fifo_insert_ch<select_t>,
     fifo_dequeue_ep -- fifo_dequeue_ep_ri : fifo_dequeue_ch<select_t>;
 
-    slave_request : slave_request_itfc(slv_ep_ar ),
-    slave_response : slave_response_itfc(slv_ep_r),
-    master1_request : master_request_itfc(mst_ep1_ar_ri),
-    master1_response : master_response_itfc(mst_ep1_r),
-    master2_request : master_request_itfc(mst_ep2_ar_ri),
-    master2_response : master_response_itfc(mst_ep2_r),
-    master3_request : master_request_itfc(mst_ep3_ar_ri),
-    master3_response : master_response_itfc(mst_ep3_r),
-    master4_request : master_request_itfc(mst_ep4_ar_ri),
-    master4_response : master_response_itfc(mst_ep4_r),
+    slave : slave_itfc(slv_ep_ar , slv_ep_r),
+    master1 : master_itfc(mst_ep1_ar_ri, mst_ep1_r),
+    master2 : master_itfc(mst_ep2_ar_ri, mst_ep2_r),
+    master3 : master_itfc(mst_ep3_ar_ri, mst_ep3_r),
+    master4 : master_itfc(mst_ep4_ar_ri, mst_ep4_r),
     demux_ar : demux_ar_main(fifo_insert_ep, demux_ep_ar, mst_ep1_ar, mst_ep2_ar, mst_ep3_ar, mst_ep4_ar),
     demux_r : demux_r_main(fifo_dequeue_ep, demux_ep_r, mst_ep1_r_ri, mst_ep2_r_ri, mst_ep3_r_ri, mst_ep4_r_ri),
     fifo : fifo_itfc(fifo_insert_ep_ri, fifo_dequeue_ep_ri)

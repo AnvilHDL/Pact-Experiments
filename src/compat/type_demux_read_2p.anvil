@@ -1,21 +1,16 @@
-interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fifo_dequeue_ch<select_t>) =  
-                                                (
-                                                    rec X . ^( pop_ep.pop : ^(push_ep.full, *);#1,
-                                                       * :  ^(push_ep.full, *);#1;X
-                                                     )
-                                                  )
-                                                                    + 
-                                                  (
-                                                    rec Y . ^(
-                                                        push_ep.push : ^(pop_ep.empty, *);#1,
-                                                        * : ^(pop_ep.empty, *);#1;Y
-                                                    )
-                                                  )
-                                                     
-                                                                    + 
-                                                    (
-                                                        &(push_ep.push , pop_ep.pop) ; #1
-                                                    )
+interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fifo_dequeue_ch<select_t>) =
+    // Empty until a push; the next phase is full or neither full nor empty.
+    (rec Empty . (
+        ^(pop_ep.empty, *);
+        ^(push_ep.push: #1, *: #1; Empty)
+    ));
+    (
+        (rec Full . (
+            ^(push_ep.full, *);
+            ^(pop_ep.pop: #1, *: #1; Full)
+        ))
+        + (&(push_ep.push, pop_ep.pop); #1)
+    )
 
 
 interface demux_ar_main (
@@ -44,19 +39,10 @@ interface demux_r_main (
                             )
 ); #1
 
-// Each channel stream repeats independently in the pool.
-interface master_request_itfc(mux_ep_ar : right mast_ch<ar_pack_t>) =
-    mux_ep_ar.rdy; mux_ep_ar.req; #1
+interface master_itfc(mux_ep_ar : right mast_ch<ar_pack_t>, demux_ep_r : left mast_ch<r_pack_t>) = mux_ep_ar.rdy; mux_ep_ar.req; rec X .( demux_ep_r.rdy; ^(demux_ep_r.res,*:#1;X)) ; #1
 
-interface master_response_itfc(demux_ep_r : left mast_ch<r_pack_t>) =
-    (rec X . (demux_ep_r.rdy; ^(demux_ep_r.res, *: #1; X))); #1
-
-
-interface slave_request_itfc(slv_ep_ar : left slv_ar_ch<ar_pack_t>) =
-    F slv_ep_ar.ar_req; slv_ep_ar.gnt; #1
-
-interface slave_response_itfc(slv_ep_r : left slv_r_ch<r_pack_t>) =
-    slv_ep_r.r_res; #1
+interface slave_itfc(slv_ep_ar : left slv_ar_ch<ar_pack_t> , slv_ep_r : left slv_r_ch<r_pack_t>) =
+        F slv_ep_ar.ar_req;slv_ep_ar.gnt ; slv_ep_r.r_res; #1
 
 
 pool demux_read_pool {
@@ -73,12 +59,9 @@ pool demux_read_pool {
     fifo_insert_ep -- fifo_insert_ep_ri : fifo_insert_ch<select_t>,
     fifo_dequeue_ep -- fifo_dequeue_ep_ri : fifo_dequeue_ch<select_t>;
 
-    slave_request : slave_request_itfc(slv_ep_ar),
-    slave_response : slave_response_itfc(slv_ep_r),
-    master1_request : master_request_itfc(mst_ep1_ar_ri),
-    master1_response : master_response_itfc(mst_ep1_r_ri),
-    master2_request : master_request_itfc(mst_ep2_ar_ri),
-    master2_response : master_response_itfc(mst_ep2_r_ri),
+    slave : slave_itfc(slv_ep_ar , slv_ep_r),
+    master1 : master_itfc(mst_ep1_ar_ri, mst_ep1_r_ri),
+    master2 : master_itfc(mst_ep2_ar_ri, mst_ep2_r_ri),
     demux_ar : demux_ar_main(fifo_insert_ep, slv_ep_ar, mst_ep1_ar, mst_ep2_ar),
     demux_r : demux_r_main(fifo_dequeue_ep, slv_ep_r, mst_ep1_r, mst_ep2_r),
     fifo : fifo_itfc(fifo_insert_ep_ri, fifo_dequeue_ep_ri)
