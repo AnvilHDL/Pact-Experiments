@@ -12,8 +12,7 @@ interface r_rr_arbiter_itfc(slv_ep1 : right r_slv_ch<ar_pack_t>, slv_ep2 : right
    slv_ep1.req : ar_req_ep.req;ar_req_ep.gnt;#slv_ep1.gnt,
    slv_ep2.req : ar_req_ep.req;ar_req_ep.gnt;#slv_ep2.gnt,
    slv_ep3.req : ar_req_ep.req;ar_req_ep.gnt;#slv_ep3.gnt,
-   slv_ep4.req : ar_req_ep.req;ar_req_ep.gnt;#slv_ep4.gnt,
-   *
+   slv_ep4.req : ar_req_ep.req;ar_req_ep.gnt;#slv_ep4.gnt
 ) ; #1
 
 

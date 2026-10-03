@@ -11,8 +11,7 @@ interface w_rr_arbiter_itfc(slv_ep1 : right w_slv_ch<T>, slv_ep2 : right w_slv_c
    slv_ep1.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep1.gnt,
    slv_ep2.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep2.gnt,
    slv_ep3.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep3.gnt,
-   slv_ep4.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep4.gnt,
-   *
+   slv_ep4.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep4.gnt
 ) ; #1
 
 interface mux_aw_main (
