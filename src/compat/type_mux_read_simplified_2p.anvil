@@ -122,7 +122,7 @@ struct ar_sel_pack_t {
 }
 
 chan slv_ch<Tp : type> {
-    right req : (Tp@#1),
+    right req : (Tp@gnt+1),
     left gnt : (void@#1)
 }
 

@@ -196,8 +196,8 @@
       "pact_test": "test_tilelink.anvil",
       "pact_core_patterns": [
         "^tilelink_arb$",
-        "^crossbar_A_.*",
-        "^crossbar_D_.*"
+        "^crossbar_A(_.*)?$",
+        "^crossbar_D(_.*)?$"
       ],
       "sv_top": "TLCrossBar",
       "sv_files": [

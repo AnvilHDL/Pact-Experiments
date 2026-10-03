@@ -51,6 +51,7 @@ CSV_FIELDS = [
     "row_type",
     "variant",
     "module",
+    "instances",
     "status",
     "status_detail",
     "total_cells",
@@ -405,6 +406,7 @@ def rows_for_pact_case(config: RunConfig, case: dict, defaults: dict) -> list[di
     defines = defaults.get("defines", [])
 
     isolated_dir = config.results_dir / case_name / "pact_isolated"
+    pact_text = pact_sv.read_text(errors="ignore")
     rows = []
     for module in selected:
         module_text = extract_module_text(pact_sv, module)
@@ -415,7 +417,11 @@ def rows_for_pact_case(config: RunConfig, case: dict, defaults: dict) -> list[di
             isolated_path = isolated_dir / f"{module}.sv"
             isolated_path.write_text(module_text)
             files = [isolated_path]
-        rows.append(process_module(config, case_name, "pact", module, files, defines, include_dirs, "clk_i"))
+        row = process_module(config, case_name, "pact", module, files, defines, include_dirs, "clk_i")
+        # A process spawned several times is synthesized once and counted per instance.
+        instance_re = rf"^\s+{re.escape(module)}\s+\w+\s*\("
+        row["instances"] = max(1, len(re.findall(instance_re, pact_text, re.MULTILINE)))
+        rows.append(row)
     return rows
 
 
@@ -448,7 +454,7 @@ def aggregate_row(case_name: str, variant: str, module_rows: list[dict]) -> dict
     if not pass_rows:
         return aggregate
     for field in SUM_FIELDS:
-        aggregate[field] = sum(float(r[field]) for r in pass_rows if r.get(field) not in ("", None))
+        aggregate[field] = sum(float(r[field]) * int(r.get("instances") or 1) for r in pass_rows if r.get(field) not in ("", None))
     for field in MIN_FIELDS:
         values = [float(r[field]) for r in pass_rows if r.get(field) not in ("", None)]
         if values:

@@ -161,11 +161,11 @@ struct aw_sel_pack_t {
 
 
 chan w_slv_ch<Tp : type> {
-    right req : (Tp@#1),
+    right req : (Tp@gnt+1),
     left gnt : (void@#1)
 }
 chan w_mux_ch<Tp : type> {
-    right req : (Tp@#1),
+    right req : (Tp@gnt+1),
     left gnt : (void@#1)
 }
 

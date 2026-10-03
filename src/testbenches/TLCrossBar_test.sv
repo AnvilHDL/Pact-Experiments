@@ -9,22 +9,22 @@ module tl_master(
     input logic d_valid,
     input logic [2:0] d_bits_opcode,
     input logic [2:0] d_bits_param,
-    input logic [1:0] d_bits_size,
+    input logic d_bits_size,
     input logic [1:0] d_bits_source,
     input logic [1:0] d_bits_sink,
     input logic d_bits_denied,
-    input logic [7:0] d_bits_data,
+    input logic [15:0] d_bits_data,
     input logic d_bits_corrupt,
     // A channel (request to crossbar)
     input logic a_ready,
     output logic a_valid,
     output logic [2:0] a_bits_opcode,
     output logic [2:0] a_bits_param,
-    output logic [1:0] a_bits_size,
+    output logic a_bits_size,
     output logic [1:0] a_bits_source,
     output logic [15:0] a_bits_address,
-    output logic a_bits_mask,
-    output logic [7:0] a_bits_data,
+    output logic [1:0] a_bits_mask,
+    output logic [15:0] a_bits_data,
     output logic a_bits_corrupt,
     // Unused channels
     output logic e_valid,
@@ -33,20 +33,20 @@ module tl_master(
     output logic c_valid,
     output logic [2:0] c_bits_opcode,
     output logic [2:0] c_bits_param,
-    output logic [1:0] c_bits_size,
+    output logic c_bits_size,
     output logic [1:0] c_bits_source,
     output logic [15:0] c_bits_address,
-    output logic [7:0] c_bits_data,
+    output logic [15:0] c_bits_data,
     output logic c_bits_corrupt,
     input logic c_ready,
     input logic b_valid,
     input logic [2:0] b_bits_opcode,
     input logic [2:0] b_bits_param,
-    input logic [1:0] b_bits_size,
+    input logic b_bits_size,
     input logic [1:0] b_bits_source,
     input logic [15:0] b_bits_address,
-    input logic b_bits_mask,
-    input logic [7:0] b_bits_data,
+    input logic [1:0] b_bits_mask,
+    input logic [15:0] b_bits_data,
     input logic b_bits_corrupt,
     output logic b_ready
 );
@@ -54,10 +54,19 @@ module tl_master(
 typedef enum logic {IDLE, WAITING} state_t;
 state_t state;
 logic [31:0] cycle_count;
+// Message counter.
+logic [3:0] msg;
+
+// Message k of master `id`. The targets of the two masters overlap so the
+// slave arbiters see contention; every transfer is a single beat.
+wire tgt = msg[0] ^ (id[0] & msg[1]);
+wire size = (msg % 3 == 2);
+wire [7:0] lo = {id[0], msg, 3'b001};
 
 // Each master has one local source ID; the crossbar remaps 0 to global 1/0.
-// Accept D channel responses every cycle
-assign d_ready = 1'b1;
+// Refuse D responses four cycles in sixteen, at a different time per client,
+// so that responses from both slaves queue up.
+assign d_ready = (cycle_count[3:2] != {id[0], 1'b1});
 
 // Unused channels
 assign e_valid = 1'b0;
@@ -65,10 +74,10 @@ assign e_bits_sink = 2'b0;
 assign c_valid = 1'b0;
 assign c_bits_opcode = 3'b0;
 assign c_bits_param = 3'b0;
-assign c_bits_size = 2'b0;
+assign c_bits_size = 1'b0;
 assign c_bits_source = 2'b0;
 assign c_bits_address = 16'b0;
-assign c_bits_data = 8'b0;
+assign c_bits_data = 16'b0;
 assign c_bits_corrupt = 1'b0;
 assign b_ready = 1'b0;
 
@@ -80,18 +89,20 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         a_valid <= 0;
         a_bits_opcode <= 3'b0;
         a_bits_param <= 3'b0;
-        a_bits_size <= 2'b0;
+        a_bits_size <= 1'b0;
         a_bits_source <= 2'd0;
         a_bits_address <= 16'b0;
-        a_bits_mask <= 1'b1;
-        a_bits_data <= 8'b0;
+        a_bits_mask <= 2'b11;
+        a_bits_data <= 16'b0;
         a_bits_corrupt <= 1'b0;
+        msg <= 4'd0;
     end else begin
         cycle_count <= cycle_count + 1;
         if (d_valid && d_ready) begin
 `ifdef TILELINK_CROSSBAR_TB_TRACE
-            $display("[Cycle %0d] Client %0d received response: %0d",
-                     cycle_count, id, d_bits_data);
+            $display("[Cycle %0d] Client %0d received D op %0d param %0d size %0d source %0d sink %0d denied %0d data %0d corrupt %0d",
+                     cycle_count, id, d_bits_opcode, d_bits_param, d_bits_size, d_bits_source,
+                     d_bits_sink, d_bits_denied, d_bits_data, d_bits_corrupt);
 `endif
         end
         case (state)
@@ -100,20 +111,26 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
                 // Try to send request on even cycles
                 if (cycle_count % 2 == 0) begin
                     a_valid <= 1;
-                    a_bits_opcode <= 3'b000; // Get
+                    a_bits_opcode <= msg[2:0] ^ {id[0], 2'b00};
+                    a_bits_param <= {id[0], msg[1:0]};
+                    a_bits_size <= size;
                     a_bits_source <= 2'd0;
-                    a_bits_address <= {14'b0, id};
-                    a_bits_data <= {6'b0, id};
+                    a_bits_address <= {id[0], msg, 10'b0, tgt};
+                    a_bits_mask <= msg[1:0];
+                    a_bits_data <= {~lo, lo};
+                    a_bits_corrupt <= msg[3];
                     state <= WAITING;
                 end
             end
             WAITING: begin
                 if (a_valid && a_ready) begin
 `ifdef TILELINK_CROSSBAR_TB_TRACE
-                    $display("[Cycle %0d] Client %0d sent request to Master %0d with data: %0d",
-                             cycle_count, id, a_bits_address[0], a_bits_data);
+                    $display("[Cycle %0d] Client %0d sent A op %0d param %0d size %0d source %0d address %0d mask %0d data %0d corrupt %0d",
+                             cycle_count, id, a_bits_opcode, a_bits_param, a_bits_size, a_bits_source,
+                             a_bits_address, a_bits_mask, a_bits_data, a_bits_corrupt);
 `endif
                     a_valid <= 0;
+                    msg <= msg + 4'd1;
                     state <= IDLE;
                 end
             end
@@ -126,7 +143,7 @@ end
 // harness in formal/comm_safety/sv/comm_safety_tb_wrappers.sv.
 //   f_a_snd : this client counts its A request as sent in this cycle.
 //   f_busy  : in flight (holding a_valid until the crossbar accepts it).
-// The client accepts any D beat (d_ready is constant 1) and keeps no record
+// The client takes D beats when d_ready is high and keeps no record
 // of outstanding requests; the harness counts A sent vs D received instead.
 wire f_a_snd = (state == WAITING) && a_valid && a_ready;
 wire f_busy  = (state == WAITING);
@@ -144,22 +161,22 @@ module tl_slave(
     input logic a_valid,
     input logic [2:0] a_bits_opcode,
     input logic [2:0] a_bits_param,
-    input logic [1:0] a_bits_size,
+    input logic a_bits_size,
     input logic [1:0] a_bits_source,
     input logic [15:0] a_bits_address,
-    input logic a_bits_mask,
-    input logic [7:0] a_bits_data,
+    input logic [1:0] a_bits_mask,
+    input logic [15:0] a_bits_data,
     input logic a_bits_corrupt,
     // D channel (response to crossbar)
     input logic d_ready,
     output logic d_valid,
     output logic [2:0] d_bits_opcode,
     output logic [2:0] d_bits_param,
-    output logic [1:0] d_bits_size,
+    output logic d_bits_size,
     output logic [1:0] d_bits_source,
     output logic [1:0] d_bits_sink,
     output logic d_bits_denied,
-    output logic [7:0] d_bits_data,
+    output logic [15:0] d_bits_data,
     output logic d_bits_corrupt,
     // Unused channels
     input logic e_valid,
@@ -168,20 +185,20 @@ module tl_slave(
     input logic c_valid,
     input logic [2:0] c_bits_opcode,
     input logic [2:0] c_bits_param,
-    input logic [1:0] c_bits_size,
+    input logic c_bits_size,
     input logic [1:0] c_bits_source,
     input logic [15:0] c_bits_address,
-    input logic [7:0] c_bits_data,
+    input logic [15:0] c_bits_data,
     input logic c_bits_corrupt,
     output logic c_ready,
     output logic b_valid,
     output logic [2:0] b_bits_opcode,
     output logic [2:0] b_bits_param,
-    output logic [1:0] b_bits_size,
+    output logic b_bits_size,
     output logic [1:0] b_bits_source,
     output logic [15:0] b_bits_address,
-    output logic b_bits_mask,
-    output logic [7:0] b_bits_data,
+    output logic [1:0] b_bits_mask,
+    output logic [15:0] b_bits_data,
     output logic b_bits_corrupt,
     input logic b_ready
 );
@@ -190,6 +207,8 @@ typedef enum logic {IDLE, RESPONDING} state_t;
 state_t state;
 logic [31:0] cycle_count;
 logic [1:0] pending_source;
+logic pending_size;
+logic [15:0] pending_data;
 
 // Accept an A channel request only while idle. Accepting while RESPONDING
 // (the original `assign a_ready = 1'b1;`) overwrote pending_source and, when
@@ -203,11 +222,11 @@ assign c_ready = 1'b0;
 assign b_valid = 1'b0;
 assign b_bits_opcode = 3'b0;
 assign b_bits_param = 3'b0;
-assign b_bits_size = 2'b0;
+assign b_bits_size = 1'b0;
 assign b_bits_source = 2'b0;
 assign b_bits_address = 16'b0;
-assign b_bits_mask = 1'b0;
-assign b_bits_data = 8'b0;
+assign b_bits_mask = 2'b0;
+assign b_bits_data = 16'b0;
 assign b_bits_corrupt = 1'b0;
 
 always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -217,26 +236,31 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
         d_valid <= 0;
         d_bits_opcode <= 3'b0;
         d_bits_param <= 3'b0;
-        d_bits_size <= 2'b0;
+        d_bits_size <= 1'b0;
         d_bits_source <= 2'b0;
         d_bits_sink <= 2'b0;
         d_bits_denied <= 1'b0;
-        d_bits_data <= 8'b0;
+        d_bits_data <= 16'b0;
         d_bits_corrupt <= 1'b0;
         pending_source <= 2'b0;
+        pending_size <= 1'b0;
+        pending_data <= 16'b0;
     end else begin
         cycle_count <= cycle_count + 1;
-        
+
         // Accept incoming A channel requests
         if (a_valid && a_ready) begin
 `ifdef TILELINK_CROSSBAR_TB_TRACE
-            $display("[Cycle %0d] Manager %0d received request from client %0d",
-                     cycle_count, id, 2'd1 - a_bits_source);
+            $display("[Cycle %0d] Manager %0d received A op %0d param %0d size %0d source %0d address %0d mask %0d data %0d corrupt %0d",
+                     cycle_count, id, a_bits_opcode, a_bits_param, a_bits_size, a_bits_source,
+                     a_bits_address, a_bits_mask, a_bits_data, a_bits_corrupt);
 `endif
             pending_source <= a_bits_source;
+            pending_size <= a_bits_size;
+            pending_data <= a_bits_data;
             state <= RESPONDING;
         end
-        
+
         case (state)
             IDLE: begin
                 d_valid <= 0;
@@ -244,12 +268,18 @@ always_ff @(posedge clk_i or negedge rst_ni) begin
             RESPONDING: begin
                 d_valid <= 1;
                 d_bits_opcode <= 3'b001; // AccessAckData
+                d_bits_param <= {2'b0, pending_size};
+                d_bits_size <= pending_size;
                 d_bits_source <= pending_source;
-                d_bits_data <= {6'b0, id};
+                d_bits_sink <= id;
+                d_bits_denied <= pending_data[2];
+                d_bits_data <= pending_data + {id[0], 15'b0};
+                d_bits_corrupt <= pending_data[3];
                 if (d_valid && d_ready) begin
 `ifdef TILELINK_CROSSBAR_TB_TRACE
-                    $display("[Cycle %0d] Manager %0d sent response: %0d to client %0d",
-                             cycle_count, id, d_bits_data, 2'd1 - d_bits_source);
+                    $display("[Cycle %0d] Manager %0d sent D op %0d param %0d size %0d source %0d sink %0d denied %0d data %0d corrupt %0d",
+                             cycle_count, id, d_bits_opcode, d_bits_param, d_bits_size, d_bits_source,
+                             d_bits_sink, d_bits_denied, d_bits_data, d_bits_corrupt);
 `endif
                     d_valid <= 0;
                     state <= IDLE;
@@ -282,29 +312,33 @@ logic m0_e_ready, m0_e_valid;
 logic [1:0] m0_e_bits_sink;
 logic m0_c_ready, m0_c_valid;
 logic [2:0] m0_c_bits_opcode, m0_c_bits_param;
-logic [1:0] m0_c_bits_size, m0_c_bits_source;
+logic m0_c_bits_size;
+logic [1:0] m0_c_bits_source;
 logic [15:0] m0_c_bits_address;
-logic [7:0] m0_c_bits_data;
+logic [15:0] m0_c_bits_data;
 logic m0_c_bits_corrupt;
 logic m0_b_ready, m0_b_valid;
 logic [2:0] m0_b_bits_opcode, m0_b_bits_param;
-logic [1:0] m0_b_bits_size, m0_b_bits_source;
+logic m0_b_bits_size;
+logic [1:0] m0_b_bits_source;
 logic [15:0] m0_b_bits_address;
-logic m0_b_bits_mask;
-logic [7:0] m0_b_bits_data;
+logic [1:0] m0_b_bits_mask;
+logic [15:0] m0_b_bits_data;
 logic m0_b_bits_corrupt;
 logic m0_d_ready, m0_d_valid;
 logic [2:0] m0_d_bits_opcode, m0_d_bits_param;
-logic [1:0] m0_d_bits_size, m0_d_bits_source, m0_d_bits_sink;
+logic m0_d_bits_size;
+logic [1:0] m0_d_bits_source, m0_d_bits_sink;
 logic m0_d_bits_denied;
-logic [7:0] m0_d_bits_data;
+logic [15:0] m0_d_bits_data;
 logic m0_d_bits_corrupt;
 logic m0_a_ready, m0_a_valid;
 logic [2:0] m0_a_bits_opcode, m0_a_bits_param;
-logic [1:0] m0_a_bits_size, m0_a_bits_source;
+logic m0_a_bits_size;
+logic [1:0] m0_a_bits_source;
 logic [15:0] m0_a_bits_address;
-logic m0_a_bits_mask;
-logic [7:0] m0_a_bits_data;
+logic [1:0] m0_a_bits_mask;
+logic [15:0] m0_a_bits_data;
 logic m0_a_bits_corrupt;
 
 // Master 1 signals
@@ -312,29 +346,33 @@ logic m1_e_ready, m1_e_valid;
 logic [1:0] m1_e_bits_sink;
 logic m1_c_ready, m1_c_valid;
 logic [2:0] m1_c_bits_opcode, m1_c_bits_param;
-logic [1:0] m1_c_bits_size, m1_c_bits_source;
+logic m1_c_bits_size;
+logic [1:0] m1_c_bits_source;
 logic [15:0] m1_c_bits_address;
-logic [7:0] m1_c_bits_data;
+logic [15:0] m1_c_bits_data;
 logic m1_c_bits_corrupt;
 logic m1_b_ready, m1_b_valid;
 logic [2:0] m1_b_bits_opcode, m1_b_bits_param;
-logic [1:0] m1_b_bits_size, m1_b_bits_source;
+logic m1_b_bits_size;
+logic [1:0] m1_b_bits_source;
 logic [15:0] m1_b_bits_address;
-logic m1_b_bits_mask;
-logic [7:0] m1_b_bits_data;
+logic [1:0] m1_b_bits_mask;
+logic [15:0] m1_b_bits_data;
 logic m1_b_bits_corrupt;
 logic m1_d_ready, m1_d_valid;
 logic [2:0] m1_d_bits_opcode, m1_d_bits_param;
-logic [1:0] m1_d_bits_size, m1_d_bits_source, m1_d_bits_sink;
+logic m1_d_bits_size;
+logic [1:0] m1_d_bits_source, m1_d_bits_sink;
 logic m1_d_bits_denied;
-logic [7:0] m1_d_bits_data;
+logic [15:0] m1_d_bits_data;
 logic m1_d_bits_corrupt;
 logic m1_a_ready, m1_a_valid;
 logic [2:0] m1_a_bits_opcode, m1_a_bits_param;
-logic [1:0] m1_a_bits_size, m1_a_bits_source;
+logic m1_a_bits_size;
+logic [1:0] m1_a_bits_source;
 logic [15:0] m1_a_bits_address;
-logic m1_a_bits_mask;
-logic [7:0] m1_a_bits_data;
+logic [1:0] m1_a_bits_mask;
+logic [15:0] m1_a_bits_data;
 logic m1_a_bits_corrupt;
 
 // Slave 0 signals
@@ -342,29 +380,33 @@ logic s0_e_ready, s0_e_valid;
 logic [1:0] s0_e_bits_sink;
 logic s0_c_ready, s0_c_valid;
 logic [2:0] s0_c_bits_opcode, s0_c_bits_param;
-logic [1:0] s0_c_bits_size, s0_c_bits_source;
+logic s0_c_bits_size;
+logic [1:0] s0_c_bits_source;
 logic [15:0] s0_c_bits_address;
-logic [7:0] s0_c_bits_data;
+logic [15:0] s0_c_bits_data;
 logic s0_c_bits_corrupt;
 logic s0_b_ready, s0_b_valid;
 logic [2:0] s0_b_bits_opcode, s0_b_bits_param;
-logic [1:0] s0_b_bits_size, s0_b_bits_source;
+logic s0_b_bits_size;
+logic [1:0] s0_b_bits_source;
 logic [15:0] s0_b_bits_address;
-logic s0_b_bits_mask;
-logic [7:0] s0_b_bits_data;
+logic [1:0] s0_b_bits_mask;
+logic [15:0] s0_b_bits_data;
 logic s0_b_bits_corrupt;
 logic s0_d_ready, s0_d_valid;
 logic [2:0] s0_d_bits_opcode, s0_d_bits_param;
-logic [1:0] s0_d_bits_size, s0_d_bits_source, s0_d_bits_sink;
+logic s0_d_bits_size;
+logic [1:0] s0_d_bits_source, s0_d_bits_sink;
 logic s0_d_bits_denied;
-logic [7:0] s0_d_bits_data;
+logic [15:0] s0_d_bits_data;
 logic s0_d_bits_corrupt;
 logic s0_a_ready, s0_a_valid;
 logic [2:0] s0_a_bits_opcode, s0_a_bits_param;
-logic [1:0] s0_a_bits_size, s0_a_bits_source;
+logic s0_a_bits_size;
+logic [1:0] s0_a_bits_source;
 logic [15:0] s0_a_bits_address;
-logic s0_a_bits_mask;
-logic [7:0] s0_a_bits_data;
+logic [1:0] s0_a_bits_mask;
+logic [15:0] s0_a_bits_data;
 logic s0_a_bits_corrupt;
 
 // Slave 1 signals
@@ -372,29 +414,33 @@ logic s1_e_ready, s1_e_valid;
 logic [1:0] s1_e_bits_sink;
 logic s1_c_ready, s1_c_valid;
 logic [2:0] s1_c_bits_opcode, s1_c_bits_param;
-logic [1:0] s1_c_bits_size, s1_c_bits_source;
+logic s1_c_bits_size;
+logic [1:0] s1_c_bits_source;
 logic [15:0] s1_c_bits_address;
-logic [7:0] s1_c_bits_data;
+logic [15:0] s1_c_bits_data;
 logic s1_c_bits_corrupt;
 logic s1_b_ready, s1_b_valid;
 logic [2:0] s1_b_bits_opcode, s1_b_bits_param;
-logic [1:0] s1_b_bits_size, s1_b_bits_source;
+logic s1_b_bits_size;
+logic [1:0] s1_b_bits_source;
 logic [15:0] s1_b_bits_address;
-logic s1_b_bits_mask;
-logic [7:0] s1_b_bits_data;
+logic [1:0] s1_b_bits_mask;
+logic [15:0] s1_b_bits_data;
 logic s1_b_bits_corrupt;
 logic s1_d_ready, s1_d_valid;
 logic [2:0] s1_d_bits_opcode, s1_d_bits_param;
-logic [1:0] s1_d_bits_size, s1_d_bits_source, s1_d_bits_sink;
+logic s1_d_bits_size;
+logic [1:0] s1_d_bits_source, s1_d_bits_sink;
 logic s1_d_bits_denied;
-logic [7:0] s1_d_bits_data;
+logic [15:0] s1_d_bits_data;
 logic s1_d_bits_corrupt;
 logic s1_a_ready, s1_a_valid;
 logic [2:0] s1_a_bits_opcode, s1_a_bits_param;
-logic [1:0] s1_a_bits_size, s1_a_bits_source;
+logic s1_a_bits_size;
+logic [1:0] s1_a_bits_source;
 logic [15:0] s1_a_bits_address;
-logic s1_a_bits_mask;
-logic [7:0] s1_a_bits_data;
+logic [1:0] s1_a_bits_mask;
+logic [15:0] s1_a_bits_data;
 logic s1_a_bits_corrupt;
 
 TLCrossBar dut (
@@ -765,5 +811,26 @@ tl_slave slave1 (
     .b_bits_corrupt(s1_b_bits_corrupt),
     .b_ready(s1_b_ready)
 );
+
+`ifdef TILELINK_CROSSBAR_TB_TRACE
+// Arbitration coverage. These lines are not part of the compared trace.
+always_ff @(posedge clk_i) begin
+    if (rst_ni) begin
+        if (dut.arbiter_sources_0_valid && dut.arbiter_sources_1_valid)
+            $display("[Cover %0d] A contention at manager 0", tb_cycle);
+        if (dut.arbiter_1_sources_0_valid && dut.arbiter_1_sources_1_valid)
+            $display("[Cover %0d] A contention at manager 1", tb_cycle);
+        if (dut.arbiter_6_sources_0_valid && dut.arbiter_6_sources_1_valid)
+            $display("[Cover %0d] D contention at client 0", tb_cycle);
+        if (dut.arbiter_7_sources_0_valid && dut.arbiter_7_sources_1_valid)
+            $display("[Cover %0d] D contention at client 1", tb_cycle);
+    end
+end
+logic [31:0] tb_cycle;
+always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) tb_cycle <= 0;
+    else tb_cycle <= tb_cycle + 1;
+end
+`endif
 
 endmodule

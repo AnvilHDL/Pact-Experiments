@@ -115,7 +115,8 @@ struct ar_ch {
 }
 
 chan slv_ar_ch<Tp : type> {
-    right ar_req : (Tp@#1),
+    // The requester holds the request until granted.
+    right ar_req : (Tp@gnt+1),
     left gnt : (void@#1)
 }
 

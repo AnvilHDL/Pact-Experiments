@@ -1,190 +1,235 @@
 import "type_tilelink.anvil"
+// Round-robin arbiter as in TLArbiter: the source not granted last has
+// priority (source 2 after reset).
 proc tilelink_arb(arbiter_ifc){
-    reg prio : logic;
+    reg last : logic;
     loop{
         let _ = recv server_ep.rdy >>
-        let prio = *prio >>
+        let prio = ~*last >>
         xoffer prio{
-            _ = irecv ep1.req => (set prio := *prio + 1),
-            _ = irecv ep2.req => (set prio := *prio + 1),
-            # => (set prio := *prio)
+            _ = irecv ep1.req => (set last := 1'd0),
+            _ = irecv ep2.req => (set last := 1'd1)
+        } else {
+            cycle 1
         }
     }
-
 }
 
 
-proc crossbar_A<T : type, U : type>(crossbar_itfc_A){
+proc crossbar_A(crossbar_itfc_A){
     loop{
         offer{
             x = irecv client_ep1.req => (
-                if (x == 1'd0){
+                // Client 1's source is remapped to the upper id.
+                let beat = tl_a_t::{opcode = x.opcode; param = x.param; size = x.size; source = x.source | 2'd1;
+                                    address = x.address; mask = x.mask; data = x.data; corrupt = x.corrupt} >>
+                if (x.address[0] == 1'd0){
                     try send arb_cl_ep_le11.req(()) {
-                        let data = irecv client_ep1.data >>
-                        isend server1_ep.req(data_pack_t::{data = data; id = 1'd0})
+                        let _ = irecv client_ep1.fire >>
+                        isend server1_ep.req(beat)
                     }
                 }else{
                     try send arb_cl_ep_le21.req(()) {
-                        let data = irecv client_ep1.data >>
-                        isend server2_ep.req(data_pack_t::{data = data; id = 1'd0})
+                        let _ = irecv client_ep1.fire >>
+                        isend server2_ep.req(beat)
                     }
                 }
             ),
             y = irecv client_ep2.req => (
-                if (y == 1'd0){
+                if (y.address[0] == 1'd0){
                     try send arb_cl_ep_le12.req(()) {
-                        let data = irecv client_ep2.data >>
-                        isend server1_ep.req(data_pack_t::{data = data; id = 1'd1})
+                        let _ = irecv client_ep2.fire >>
+                        isend server1_ep.req(y)
                     }
                 }else{
                     try send arb_cl_ep_le22.req(()) {
-                        let data = irecv client_ep2.data >>
-                        isend server2_ep.req(data_pack_t::{data = data; id = 1'd1})
+                        let _ = irecv client_ep2.fire >>
+                        isend server2_ep.req(y)
                     }
                 }
-            ),
-            # =>(
-                ()
             )
+        } else {
+            ()
         } >>
         cycle 1
     }
 }
 
 
-proc crossbar_D<T : type>(crossbar_itfc_D){
+proc crossbar_D(crossbar_itfc_D){
     loop{
         offer{
             a = irecv server1_ep.req => (
-                if (a == 1'd0){
+                // Responses reach the client with source 0 and the manager in sink.
+                let beat = tl_d_t::{opcode = a.opcode; param = a.param; size = a.size; source = 2'd0;
+                                    sink = 2'd1; denied = a.denied; data = a.data; corrupt = a.corrupt} >>
+                if (a.source == 2'd1){
                     try send arb_cl_ep_le11.req(()) {
-                        let data = irecv server1_ep.res >>
-                        isend client_ep1.res(data)
+                        let _ = irecv server1_ep.fire >>
+                        isend client_ep1.res(beat)
+                    }
+                }else if (a.source == 2'd0){
+                    try send arb_cl_ep_le21.req(()) {
+                        let _ = irecv server1_ep.fire >>
+                        isend client_ep2.res(beat)
                     }
                 }else{
-                    try send arb_cl_ep_le21.req(()) {
-                        let data = irecv server1_ep.res >>
-                        isend client_ep2.res(data)
-                    }
+                    ()
                 }
             ),
             b = irecv server2_ep.req => (
-                if (b == 1'd0){
+                let beat = tl_d_t::{opcode = b.opcode; param = b.param; size = b.size; source = 2'd0;
+                                    sink = 2'd0; denied = b.denied; data = b.data; corrupt = b.corrupt} >>
+                if (b.source == 2'd1){
                     try send arb_cl_ep_le12.req(()) {
-                        let data = irecv server2_ep.res >>
-                        isend client_ep1.res(data)
+                        let _ = irecv server2_ep.fire >>
+                        isend client_ep1.res(beat)
+                    }
+                }else if (b.source == 2'd0){
+                    try send arb_cl_ep_le22.req(()) {
+                        let _ = irecv server2_ep.fire >>
+                        isend client_ep2.res(beat)
                     }
                 }else{
-                    try send arb_cl_ep_le22.req(()) {
-                        let data = irecv server2_ep.res >>
-                        isend client_ep2.res(data)
-                    }
+                    ()
                 }
-            ),
-            # =>(
-                ()
             )
+        } else {
+            ()
         } >>
         cycle 1
     }
 }
 
 
-proc client<T : type, id : int>(client_itfc){
-    reg client_select : logic;
-    reg data : logic[8];
-    reg cyc : logic[8];
+// The clients and managers follow the tl_master/tl_slave state machines of
+// TLCrossBar_test.sv register for register, one loop iteration per cycle.
+// SV cycle_count is *cyc + 1.
+proc client<id : int>(client_itfc){
+    reg cyc : logic[16];
+    reg msg : logic[4];
+    reg idle : logic;
     loop{
+        let c = *cyc + 16'd1 >>
         {
             (
-                try send res_arb_client.rdy(()) {
-                    try  x = recv client_crossbar_ep.res {
-                        let trace_cyc = *cyc + 8'd1 >>
-                        dprint "[Cycle %d] Client %d received response: %d\n" (trace_cyc, id, x) >>
-                        set data := x;
-                        set client_select := *client_select + 1'd1
+                // D side: not ready four cycles in sixteen.
+                if (c[2+:2] != #{id[0+:1], 1'd1}) {
+                    try send res_arb_client.rdy(()) {
+                        try x = recv client_crossbar_ep.res {
+                            dprint "[Cycle %d] Client %d received D op %d param %d size %d source %d sink %d denied %d data %d corrupt %d\n" (c, id[0+:2], x.opcode, x.param, x.size, x.source, x.sink, x.denied, x.data, x.corrupt) >>
+                            cycle 1
+                        }
+                        else{
+                            cycle 1
+                        }
                     }
                     else{
                         cycle 1
                     }
-                }
-                else{
+                } else {
                     cycle 1
                 }
             );
             (
-                let next_select = if (id == 32'd0) {1'd0} else {1'd1} >>
-                let next_data = id[0+:8] >>
-                try send client_ep.req(next_select) {
-                    try send client_ep.data(next_data) {
-                        let trace_cyc = *cyc + 8'd1 >>
-                        dprint "[Cycle %d] Client %d sent request to Master %d with data: %d\n" (trace_cyc, id, next_select, next_data) >>
-                        cycle 1
+                let m = *msg >>
+                let size = if (m == 4'd2 || m == 4'd5 || m == 4'd8 || m == 4'd11 || m == 4'd14) {1'd1} else {1'd0} >>
+                let tgt = m[0] ^ (id[0] & m[1]) >>
+                let lo = #{id[0+:1], m, 3'd1} >>
+                let a = tl_a_t::{opcode = m[0+:3] ^ #{id[0+:1], 2'd0}; param = #{id[0+:1], m[0+:2]}; size = size; source = 2'd0;
+                                 address = #{id[0+:1], m, 10'd0, tgt}; mask = m[0+:2]; data = #{~lo, lo}; corrupt = m[3]} >>
+                if (*idle == 1'd0) {
+                    try send client_ep.req(a) {
+                        try send client_ep.fire(()) {
+                            dprint "[Cycle %d] Client %d sent A op %d param %d size %d source %d address %d mask %d data %d corrupt %d\n" (c, id[0+:2], a.opcode, a.param, a.size, a.source, a.address, a.mask, a.data, a.corrupt) >>
+                            set idle := 1'd1;
+                            set msg := m + 4'd1
+                        }
+                        else{
+                            cycle 1
+                        }
                     }
                     else{
                         cycle 1
                     }
-                }
-                else{
-                    cycle 1
+                } else {
+                    // Issue on even cycles.
+                    if (c[0] == 1'd0) {
+                        set idle := 1'd0
+                    } else {
+                        cycle 1
+                    }
                 }
             )
         }
     }
     loop{
-        set cyc := *cyc + 8'd1
+        set cyc := *cyc + 16'd1
     }
 }
 
 
 
-proc manager<T : type, U : type, id : int>(manager_itfc){
-    reg next_id : logic;
-    reg cyc : logic[8];
+proc manager<id : int>(manager_itfc){
+    reg cyc : logic[16];
+    reg responding : logic;
+    reg d_valid : logic;
+    reg pending_source : logic[2];
+    reg pending_size : logic;
+    reg pending_data : logic[16];
     loop{
-        // Readiness must remain available until a request is accepted.
-        rec WaitRequest {
-            send manager_ep.rdy(()) >>
-            try req = recv manager_crossbar_ep.req {
-                let trace_cyc = *cyc + 8'd1 >>
-                dprint "[Cycle %d] Manager %d received request from client %d\n" (trace_cyc, id, req.id) >>
-                set next_id := req.id >>
-                cycle 1 >>
-                // Retry the routing request too when the payload is not accepted.
-                rec WaitResponse {
-                    send manager_crossbar_d_ep.req(*next_id) >>
-                    try send manager_crossbar_d_ep.res(id[0+:8]) {
-                        let trace_cyc = *cyc + 8'd1 >>
-                        dprint "[Cycle %d] Manager %d sent response: %d to client %d\n" (trace_cyc, id, id[0+:8], *next_id) >>
-                        cycle 1
-                    } else {
-                        cycle 1 >> recurse WaitResponse
-                    }
+        let c = *cyc + 16'd1 >>
+        if (*responding == 1'd0) {
+            try send manager_ep.rdy(()) {
+                try req = recv manager_crossbar_ep.req {
+                    dprint "[Cycle %d] Manager %d received A op %d param %d size %d source %d address %d mask %d data %d corrupt %d\n" (c, id[0+:2], req.opcode, req.param, req.size, req.source, req.address, req.mask, req.data, req.corrupt) >>
+                    set pending_source := req.source;
+                    set pending_size := req.size;
+                    set pending_data := req.data;
+                    set responding := 1'd1
+                } else {
+                    cycle 1
                 }
             } else {
-                cycle 1 >> recurse WaitRequest
+                cycle 1
+            }
+        } else if (*d_valid == 1'd0) {
+            set d_valid := 1'd1
+        } else {
+            let d = tl_d_t::{opcode = 3'd1; param = #{2'd0, *pending_size}; size = *pending_size; source = *pending_source;
+                             sink = id[0+:2]; denied = (*pending_data)[2]; data = *pending_data + #{id[0+:1], 15'd0}; corrupt = (*pending_data)[3]} >>
+            try send manager_crossbar_d_ep.req(d) {
+                try send manager_crossbar_d_ep.fire(()) {
+                    dprint "[Cycle %d] Manager %d sent D op %d param %d size %d source %d sink %d denied %d data %d corrupt %d\n" (c, id[0+:2], d.opcode, d.param, d.size, d.source, d.sink, d.denied, d.data, d.corrupt) >>
+                    set d_valid := 1'd0;
+                    set responding := 1'd0
+                } else {
+                    cycle 1
+                }
+            } else {
+                cycle 1
             }
         }
     }
     loop{
-        set cyc := *cyc + 8'd1
+        set cyc := *cyc + 16'd1
     }
 }
 
 
 proc test_tilelink(){
     pool p : tilelink;
-    spawn client<logic[8], 0>[p.ic1];
-    spawn client<logic[8], 1>[p.ic2];
-    spawn manager<data_pack_t, logic[8], 0>[p.im1];
-    spawn manager<data_pack_t, logic[8], 1>[p.im2];
-    spawn crossbar_A<logic[8], data_pack_t>[p.icrA];
-    spawn crossbar_D<logic[8]>[p.icrD];
+    spawn client<0>[p.ic1];
+    spawn client<1>[p.ic2];
+    spawn manager<0>[p.im1];
+    spawn manager<1>[p.im2];
+    spawn crossbar_A[p.icrA];
+    spawn crossbar_D[p.icrD];
     spawn tilelink_arb[p.ia1];
     spawn tilelink_arb[p.ia2];
     spawn tilelink_arb[p.iares1];
     spawn tilelink_arb[p.iares2];
-    
+
     loop{
         cycle 1
     }

@@ -110,12 +110,12 @@ struct ar_sel_pack_t {
 }
 
 chan r_slv_ch<Tp : type> {
-    right req : (Tp@#1),
+    right req : (Tp@gnt+1),
     left gnt : (void@#1)
 }
 
 chan r_mux_ch<Tp : type> {
-    right req : (Tp@#1),
+    right req : (Tp@gnt+1),
     left gnt : (void@#1)
 }
 
