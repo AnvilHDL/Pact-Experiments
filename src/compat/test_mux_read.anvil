@@ -5,7 +5,7 @@ proc arbiter<T : type, T1 : type> (r_rr_arbiter_itfc){
     reg prio : logic[2];
     loop{
         let prio = *prio >>
-        xoffer prio{
+        xoffer tree prio{
           x = recv slv_ep1.req => (
                 let data = ar_sel_pack_t::{ar_pack = x; select = 2'd0} >>
                 send ar_req_ep.req(data) >>
@@ -184,7 +184,7 @@ proc master_read(master_read_itfc){
         dprint "[Cycle %d] Master received ar req with addr %d" (*cyc, req.addr) >>
         cycle 1 >>
         cycle 1 >>
-        let r = r_pack_t::{data = *data; resp = 1'b0} >>
+        let r = r_pack_t::{data = *data; resp = 2'd0} >>
         send mst_ep_r.rdy(()) >>
         dprint "[Cycle %d] Master sent r res with data %d" (*cyc, r.data) >>
         send mst_ep_r.res(r) >>
@@ -216,7 +216,7 @@ proc slave_read<id : int>(slave_read_itfc){
             }
         } >>
         let aid = id[0+:32] >>
-        let req = ar_pack_t::{addr = aid; prot = 1'b0} >>
+        let req = ar_pack_t::{addr = aid; prot = 3'd0} >>
         send read_req_ep.req(req) >>
         let _ = recv read_req_ep.gnt >>
         dprint "[Cycle %d] Slave %d read req selected with addr %d" (*cyc, id[0+:2], req.addr) >>

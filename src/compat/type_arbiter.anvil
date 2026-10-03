@@ -27,7 +27,8 @@ pool arbiter_pool{
 }
 
 chan arbiter_slave_ch <T : type> {
-    right req : (T@#1),
+    // The requester holds its data until granted, as rr_arb_tree assumes.
+    right req : (T@gnt+1),
     left gnt : (void@#1)
 }
 

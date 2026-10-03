@@ -87,8 +87,8 @@ chan fifo_dequeue_ch<Tp : type> {
     left empty : (void@#1)
 }
 
-type prot_t = logic;
-type resp_t = logic;
+type prot_t = logic[3];
+type resp_t = logic[2];
 
 type select_t = logic[2];
 type A = logic[32];

@@ -1,17 +1,30 @@
 interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fifo_dequeue_ch<select_t>) =
-    // Empty until a push; the next phase is full or neither full nor empty.
+    // FIFO of any depth >= 1. Empty until a push.
     (rec Empty . (
         ^(pop_ep.empty, *);
-        ^(push_ep.push: #1, *: #1; Empty)
+        ^(push_ep.push : #1, * : #1; Empty)
     ));
-    (
-        (rec Full . (
+    // Push and pop are independent unless full; the arms taken pick the next
+    // state. Only a push alone can fill it and only a pop alone can empty it.
+    ((rec Middle . &(push_ep.push : #1, pop_ep.pop : #1).(
+        push_ep.push : (Middle + (rec FullMiddle . (
             ^(push_ep.full, *);
-            ^(pop_ep.pop: #1, *: #1; Full)
-        ))
-        + (&(push_ep.push, pop_ep.pop); #1)
-    )
-
+            ^(pop_ep.pop : #1; (Middle + ()), * : #1; FullMiddle)
+        ))),
+        pop_ep.pop : (Middle + ()),
+        {push_ep.push, pop_ep.pop} : Middle
+    ))
+     + (rec Full . (
+        ^(push_ep.full, *);
+        ^(pop_ep.pop : #1; ((rec AfterFull . &(push_ep.push : #1, pop_ep.pop : #1).(
+                push_ep.push : (AfterFull + (rec FullAfterFull . (
+                    ^(push_ep.full, *);
+                    ^(pop_ep.pop : #1; (AfterFull + ()), * : #1; FullAfterFull)
+                ))),
+                pop_ep.pop : (AfterFull + ()),
+                {push_ep.push, pop_ep.pop} : AfterFull
+            )) + ()), * : #1; Full)
+    )))
 
 interface master_itfc(mst_ep_ar : right mst_ch<ar_pack_t>, mst_ep_r : left mst_r_ch<r_pack_t>) = mst_ep_ar.rdy;mst_ep_ar.req ;#1;mst_ep_r.rdy;mst_ep_r.res;#1
 
@@ -86,8 +99,8 @@ chan fifo_dequeue_ch<Tp : type> {
     left empty : (void@#1)
 }
 
-type prot_t = logic;
-type resp_t = logic;
+type prot_t = logic[3];
+type resp_t = logic[2];
 
 type select_t = logic[2];
 type A = logic[32];

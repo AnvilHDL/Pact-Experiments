@@ -20,7 +20,7 @@ proc master(master_read_itfc, master_write_itfc){
         cycle 1 >>
         send mst_ep_r.rdy(()) >>
 
-        let r = r_pack_t::{data = *data; resp = 1'b1} >>
+        let r = r_pack_t::{data = *data; resp = 2'd1} >>
         send mst_ep_r.res(r) >>
         dprint "[Cycle %d] Master sent r res with data %d\n" (*cyc, r.data) >>
         cycle 1
@@ -42,7 +42,7 @@ proc master(master_read_itfc, master_write_itfc){
         set mem[*addr] := wdata.data >>
         cycle 1 >>
         send mst_ep_b.rdy (()) >>
-        send mst_ep_b.res(b_pack_t::{resp = 1'b1}) >>
+        send mst_ep_b.res(b_pack_t::{resp = 2'd1}) >>
         cycle 1
     }
 

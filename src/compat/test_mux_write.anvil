@@ -3,120 +3,33 @@ import "type_mux_4p_write.anvil"
 proc arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
     reg prio : logic[2];
     loop{
-        let raw_prio = *prio >>
-        let prio = if (raw_prio == 2'd1) {2'd1} else if (raw_prio == 2'd2) {2'd2} else if (raw_prio == 2'd3) {2'd3} else {2'd0} >>
-        let zero = 2'd0 >>
-        if (prio == 2'd0) {
-            xoffer zero{
-                x = recv slv_ep1.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep1.gnt(())
-                ),
-                x = recv slv_ep2.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep2.gnt(())
-                ),
-                x = recv slv_ep3.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep3.gnt(())
-                ),
-                x = recv slv_ep4.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep4.gnt(())
-                )
-            }
-        }
-        else if (prio == 2'd1) {
-            xoffer zero{
-                x = recv slv_ep2.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep2.gnt(())
-                ),
-                x = recv slv_ep1.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep1.gnt(())
-                ),
-                x = recv slv_ep4.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep4.gnt(())
-                ),
-                x = recv slv_ep3.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep3.gnt(())
-                )
-            }
-        }
-        else if (prio == 2'd2) {
-            xoffer zero{
-                x = recv slv_ep3.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep3.gnt(())
-                ),
-                x = recv slv_ep4.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep4.gnt(())
-                ),
-                x = recv slv_ep1.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep1.gnt(())
-                ),
-                x = recv slv_ep2.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep2.gnt(())
-                )
-            }
-        }
-        else {
-            xoffer zero{
-                x = recv slv_ep4.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep4.gnt(())
-                ),
-                x = recv slv_ep3.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep3.gnt(())
-                ),
-                x = recv slv_ep2.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep2.gnt(())
-                ),
-                x = recv slv_ep1.req => (
-                    let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
-                    send aw_req_ep.req(data) >>
-                    let _ = recv aw_req_ep.gnt >>
-                    isend slv_ep1.gnt(())
-                )
-            }
+        let prio = *prio >>
+        // Tree round robin: step i tries arm (prio XOR i), as rr_arb_tree does.
+        xoffer tree prio{
+            x = recv slv_ep1.req => (
+                let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
+                send aw_req_ep.req(data) >>
+                let _ = recv aw_req_ep.gnt >>
+                isend slv_ep1.gnt(())
+            ),
+            x = recv slv_ep2.req => (
+                let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
+                send aw_req_ep.req(data) >>
+                let _ = recv aw_req_ep.gnt >>
+                isend slv_ep2.gnt(())
+            ),
+            x = recv slv_ep3.req => (
+                let data = aw_sel_pack_t::{aw_pack = x; select = 2'd2} >>
+                send aw_req_ep.req(data) >>
+                let _ = recv aw_req_ep.gnt >>
+                isend slv_ep3.gnt(())
+            ),
+            x = recv slv_ep4.req => (
+                let data = aw_sel_pack_t::{aw_pack = x; select = 2'd3} >>
+                send aw_req_ep.req(data) >>
+                let _ = recv aw_req_ep.gnt >>
+                isend slv_ep4.gnt(())
+            )
         } >>
         if (prio == 2'd0) {
             if (ready slv_ep2.req) {
@@ -346,7 +259,7 @@ proc master_write(master_write_itfc){
         set mem[*addr] := wdata.data >>
         cycle 1 >>
         send mst_ep_b.rdy (()) >>
-        send mst_ep_b.res(b_pack_t::{resp = 1'b0}) >>
+        send mst_ep_b.res(b_pack_t::{resp = 2'd0}) >>
         let b_cyc = *cyc >>
         dprint "[Cycle %d] Master sent b response" (b_cyc) >>
         cycle 2
@@ -371,7 +284,7 @@ proc slave_write<id : int>(slave_write_itfc){
             }
         } >>
         let aid = id[0+:32] >>
-        let aw = aw_pack_t::{addr = aid; prot = 1'b0} >>
+        let aw = aw_pack_t::{addr = aid; prot = 3'd0} >>
         send write_req_ep.req(aw) >>
         let _ = recv write_req_ep.gnt >>
         let aw_cyc = *cyc >>
@@ -379,7 +292,7 @@ proc slave_write<id : int>(slave_write_itfc){
         cycle 2 >>
         rec x {
             send write_data_ep.rdy(()) >>
-            let w = w_pack_t::{data = *data + aid; strb = 1'b1} >>
+            let w = w_pack_t::{data = *data + aid; strb = 4'd1} >>
             try send write_data_ep.data(w) {
                 let w_cyc = *cyc >>
                 dprint "[Cycle %d] Slave %d write data %d granted" (w_cyc, id[0+:2], w.data)

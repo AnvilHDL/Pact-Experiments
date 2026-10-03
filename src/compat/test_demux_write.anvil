@@ -241,7 +241,7 @@ proc master<id : int>(master_itfc){
         } >>
         cycle 1 >>
         send demux_ep_b.rdy(()) >>
-        send demux_ep_b.res(b_pack_t::{resp = 1'b0}) >>
+        send demux_ep_b.res(b_pack_t::{resp = 2'd0}) >>
         cycle 1 >>
         let b_cyc = *cyc - 8'd1 >>
         dprint "[Cycle %d] Master %d sent b response" (b_cyc, id[0+:2]) >>
@@ -268,12 +268,12 @@ proc slave(slave_itfc){
         } >>
         let curr_sel = *sel >>
         let curr_addr = if (curr_sel == 2'd0) {32'd0} else if (curr_sel == 2'd1) {32'd64} else if (curr_sel == 2'd2) {32'd128} else {32'd192} >>
-        let aw = aw_pack_t::{addr = curr_addr; prot = 1'b0} >>
+        let aw = aw_pack_t::{addr = curr_addr; prot = 3'd0} >>
         let req = aw_ch::{aw_pack = aw; select = curr_sel} >>
         dprint "[Cycle %d] Slave write aw addr %d selected master %d" (*cyc, aw.addr, req.select) >>
         send slv_ep_aw.req(req) >>
         let _ = recv slv_ep_aw.gnt >>
-        let w = w_pack_t::{data = *data; strb = 1'b1} >>
+        let w = w_pack_t::{data = *data; strb = 4'd1} >>
         send slv_ep_w.req(w) >>
         let _ = recv slv_ep_w.gnt >>
         dprint "[Cycle %d] Slave write data %d granted" (*cyc, w.data) >>
