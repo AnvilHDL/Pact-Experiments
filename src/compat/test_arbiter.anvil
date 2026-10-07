@@ -4,7 +4,7 @@ proc arbiter<Tp : type>(rr_arbiter_itfc){
     // reg cyc : logic[8]; // debug/bookkeeping only
     loop{
         let prio = *prio >>
-        xoffer tree prio {
+        fair xoffer tree prio {
             x = irecv slv_ep1.req => (
                 send mst_ep.req(x) >>
                 isend slv_ep1.gnt(()) >>

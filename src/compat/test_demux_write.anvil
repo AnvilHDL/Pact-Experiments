@@ -6,7 +6,7 @@ proc demux_aw_main(demux_aw_main){
     loop{
         let req = recv slv_ep.req >>
         let sel = req.select >>
-        if (sel == 2'd0){
+        fair if (sel == 2'd0){
             let _ = recv mst_ep1.rdy >>
             rec X {
                 try _ = irecv w_fifo_ep.full {
@@ -20,7 +20,7 @@ proc demux_aw_main(demux_aw_main){
                 }
             }
         }
-        else if (sel == 2'd1){
+        else fair if (sel == 2'd1){
             let _ = recv mst_ep2.rdy >>
             rec X {
                 try _ = irecv w_fifo_ep.full {
@@ -34,7 +34,7 @@ proc demux_aw_main(demux_aw_main){
                 }
             }
         }
-        else if (sel == 2'd2){
+        else fair if (sel == 2'd2){
             let _ = recv mst_ep3.rdy >>
             rec X {
                 try _ = irecv w_fifo_ep.full {
@@ -85,7 +85,7 @@ proc demux_w_main(demux_w_main){
                         let wprio = if(*wset) {*wentry} else {wentry} >>
                         xoffer wprio{
                             _ = irecv mst_ep1.rdy => (
-                                if (wprio == 2'd0){
+                                fair if (wprio == 2'd0){
                                     isend mst_ep1.req(x) >>
                                     isend slv_ep.gnt(())
                                 }
@@ -96,7 +96,7 @@ proc demux_w_main(demux_w_main){
                                 }
                             ),
                             _ = irecv mst_ep2.rdy => (
-                                if (wprio == 2'd1){
+                                fair if (wprio == 2'd1){
                                     isend mst_ep2.req(x) >>
                                     isend slv_ep.gnt(())
                                 }
@@ -107,7 +107,7 @@ proc demux_w_main(demux_w_main){
                                 }
                             ),
                             _ = irecv mst_ep3.rdy => (
-                                if (wprio == 2'd2){
+                                fair if (wprio == 2'd2){
                                     isend mst_ep3.req(x) >>
                                     isend slv_ep.gnt(())
                                 }
@@ -118,7 +118,7 @@ proc demux_w_main(demux_w_main){
                                 }
                             ),
                             _ = irecv mst_ep4.rdy => (
-                                if (wprio == 2'd3){
+                                fair if (wprio == 2'd3){
                                     isend mst_ep4.req(x) >>
                                     isend slv_ep.gnt(())
                                 }
@@ -158,7 +158,7 @@ proc demux_b_main(demux_b_main){
                 let bprio = if(*bset) {*bentry} else {bentry} >>
                 xoffer bprio{
                     _ = irecv mst_ep1.rdy => (
-                        if (bprio == 2'd0){
+                        fair if (bprio == 2'd0){
                             let b = irecv mst_ep1.res >>
                             isend slv_ep.res(b)
                         }
@@ -169,7 +169,7 @@ proc demux_b_main(demux_b_main){
                         }
                     ),
                     _ = irecv mst_ep2.rdy => (
-                        if (bprio == 2'd1){
+                        fair if (bprio == 2'd1){
                             let b = irecv mst_ep2.res >>
                             isend slv_ep.res(b)
                         }
@@ -180,7 +180,7 @@ proc demux_b_main(demux_b_main){
                         }
                     ),
                     _ = irecv mst_ep3.rdy => (
-                        if (bprio == 2'd2){
+                        fair if (bprio == 2'd2){
                             let b = irecv mst_ep3.res >>
                             isend slv_ep.res(b)
                         }
@@ -191,7 +191,7 @@ proc demux_b_main(demux_b_main){
                         }
                     ),
                     _ = irecv mst_ep4.rdy => (
-                        if (bprio == 2'd3){
+                        fair if (bprio == 2'd3){
                             let b = irecv mst_ep4.res >>
                             isend slv_ep.res(b)
                         }
@@ -263,7 +263,7 @@ proc slave(slave_itfc){
     loop{
         let target = if (*next_aw == 16'd0) {16'd3} else {*next_aw} >>
         rec WaitAw {
-            if (*cyc == target) { () }
+            fair if (*cyc == target) { () }
             else {
                 cycle 1 >>
                 recurse WaitAw

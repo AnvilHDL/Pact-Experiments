@@ -7,13 +7,13 @@ proc spill_reg <T: type> (spill_register_itfc){
     reg bfull : logic;
     // reg cyc : logic[8]; // debug/bookkeeping only
     loop{
-        if (~ (*afull || *bfull)){
+        fair if (~ (*afull || *bfull)){
             let in_data = recv inp_ep.req >>
             set a := in_data;
             set afull := 1'b1;
             set bfull := 1'b0
         }
-        else if (~ (*afull & *bfull)) {
+        else fair if (~ (*afull & *bfull)) {
             let out = if(*bfull){
                 *b
             }

@@ -5,7 +5,7 @@ proc arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
     loop{
         let prio = *prio >>
         // Tree round robin: step i tries arm (prio XOR i), as rr_arb_tree does.
-        xoffer tree prio{
+        fair xoffer tree prio{
             x = recv slv_ep1.req => (
                 let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
                 send aw_req_ep.req(data) >>
@@ -104,7 +104,7 @@ proc mux_w_main(mux_w_main){
                         rec X  {
                             xoffer wentry{
                                 _ = recv slv_ep1.rdy => (
-                                    if (wentry == 2'd0){
+                                    fair if (wentry == 2'd0){
                                         let data = irecv slv_ep1.data >>
                                         isend w_mst_ep.req(data)
                                     }
@@ -115,7 +115,7 @@ proc mux_w_main(mux_w_main){
                                     }
                                 ),
                                 _ = recv slv_ep2.rdy => (
-                                    if (wentry == 2'd1){
+                                    fair if (wentry == 2'd1){
                                         let data = irecv slv_ep2.data >>
                                         isend w_mst_ep.req(data)
                                     }
@@ -126,7 +126,7 @@ proc mux_w_main(mux_w_main){
                                     }
                                 ),
                                 _ = recv slv_ep3.rdy => (
-                                    if (wentry == 2'd2){
+                                    fair if (wentry == 2'd2){
                                         let data = irecv slv_ep3.data >>
                                         isend w_mst_ep.req(data)
                                     }
@@ -137,7 +137,7 @@ proc mux_w_main(mux_w_main){
                                     }
                                 ),
                                 _ = recv slv_ep4.rdy => (
-                                    if (wentry == 2'd3){
+                                    fair if (wentry == 2'd3){
                                         let data = irecv slv_ep4.data >>
                                         isend w_mst_ep.req(data)
                                     }
@@ -188,7 +188,7 @@ proc mux_b_main(mux_b_main){
                 rec X{
                     xoffer bentry{
                         _ = recv slv_ep1.rdy => (
-                            if (bentry == 2'd0){
+                            fair if (bentry == 2'd0){
                                 let b = irecv b_mst_ep.res >>
                                 isend slv_ep1.res(b)
                             }
@@ -199,7 +199,7 @@ proc mux_b_main(mux_b_main){
                             }
                         ),
                         _ = recv slv_ep2.rdy => (
-                            if (bentry == 2'd1){
+                            fair if (bentry == 2'd1){
                                 let b = irecv b_mst_ep.res >>
                                 isend slv_ep2.res(b)
                             }
@@ -210,7 +210,7 @@ proc mux_b_main(mux_b_main){
                             }
                         ),
                         _ = recv slv_ep3.rdy => (
-                            if (bentry == 2'd2){
+                            fair if (bentry == 2'd2){
                                 let b = irecv b_mst_ep.res >>
                                 isend slv_ep3.res(b)
                             }
@@ -221,7 +221,7 @@ proc mux_b_main(mux_b_main){
                             }
                         ),
                         _ = recv slv_ep4.rdy => (
-                            if (bentry == 2'd3){
+                            fair if (bentry == 2'd3){
                                 let b = irecv b_mst_ep.res >>
                                 isend slv_ep4.res(b)
                             }

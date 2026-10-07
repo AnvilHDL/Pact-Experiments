@@ -1,0 +1,194 @@
+import "type_demux_read_2p.anvil"
+
+
+proc demux_ar_main(demux_ar_main){
+    reg cyc : logic[8];
+    loop{
+        let req = recv slv_ep.ar_req >>
+        let sel = req.select >>
+        fair if (sel == 2'd0){
+            let _ = recv mst_ep1.rdy >>
+            rec X {
+                try _ = irecv fifo_ep.full {
+                    cycle 1 >>
+                    recurse X
+                }
+                else {
+                    isend fifo_ep.push(sel) >>
+                    isend mst_ep1.req(req.ar_pack) >>
+                    isend slv_ep.gnt(())
+                }
+            }
+        }
+        else{
+            let _ = recv mst_ep2.rdy >>
+            rec X {
+                try _ = irecv fifo_ep.full {
+                    cycle 1 >>
+                    recurse X
+                }
+                else {
+                    isend fifo_ep.push(sel) >>
+                    isend mst_ep2.req(req.ar_pack) >>
+                    isend slv_ep.gnt(())
+                }
+            }
+        } >>
+        cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc demux_r_main(demux_r_main){
+    reg cyc : logic[8];
+    reg rset : logic;
+    reg rentry : select_t;
+    loop{
+        try _ = irecv fifo_ep.empty { () }
+        else{
+            let rentry = irecv fifo_ep.pop >>
+            rec X {
+                let rprio = (if(*rset == 1'd0){rentry} else {*rentry} ) >>
+
+                let rprio_sel = rprio[0+:1] >>
+
+                xoffer rprio_sel{
+                    _  = irecv mst_ep1.rdy => (
+                        fair if (rprio == 2'd0){
+                            let r = irecv mst_ep1.res >>
+                            isend slv_ep.r_res(r)
+                        }
+                        else{
+                            dprint "[Cycle %d] Something went wrong! | rentry = %d vs id = 2'd0" (*cyc, rentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    ),
+                    _ = irecv mst_ep2.rdy => (
+                        fair if (rprio == 2'd1){
+                            let r = irecv mst_ep2.res >>
+                            isend slv_ep.r_res(r)
+                        }
+                        else{
+                            dprint "[Cycle %d] Something went wrong! | rentry = %d vs id = 2'd1" (*cyc, rentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    ),
+                    
+                    
+                    # =>(
+                        (
+
+                            set rset := 1'b1;
+                            set rentry := rprio
+                        ) >>
+                        recurse X
+                    )
+
+                }
+            }
+        } >>
+        set rset := 1'b0
+
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc master<id : int>(master_itfc){
+    reg count : logic[32];
+    reg cyc : logic[8];
+    loop{
+        send mux_ep_ar.rdy(()) >>
+        let ar = recv mux_ep_ar.req >>
+        cycle 1 >>
+        let recv_cyc = *cyc - 8'd1 >>
+        dprint "[Cycle %d] Master %d received ar addr %d" (recv_cyc, id, ar.addr) >>
+        cycle 1 >>
+        let aid = id[0+:32] >>
+        let rdata = (aid * 32'd10) + *count >>
+        let r = r_pack_t::{data = rdata; resp = 2'd0} >>
+        // Offer the response for one cycle; if it is not taken, signal ready again.
+        rec X {
+            send demux_ep_r.rdy(()) >>
+            try isend demux_ep_r.res(r) { () } else { cycle 1 >> recurse X }
+        } >>
+        cycle 1 >>
+        let sent_cyc = *cyc - 8'd1 >>
+        dprint "[Cycle %d] Master %d sent r data %d" (sent_cyc, id, r.data) >>
+        set count := *count + 32'd1 >>
+        ()
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc slave(slave_itfc){
+    reg cyc : logic[8];
+
+    loop{
+        cycle 3 >>
+        let ar0 = ar_pack_t::{addr = 32'd0; prot = 3'd0} >>
+        let req0 = ar_ch::{ar_pack = ar0; select = 2'd0} >>
+        dprint "[Cycle %d] Slave read ar addr %d selected master %d" (*cyc, ar0.addr, req0.select) >>
+        send slv_ep_ar.ar_req(req0) >>
+        let _ = recv slv_ep_ar.gnt >>
+        let r0 = recv slv_ep_r.r_res >>
+        dprint "[Cycle %d] Slave received r data %d" (*cyc, r0.data) >>
+
+        cycle 5 >>
+        let ar1 = ar_pack_t::{addr = 32'd64; prot = 3'd0} >>
+        let req1 = ar_ch::{ar_pack = ar1; select = 2'd1} >>
+        dprint "[Cycle %d] Slave read ar addr %d selected master %d" (*cyc, ar1.addr, req1.select) >>
+        send slv_ep_ar.ar_req(req1) >>
+        let _ = recv slv_ep_ar.gnt >>
+        let r1 = recv slv_ep_r.r_res >>
+        dprint "[Cycle %d] Slave received r data %d" (*cyc, r1.data) >>
+
+        cycle 6 >>
+        let ar2 = ar_pack_t::{addr = 32'd128; prot = 3'd0} >>
+        let req2 = ar_ch::{ar_pack = ar2; select = 2'd2} >>
+        dprint "[Cycle %d] Slave read ar addr %d selected master %d" (*cyc, ar2.addr, req2.select) >>
+        send slv_ep_ar.ar_req(req2) >>
+        let _ = recv slv_ep_ar.gnt >>
+        let r2 = recv slv_ep_r.r_res >>
+        dprint "[Cycle %d] Slave received r data %d" (*cyc, r2.data) >>
+
+        cycle 14 >>
+        let ar3 = ar_pack_t::{addr = 32'd192; prot = 3'd0} >>
+        let req3 = ar_ch::{ar_pack = ar3; select = 2'd3} >>
+        dprint "[Cycle %d] Slave read ar addr %d selected master %d" (*cyc, ar3.addr, req3.select) >>
+        send slv_ep_ar.ar_req(req3) >>
+        let _ = recv slv_ep_ar.gnt >>
+        let r3 = recv slv_ep_r.r_res >>
+        dprint "[Cycle %d] Slave received r data %d" (*cyc, r3.data) >>
+
+        cycle 2
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+
+}
+
+proc test_demux_read_2p(){
+
+    pool p : demux_read_pool;
+
+    spawn slave[p.slave];
+    spawn master<0>[p.master1];
+    spawn master<1>[p.master2];
+    spawn demux_ar_main[p.demux_ar];
+    spawn demux_r_main[p.demux_r];
+    spawn fifo<select_t>[p.fifo];
+
+    loop{
+        cycle 38 >>
+        dfinish
+    }
+}

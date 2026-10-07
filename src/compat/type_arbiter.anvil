@@ -1,6 +1,6 @@
 interface rr_arbiter_itfc(slv_ep1 : right arbiter_slave_ch<Tp>, slv_ep2 : right arbiter_slave_ch<Tp>, slv_ep3 : right arbiter_slave_ch<Tp>, slv_ep4 : right arbiter_slave_ch<Tp>, mst_ep : left arbiter_master_ch<Tp>) =  
 
-^( #slv_ep1.req : mst_ep.req ; #slv_ep1.gnt; #1,
+^^( #slv_ep1.req : mst_ep.req ; #slv_ep1.gnt; #1,
    #slv_ep2.req : mst_ep.req ; #slv_ep2.gnt; #1,
    #slv_ep3.req : mst_ep.req ; #slv_ep3.gnt; #1,
    #slv_ep4.req : mst_ep.req ; #slv_ep4.gnt; #1,

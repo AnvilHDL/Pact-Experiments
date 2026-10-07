@@ -13,9 +13,9 @@ interface demux_aw_main (
     mst_ep2 : left mast_ch<aw_pack_t>,
     mst_ep3 : left mast_ch<aw_pack_t>,
     mst_ep4 : left mast_ch<aw_pack_t>
-) = slv_ep.req ; ((mst_ep1.rdy; rec X . ^(#w_fifo_ep.full : #1;X, * : #w_fifo_ep.push;#mst_ep1.req;#slv_ep.gnt))+
-                 (mst_ep2.rdy; rec Y . ^(#w_fifo_ep.full : #1;Y, * : #w_fifo_ep.push;#mst_ep2.req;#slv_ep.gnt)) +
-                 (mst_ep3.rdy; rec Z . ^(#w_fifo_ep.full : #1;Z, * : #w_fifo_ep.push;#mst_ep3.req;#slv_ep.gnt)) +
+) = slv_ep.req ; ((mst_ep1.rdy; rec X . ^(#w_fifo_ep.full : #1;X, * : #w_fifo_ep.push;#mst_ep1.req;#slv_ep.gnt)) ++
+                 (mst_ep2.rdy; rec Y . ^(#w_fifo_ep.full : #1;Y, * : #w_fifo_ep.push;#mst_ep2.req;#slv_ep.gnt)) ++
+                 (mst_ep3.rdy; rec Z . ^(#w_fifo_ep.full : #1;Z, * : #w_fifo_ep.push;#mst_ep3.req;#slv_ep.gnt)) ++
                  (mst_ep4.rdy; rec W . ^(#w_fifo_ep.full : #1;W, * : #w_fifo_ep.push;#mst_ep4.req;#slv_ep.gnt))
 
     ) ; #1
@@ -32,10 +32,10 @@ interface demux_w_main (
         #w_fifo_ep.empty,
         #b_fifo_ep.full,
               * : ^(#slv_ep.req : #w_fifo_ep.pop ; #b_fifo_ep.push; rec X . ^(
-                                #mst_ep1.rdy : (#mst_ep1.req;#slv_ep.gnt)+(#1;X),
-                                #mst_ep2.rdy : (#mst_ep2.req;#slv_ep.gnt)+(#1;X),
-                                #mst_ep3.rdy : (#mst_ep3.req;#slv_ep.gnt)+(#1;X),
-                                #mst_ep4.rdy : (#mst_ep4.req;#slv_ep.gnt)+(#1;X),
+                                #mst_ep1.rdy : (#mst_ep1.req;#slv_ep.gnt) ++ (#1;X),
+                                #mst_ep2.rdy : (#mst_ep2.req;#slv_ep.gnt) ++ (#1;X),
+                                #mst_ep3.rdy : (#mst_ep3.req;#slv_ep.gnt) ++ (#1;X),
+                                #mst_ep4.rdy : (#mst_ep4.req;#slv_ep.gnt) ++ (#1;X),
                                 * : #1;X
                             ),
                     *)
@@ -51,10 +51,10 @@ interface demux_b_main (
 ) = ^(
         #b_fifo_ep.empty,
         * : #b_fifo_ep.pop ; rec X . ^(
-                       #mst_ep1.rdy : ((#mst_ep1.res;#slv_ep.res) + (#1;X)),
-                       #mst_ep2.rdy : ((#mst_ep2.res;#slv_ep.res) + (#1;X)),
-                       #mst_ep3.rdy : ((#mst_ep3.res;#slv_ep.res) + (#1;X)),
-                       #mst_ep4.rdy : ((#mst_ep4.res;#slv_ep.res) + (#1;X)),
+                       #mst_ep1.rdy : ((#mst_ep1.res;#slv_ep.res) ++ (#1;X)),
+                       #mst_ep2.rdy : ((#mst_ep2.res;#slv_ep.res) ++ (#1;X)),
+                       #mst_ep3.rdy : ((#mst_ep3.res;#slv_ep.res) ++ (#1;X)),
+                       #mst_ep4.rdy : ((#mst_ep4.res;#slv_ep.res) ++ (#1;X)),
                        * : #1;X
                    )
 

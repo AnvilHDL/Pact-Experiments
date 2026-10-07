@@ -5,7 +5,7 @@ proc arbiter<T : type, T1 : type> (r_rr_arbiter_itfc){
     reg prio : logic[2];
     loop{
         let prio = *prio >>
-        xoffer tree prio{
+        fair xoffer tree prio{
           x = recv slv_ep1.req => (
                 let data = ar_sel_pack_t::{ar_pack = x; select = 2'd0} >>
                 send ar_req_ep.req(data) >>
@@ -117,7 +117,7 @@ proc mux_r_main(mux_r_main){
                     let rprio = (if(*rset == 1'd0){rentry} else {*rentry}) >>
                     xoffer rprio{
                         _ = irecv slv_ep1.rdy => (
-                            if (rprio == 2'd0){
+                            fair if (rprio == 2'd0){
                                 let r = irecv r_res_ep.res >>
                                 isend slv_ep1.res(r)
                             }
@@ -128,7 +128,7 @@ proc mux_r_main(mux_r_main){
                             }
                         ),
                         _ = irecv slv_ep2.rdy => (
-                            if (rprio == 2'd1){
+                            fair if (rprio == 2'd1){
                                 let r = irecv r_res_ep.res >>
                                 isend slv_ep2.res(r)
                             }
@@ -139,7 +139,7 @@ proc mux_r_main(mux_r_main){
                             }
                         ),
                         _ = irecv slv_ep3.rdy => (
-                            if (rprio == 2'd2){
+                            fair if (rprio == 2'd2){
                                 let r = irecv r_res_ep.res >>
                                 isend slv_ep3.res(r)
                             }
@@ -150,7 +150,7 @@ proc mux_r_main(mux_r_main){
                             }
                         ),
                         _ = irecv slv_ep4.rdy => (
-                            if (rprio == 2'd3){
+                            fair if (rprio == 2'd3){
                                 let r = irecv r_res_ep.res >>
                                 isend slv_ep4.res(r)
                             }
@@ -202,7 +202,7 @@ proc slave_read<id : int>(slave_read_itfc){
     loop{
         rec WaitReq {
             let target = if (*next_req == 32'd0) {32'd3} else {*next_req} >>
-            if (*cyc == target) { () }
+            fair if (*cyc == target) { () }
             else {
                 if (target < *cyc) {
                     let next_target = if (target == 32'd3) {32'd10} else {((target - 32'd2) * 32'd2) + 32'd2} >>

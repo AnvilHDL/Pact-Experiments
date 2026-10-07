@@ -7,7 +7,7 @@ interface slave_write_itfc(write_req_ep : left w_slv_ch<aw_pack_t>, write_data_e
             F write_req_ep.req ; write_req_ep.gnt;#2; rec X . (write_data_ep.rdy; ^(#write_data_ep.data, * : #1; X) ); rec Y . (write_res_ep.rdy; ^(#write_res_ep.res, * : #1; Y)); #1
 
 interface w_rr_arbiter_itfc(slv_ep1 : right w_slv_ch<T>, slv_ep2 : right w_slv_ch<T>, slv_ep3 : right w_slv_ch<T>, slv_ep4 : right w_slv_ch<T>, aw_req_ep : left w_mux_ch<T1>) =
-^( 
+^^( 
    slv_ep1.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep1.gnt,
    slv_ep2.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep2.gnt,
    slv_ep3.req : aw_req_ep.req;aw_req_ep.gnt;#slv_ep3.gnt,
@@ -32,10 +32,10 @@ interface mux_w_main (
         #w_fifo_ep.empty,
         #b_fifo_ep.full,
         * : ^(#w_mst_ep.rdy :  #w_fifo_ep.pop;#b_fifo_ep.push; rec X . ^(
-                                                        slv_ep1.rdy : ((#slv_ep1.data;#w_mst_ep.req) + (#1;X)),
-                                                        slv_ep2.rdy : ((#slv_ep2.data;#w_mst_ep.req) + (#1;X)),
-                                                        slv_ep3.rdy : ((#slv_ep3.data;#w_mst_ep.req) + (#1;X)),
-                                                        slv_ep4.rdy : ((#slv_ep4.data;#w_mst_ep.req) + (#1;X))                                                      
+                                                        slv_ep1.rdy : ((#slv_ep1.data;#w_mst_ep.req) ++ (#1;X)),
+                                                        slv_ep2.rdy : ((#slv_ep2.data;#w_mst_ep.req) ++ (#1;X)),
+                                                        slv_ep3.rdy : ((#slv_ep3.data;#w_mst_ep.req) ++ (#1;X)),
+                                                        slv_ep4.rdy : ((#slv_ep4.data;#w_mst_ep.req) ++ (#1;X))                                                      
                                                      ),
                 *
             )
@@ -52,10 +52,10 @@ interface mux_b_main (
 ) = ^(
         #b_fifo_ep.empty,
         * : ^(#b_mst_ep.rdy : #b_fifo_ep.pop ; rec X.  ^(
-                                         slv_ep1.rdy : (#b_mst_ep.res;#slv_ep1.res) + (#1;X),
-                                          slv_ep2.rdy : (#b_mst_ep.res;#slv_ep2.res) + (#1;X),
-                                          slv_ep3.rdy : (#b_mst_ep.res;#slv_ep3.res) + (#1;X),
-                                          slv_ep4.rdy : (#b_mst_ep.res;#slv_ep4.res) + (#1;X)
+                                         slv_ep1.rdy : (#b_mst_ep.res;#slv_ep1.res) ++ (#1;X),
+                                          slv_ep2.rdy : (#b_mst_ep.res;#slv_ep2.res) ++ (#1;X),
+                                          slv_ep3.rdy : (#b_mst_ep.res;#slv_ep3.res) ++ (#1;X),
+                                          slv_ep4.rdy : (#b_mst_ep.res;#slv_ep4.res) ++ (#1;X)
                                     ),
                 *)
 

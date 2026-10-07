@@ -1,0 +1,87 @@
+import "test_mux_read_2p.anvil"
+import "test_mux_write_2p.anvil"
+
+
+proc master(master_read_itfc, master_write_itfc){
+    reg mem : byte[256];
+    reg addr : logic[8];
+    reg data : byte;
+    reg cyc : logic[8];
+
+    loop{
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        send mst_ep_ar.rdy(()) >>
+        let req = recv mst_ep_ar.req >>
+        dprint "[Cycle %d] Master received ar req with addr %d\n" (*cyc, req.addr) >>
+        set data := *mem[req.addr] >>
+        cycle 1 >>
+        send mst_ep_r.rdy(()) >>
+
+        let r = r_pack_t::{data = *data; resp = 2'd1} >>
+        send mst_ep_r.res(r) >>
+        dprint "[Cycle %d] Master sent r res with data %d\n" (*cyc, r.data) >>
+        cycle 1
+    }
+
+    loop{
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        cycle 1 >>
+        send mst_ep_aw.rdy(()) >>
+        let req = recv mst_ep_aw.req >>
+        dprint "[Cycle %d] Master received aw req with addr %d\n" (*cyc, req.addr) >>
+        set addr := req.addr[0+:8] >>
+        cycle 1 >>
+        send mst_ep_w.rdy(()) >>
+        let wdata = recv mst_ep_w.req >>
+        dprint "[Cycle %d] Master received w req with data %d\n" (*cyc, wdata.data) >>
+        set mem[*addr] := wdata.data >>
+        cycle 1 >>
+        send mst_ep_b.rdy (()) >>
+        send mst_ep_b.res(b_pack_t::{resp = 2'd1}) >>
+        cycle 1
+    }
+
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+
+proc test_unified_mux_2p(){
+    // read transactions
+    pool p1 : mux_read_transaction_pool;
+    pool p2 : mux_write_transaction_pool;
+    spawn slave_read<1>[p1.islv1];
+    spawn slave_read<2>[p1.islv2];
+    spawn arbiter<ar_pack_t, ar_sel_pack_t>[p1.iarb];
+    spawn mux_ar_main[p1.imux_ar];
+    spawn mux_r_main[p1.imux_r];
+    spawn fifo<select_t>[p1.ififo];
+
+    // write transactions
+
+    spawn slave_write<1>[p2.islv1];
+    spawn slave_write<2>[p2.islv2];
+    spawn arbiter<aw_pack_t, aw_sel_pack_t>[p2.iarb];
+    spawn mux_aw_main[p2.iaw];
+    spawn mux_w_main[p2.iw];
+    spawn mux_b_main[p2.ib];
+    spawn fifo<select_t>[p2.iwf];
+    spawn fifo<select_t>[p2.ibf];
+
+
+    //unified master
+
+    spawn master[p1.imst, p2.imst];
+
+    loop{
+        cycle 30 >>
+        dfinish
+    }
+
+}

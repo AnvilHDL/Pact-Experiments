@@ -1,0 +1,250 @@
+import "type_demux_write_2p.anvil"
+
+
+proc demux_aw_main(demux_aw_main){
+    reg cyc : logic[8];
+    loop{
+        let req = recv slv_ep.req >>
+        let sel = req.select >>
+        fair if (sel == 2'd0){
+            let _ = recv mst_ep1.rdy >>
+            rec X {
+                try _ = irecv w_fifo_ep.full {
+                    cycle 1 >>
+                    recurse X
+                }
+                else {
+                    isend w_fifo_ep.push(sel) >>
+                    isend mst_ep1.req(req.aw_pack) >>
+                    isend slv_ep.gnt(())
+                }
+            }
+        }
+        else{
+            let _ = recv mst_ep2.rdy >>
+            rec X {
+                try _ = irecv w_fifo_ep.full {
+                    cycle 1 >>
+                    recurse X
+                }
+                else {
+                    isend w_fifo_ep.push(sel) >>
+                    isend mst_ep2.req(req.aw_pack) >>
+                    isend slv_ep.gnt(())
+                }
+            }
+        } >>
+        cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc demux_w_main(demux_w_main){
+    reg cyc : logic[8];
+    reg wentry : select_t;
+    reg wset : logic;
+    loop{
+        offer{
+            _ = irecv w_fifo_ep.empty =>(),
+            _ = irecv b_fifo_ep.full =>(),
+            # => (
+                try x = irecv slv_ep.req {
+                    let wentry = irecv w_fifo_ep.pop >>
+                    isend b_fifo_ep.push(wentry) >>
+                    rec X  {
+                        let wprio = if(*wset) {*wentry} else {wentry} >>
+                        let wprio_sel = wprio[0+:1] >>
+                        xoffer wprio_sel{
+                            _ = irecv mst_ep1.rdy => (
+                                fair if (wprio == 2'd0){
+                                    isend mst_ep1.req(x) >>
+                                    isend slv_ep.gnt(())
+                                }
+                                else{
+                                    dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd0" (*cyc, wentry) >>
+                                    cycle 1 >>
+                                    recurse X
+                                }
+                            ),
+                            _ = irecv mst_ep2.rdy => (
+                                fair if (wprio == 2'd1){
+                                    isend mst_ep2.req(x) >>
+                                    isend slv_ep.gnt(())
+                                }
+                                else{
+                                    dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd1" (*cyc, wentry) >>
+                                    cycle 1 >>
+                                    recurse X
+                                }
+                            ),
+                            
+                            
+                            # => (
+                                (
+                                    set wset := 1'b1;
+                                    set wentry := wprio
+                                ) >>
+                                recurse X
+                            )
+                        }
+                    }
+                }
+            )
+        } >>
+        set wset := 1'b0
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc demux_b_main(demux_b_main){
+    reg bentry : select_t;
+    reg bset : logic;
+    loop{
+        try _ = irecv b_fifo_ep.empty { () }
+        else{
+            let bentry = irecv b_fifo_ep.pop >>
+            rec X {
+                let bprio = if(*bset) {*bentry} else {bentry} >>
+                let bprio_sel = bprio[0+:1] >>
+                xoffer bprio_sel{
+                    _ = irecv mst_ep1.rdy => (
+                        fair if (bprio == 2'd0){
+                            let b = irecv mst_ep1.res >>
+                            isend slv_ep.res(b)
+                        }
+                        else{
+                            dprint "Something went wrong! | bentry = %d vs id = 2'd0" (bentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    ),
+                    _ = irecv mst_ep2.rdy => (
+                        fair if (bprio == 2'd1){
+                            let b = irecv mst_ep2.res >>
+                            isend slv_ep.res(b)
+                        }
+                        else{
+                            dprint "Something went wrong! | bentry = %d vs id = 2'd1" (bentry) >>
+                            cycle 1 >>
+                            recurse X
+                        }
+                    ),
+                    
+                    
+                    # =>(
+                        (
+                            set bset := 1'b1;
+                            set bentry := bprio
+                        ) >>
+                        recurse X
+                    )
+                }
+            }
+        } >>
+        set bset := 1'b0
+    }
+
+}
+
+proc master<id : int>(master_itfc){
+    reg mem : byte[256];
+    reg addr : logic[8];
+    reg cyc : logic[8];
+    loop{
+        send mux_ep_aw.rdy(()) >>
+        let aw = recv mux_ep_aw.req >>
+        set addr := aw.addr[0+:8] >>
+        cycle 1 >>
+        let aw_cyc = *cyc - 8'd2 >>
+        dprint "[Cycle %d] Master %d received aw addr %d" (aw_cyc, id[0+:2], aw.addr) >>
+        rec X {
+            send demux_ep_w.rdy(()) >>
+            try w = irecv demux_ep_w.req {
+                set mem[*addr] := w.data >>
+                let w_cyc = *cyc - 8'd1 >>
+                dprint "[Cycle %d] Master %d received w data %d" (w_cyc, id[0+:2], w.data)
+            }
+            else{
+                cycle 1 >>
+                recurse X
+            }
+        } >>
+        cycle 1 >>
+        // Offer the response for one cycle; if it is not taken, signal ready again.
+        rec Y {
+            send demux_ep_b.rdy(()) >>
+            try isend demux_ep_b.res(b_pack_t::{resp = 2'd0}) { () } else { cycle 1 >> recurse Y }
+        } >>
+        cycle 1 >>
+        let b_cyc = *cyc - 8'd1 >>
+        dprint "[Cycle %d] Master %d sent b response" (b_cyc, id[0+:2]) >>
+        ()
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc slave(slave_itfc){
+    reg cyc : logic[16];
+    reg next_aw : logic[16];
+    reg data : logic[32];
+    reg sel : logic[2];
+    loop{
+        let target = if (*next_aw == 16'd0) {16'd3} else {*next_aw} >>
+        rec WaitAw {
+            fair if (*cyc == target) { () }
+            else {
+                cycle 1 >>
+                recurse WaitAw
+            }
+        } >>
+        let curr_sel = *sel >>
+        let curr_addr = if (curr_sel == 2'd0){32'd0}
+        else{32'd64} >>
+        let aw = aw_pack_t::{addr = curr_addr; prot = 3'd0} >>
+        let req = aw_ch::{aw_pack = aw; select = curr_sel} >>
+        dprint "[Cycle %d] Slave write aw addr %d selected master %d" (*cyc, aw.addr, req.select) >>
+        send slv_ep_aw.req(req) >>
+        let _ = recv slv_ep_aw.gnt >>
+        let w = w_pack_t::{data = *data; strb = 4'd1} >>
+        send slv_ep_w.req(w) >>
+        let _ = recv slv_ep_w.gnt >>
+        dprint "[Cycle %d] Slave write data %d granted" (*cyc, w.data) >>
+        let b = recv slv_ep_b.res >>
+        dprint "[Cycle %d] Slave received b response %d" (*cyc, b.resp) >>
+        set data := *data + 32'd1 >>
+        set sel := *sel + 2'd1 >>
+        if (target == 16'd3) {
+            set next_aw := 16'd10
+        }
+        else {
+            set next_aw := ((target - 16'd2) * 16'd2) + 16'd2
+        }
+    }
+    loop{
+        set cyc := *cyc + 16'd1
+    }
+}
+
+proc test_demux_write_2p(){
+
+    pool p : axi_type_demux_write_pool;
+
+    spawn slave[p.i1];
+    spawn master<0>[p.i2];
+    spawn master<1>[p.i3];
+    spawn demux_aw_main[p.i6];
+    spawn demux_w_main[p.i7];
+    spawn demux_b_main[p.i8];
+    spawn fifo<select_t>[p.i9];
+    spawn fifo<select_t>[p.i10];
+
+    loop{
+        cycle 1
+    }
+}

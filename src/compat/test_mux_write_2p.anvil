@@ -1,0 +1,251 @@
+import "type_mux_write_2p.anvil"
+
+proc arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
+    reg prio : logic[1];
+    loop{
+        let prio = *prio >>
+        // Tree round robin: step i tries arm (prio XOR i), as rr_arb_tree does.
+        fair xoffer tree prio{
+            x = recv slv_ep1.req => (
+                let data = aw_sel_pack_t::{aw_pack = x; select = 2'd0} >>
+                send aw_req_ep.req(data) >>
+                let _ = recv aw_req_ep.gnt >>
+                isend slv_ep1.gnt(())
+            ),
+            x = recv slv_ep2.req => (
+                let data = aw_sel_pack_t::{aw_pack = x; select = 2'd1} >>
+                send aw_req_ep.req(data) >>
+                let _ = recv aw_req_ep.gnt >>
+                isend slv_ep2.gnt(())
+            )
+            
+            
+        } >>
+        if (prio == 1'd0){
+            if (ready slv_ep2.req){
+                set prio := 1'd1
+            }
+        else{
+                set prio := 1'd0
+            }
+        }
+        else{
+            if (ready slv_ep1.req){
+                set prio := 1'd0
+            }
+        else{
+                set prio := 1'd1
+            }
+        }
+    }
+}
+
+
+proc mux_w_main(mux_w_main){
+    reg cyc : logic[8];
+    loop{
+        offer{
+            _ = irecv w_fifo_ep.empty =>  (),
+            _ = irecv b_fifo_ep.full => (),
+            # => (
+                    try _ = irecv w_mst_ep.rdy {
+                        let wentry = irecv w_fifo_ep.pop >>
+                        isend b_fifo_ep.push(wentry) >>
+                        rec X  {
+                            let wentry_sel = wentry[0+:1] >>
+                            xoffer wentry_sel{
+                                _ = recv slv_ep1.rdy => (
+                                    fair if (wentry == 2'd0){
+                                        let data = irecv slv_ep1.data >>
+                                        isend w_mst_ep.req(data)
+                                    }
+                                    else{
+                                        dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd0" (*cyc, wentry) >>
+                                        cycle 1 >>
+                                        recurse X
+                                    }
+                                ),
+                                _ = recv slv_ep2.rdy => (
+                                    fair if (wentry == 2'd1){
+                                        let data = irecv slv_ep2.data >>
+                                        isend w_mst_ep.req(data)
+                                    }
+                                    else{
+                                        dprint "[Cycle %d] Something went wrong! | wentry = %d\n vs id = 2'd1" (*cyc, wentry) >>
+                                        cycle 1 >>
+                                        recurse X
+                                    }
+                                )
+                                
+                                
+                            }
+                        }
+                    }
+            )
+        }  >>
+        cycle 1
+    }
+    loop{
+        set cyc := *cyc + 8'd1
+    }
+}
+
+proc mux_aw_main(mux_aw_main){
+    reg cyc : logic[8];
+    loop{
+        let x = recv aw_req_ep.req >>
+        let _ = recv aw_mst_ep.rdy >>
+        rec X {
+            try _ = irecv fifo_ep.full {
+                cycle 1 >>
+                recurse X
+            }
+            else {
+                isend fifo_ep.push(x.select) >>
+                isend aw_mst_ep.req(x.aw_pack) >>
+                isend aw_req_ep.gnt(())
+            }
+        } >>
+        cycle 1
+    }
+}
+
+proc mux_b_main(mux_b_main){
+    loop{
+        try _ = irecv b_fifo_ep.empty { ()}
+        else{
+            try _ = irecv b_mst_ep.rdy {
+                let bentry = irecv b_fifo_ep.pop >>
+                rec X{
+                    let bentry_sel = bentry[0+:1] >>
+                    xoffer bentry_sel{
+                        _ = recv slv_ep1.rdy => (
+                            fair if (bentry == 2'd0){
+                                let b = irecv b_mst_ep.res >>
+                                isend slv_ep1.res(b)
+                            }
+                            else{
+                                dprint "Something went wrong! | bentry = %d\n vs id = 2'd0" (bentry) >>
+                                cycle 1 >>
+                                recurse X
+                            }
+                        ),
+                        _ = recv slv_ep2.rdy => (
+                            fair if (bentry == 2'd1){
+                                let b = irecv b_mst_ep.res >>
+                                isend slv_ep2.res(b)
+                            }
+                            else{
+                                dprint "Something went wrong! | bentry = %d\n vs id = 2'd1" (bentry) >>
+                                cycle 1 >>
+                                recurse X
+                            }
+                        )
+                        
+                        
+                    }
+                }
+            }
+
+        } >>
+        cycle 1
+    }
+
+}
+
+proc master_write(master_write_itfc){
+    reg mem : byte[256];
+    reg addr : logic[8];
+    reg cyc : logic[32];
+    loop{
+        send mst_ep_aw.rdy(()) >>
+        let req = recv mst_ep_aw.req >>
+        let aw_cyc = *cyc >>
+        dprint "[Cycle %d] Master received aw req with addr %d" (aw_cyc, req.addr) >>
+        set addr := req.addr[0+:8] >>
+        cycle 1 >>
+        send mst_ep_w.rdy(()) >>
+        let wdata = recv mst_ep_w.req >>
+        let w_cyc = *cyc >>
+        dprint "[Cycle %d] Master received w req with data %d" (w_cyc, wdata.data) >>
+        set mem[*addr] := wdata.data >>
+        cycle 1 >>
+        send mst_ep_b.rdy (()) >>
+        send mst_ep_b.res(b_pack_t::{resp = 2'd0}) >>
+        let b_cyc = *cyc >>
+        dprint "[Cycle %d] Master sent b response" (b_cyc) >>
+        cycle 2
+    }
+    loop{
+        set cyc := *cyc + 32'd1
+    }
+}
+
+
+proc slave_write<id : int>(slave_write_itfc){
+    reg cyc : logic[32];
+    reg data : logic[32];
+    loop{
+        // The SV stimulus starts a request on power-of-two idle cycles;
+        // SEND_AW registers valid one cycle before the handshake.
+        rec WaitReq {
+            if ((*cyc != 32'd0) && ((*cyc & (*cyc - 32'd1)) == 32'd0)) {
+                cycle 2
+            } else {
+                cycle 1 >> recurse WaitReq
+            }
+        } >>
+        let aid = id[0+:32] >>
+        let aw = aw_pack_t::{addr = aid; prot = 3'd0} >>
+        send write_req_ep.req(aw) >>
+        let _ = recv write_req_ep.gnt >>
+        let aw_cyc = *cyc >>
+        dprint "[Cycle %d] Slave %d write aw addr %d selected" (aw_cyc, id[0+:2], aw.addr) >>
+        cycle 2 >>
+        rec x {
+            send write_data_ep.rdy(()) >>
+            let w = w_pack_t::{data = *data + aid; strb = 4'd1} >>
+            try isend write_data_ep.data(w) {
+                let w_cyc = *cyc >>
+                dprint "[Cycle %d] Slave %d write data %d granted" (w_cyc, id[0+:2], w.data)
+            }
+            else{
+                cycle 1 >>
+                recurse x
+            }
+        } >>
+        rec Y {
+            send write_res_ep.rdy(()) >>
+            try res = irecv write_res_ep.res {
+                let b_cyc = *cyc >>
+                dprint "[Cycle %d] Slave %d write response received" (b_cyc, id[0+:2])
+            }
+            else{
+                cycle 1 >>
+                recurse Y
+            }
+        } >>
+        set data := *data + 32'd1
+    }
+    loop{
+        set cyc := *cyc + 32'd1
+    }
+}
+
+proc test_mux_write_2p(){
+
+    pool p : mux_write_transaction_pool;
+    spawn slave_write<0>[p.islv1];
+    spawn slave_write<1>[p.islv2];
+    spawn master_write[p.imst];
+    spawn arbiter<aw_pack_t, aw_sel_pack_t>[p.iarb];
+    spawn mux_aw_main[p.iaw];
+    spawn mux_w_main[p.iw];
+    spawn mux_b_main[p.ib];
+    spawn fifo<select_t>[p.iwf];
+    spawn fifo<select_t>[p.ibf];
+
+    loop{
+        cycle 1
+    }
+}

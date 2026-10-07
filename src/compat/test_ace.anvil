@@ -8,12 +8,12 @@ proc arbiter(arb_itfc) {
     reg held : req_pack_t;
     loop {
         let priority = *prio >>
-        xoffer priority {
+        fair xoffer priority {
             req = recv cache_ep1.req => (
                 set held := req >>
                 let _ = recv req_ep.rdy >> cycle 1 >>
                 send req_ep.req(*held) >>
-                if ((*held).is_write) {
+                fair if ((*held).is_write) {
                     let data = recv cache_ep1.w_data >>
                     send req_ep.w_data(data)
                 } >>
@@ -25,7 +25,7 @@ proc arbiter(arb_itfc) {
                 set held := req >>
                 let _ = recv req_ep.rdy >> cycle 1 >>
                 send req_ep.req(*held) >>
-                if ((*held).is_write) {
+                fair if ((*held).is_write) {
                     let data = recv cache_ep2.w_data >>
                     send req_ep.w_data(data)
                 } >>
@@ -37,7 +37,7 @@ proc arbiter(arb_itfc) {
                 set held := req >>
                 let _ = recv req_ep.rdy >> cycle 1 >>
                 send req_ep.req(*held) >>
-                if ((*held).is_write) {
+                fair if ((*held).is_write) {
                     let data = recv cache_ep3.w_data >>
                     send req_ep.w_data(data)
                 } >>
@@ -49,7 +49,7 @@ proc arbiter(arb_itfc) {
                 set held := req >>
                 let _ = recv req_ep.rdy >> cycle 1 >>
                 send req_ep.req(*held) >>
-                if ((*held).is_write) {
+                fair if ((*held).is_write) {
                     let data = recv cache_ep4.w_data >>
                     send req_ep.w_data(data)
                 } >>
@@ -79,7 +79,7 @@ proc mem_controller(mem_itfc) {
                 let data = recv mem_ep.w_req >>
                 dprint "[Cycle %d] Memory write addr %d data %d\n" (*cyc + 16'd1, *addr_q, data) >>
                 set mem[*addr_q] := data >>
-                if (*line_q) {
+                fair if (*line_q) {
                     let data = recv mem_ep.w_req >>
                     dprint "[Cycle %d] Memory write addr %d data %d\n" (*cyc + 16'd1, *addr_q + 8'd1, data) >>
                     set mem[*addr_q + 8'd1] := data
@@ -107,24 +107,24 @@ proc ace_main(ace_itfc) {
         set held := req >> cycle 1 >>
         // AC handshake follows decode; the initiating client is excluded.
         {
-            (if ((*held).src != 2'd0) { send cs_ep_1.req(*held) });
-            (if ((*held).src != 2'd1) { send cs_ep_2.req(*held) });
-            (if ((*held).src != 2'd2) { send cs_ep_3.req(*held) });
-            (if ((*held).src != 2'd3) { send cs_ep_4.req(*held) })
+            (fair if ((*held).src != 2'd0) { send cs_ep_1.req(*held) });
+            (fair if ((*held).src != 2'd1) { send cs_ep_2.req(*held) });
+            (fair if ((*held).src != 2'd2) { send cs_ep_3.req(*held) });
+            (fair if ((*held).src != 2'd3) { send cs_ep_4.req(*held) })
         } >> cycle 2 >>
         // CR is registered before selecting the data path.
         {
-            (if ((*held).src != 2'd0) { let r = recv cs_ep_1.res >> set transfer1 := r } else { set transfer1 := 1'b0 });
-            (if ((*held).src != 2'd1) { let r = recv cs_ep_2.res >> set transfer2 := r } else { set transfer2 := 1'b0 });
-            (if ((*held).src != 2'd2) { let r = recv cs_ep_3.res >> set transfer3 := r } else { set transfer3 := 1'b0 });
-            (if ((*held).src != 2'd3) { let r = recv cs_ep_4.res >> set transfer4 := r } else { set transfer4 := 1'b0 })
+            (fair if ((*held).src != 2'd0) { let r = recv cs_ep_1.res >> set transfer1 := r } else { set transfer1 := 1'b0 });
+            (fair if ((*held).src != 2'd1) { let r = recv cs_ep_2.res >> set transfer2 := r } else { set transfer2 := 1'b0 });
+            (fair if ((*held).src != 2'd2) { let r = recv cs_ep_3.res >> set transfer3 := r } else { set transfer3 := 1'b0 });
+            (fair if ((*held).src != 2'd3) { let r = recv cs_ep_4.res >> set transfer4 := r } else { set transfer4 := 1'b0 })
         } >>
         let has_data = *transfer1 || *transfer2 || *transfer3 || *transfer4 >>
         let word = if (*transfer1) { *snoop1 } else if (*transfer2) { *snoop2 } else if (*transfer3) { *snoop3 } else { *snoop4 } >>
-        if ((*held).clean) {
+        fair if ((*held).clean) {
             // CleanUnique responds when CR completes, before dirty writeback.
             send req_ep.res(res_pack_t::{data = 8'd0; ack = 1'b1}) >>
-            if (has_data) {
+            fair if (has_data) {
                 cycle 1 >>
                 send mem_ep.aw_req(mem_write_t::{addr = (*held).addr & 8'hf0; line = 1'b1}) >>
                 cycle 1 >>
@@ -147,8 +147,8 @@ proc ace_main(ace_itfc) {
             } >> cycle 1
         } else {
             cycle 1 >>
-            if ((*held).is_write) {
-                if (has_data) {
+            fair if ((*held).is_write) {
+                fair if (has_data) {
                     send mem_ep.aw_req(mem_write_t::{addr = (*held).addr & 8'hf0; line = 1'b1}) >>
                     cycle 1 >>
                     offer {
@@ -175,7 +175,7 @@ proc ace_main(ace_itfc) {
                 let _ = recv mem_ep.b_res >>
                 send req_ep.res(res_pack_t::{data = 8'd0; ack = 1'b1}) >> cycle 1
             } else {
-                if (has_data) {
+                fair if (has_data) {
                     offer {
                         data = recv cs_ep_1.data => (set snoop1 := data),
                         data = recv cs_ep_2.data => (set snoop2 := data),
@@ -189,7 +189,7 @@ proc ace_main(ace_itfc) {
                             data = recv cs_ep_3.data => (set snoop3 := data),
                             data = recv cs_ep_4.data => (set snoop4 := data)
                         };
-                        (if (((*held).addr & 8'd8) == 8'd0) {
+                        (fair if (((*held).addr & 8'd8) == 8'd0) {
                             send req_ep.res(res_pack_t::{data = word; ack = 1'b0}) >> cycle 1
                         } else {
                             cycle 1 >> send req_ep.res(res_pack_t::{data = word; ack = 1'b0}) >> cycle 1
@@ -299,7 +299,7 @@ proc cache_client<id : int>(client_itfc, snoop_itfc) {
                 }
             } else { cycle 1 })
         } >>
-        if (*transfer) {
+        fair if (*transfer) {
             send cs_ep.data(*mem[line]) >> cycle 1 >>
             send cs_ep.data(*mem[line]) >> cycle 1
         }

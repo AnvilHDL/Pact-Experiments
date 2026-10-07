@@ -8,7 +8,7 @@
 interface arbiter_ifc(  ep1 : right arbiter_client_ch,
                         ep2 : right arbiter_client_ch,
                      server_ep : left arbiter_server_ch) =
-    server_ep.rdy ; ^(#ep1.req, #ep2.req, *) ; #1
+    server_ep.rdy ; ^^(#ep1.req, #ep2.req, *) ; #1
 
 interface crossbar_itfc_A(client_ep1 : right client_ch, client_ep2 : right client_ch,
                         arb_cl_ep_le11 : left arbiter_client_ch, arb_cl_ep_le12 : left arbiter_client_ch,
@@ -18,13 +18,13 @@ interface crossbar_itfc_A(client_ep1 : right client_ch, client_ep2 : right clien
     &(
         #client_ep1.req : (
                             (^(#arb_cl_ep_le11.req : #client_ep1.fire;#server1_ep.req , *))
-                                                                    +
+                                                                    ++
                             (^(#arb_cl_ep_le21.req : #client_ep1.fire;#server2_ep.req , *))
                          ),
 
         #client_ep2.req : (
                             (^(#arb_cl_ep_le12.req : #client_ep2.fire;#server1_ep.req , *))
-                                                                    +
+                                                                    ++
                             (^(#arb_cl_ep_le22.req : #client_ep2.fire;#server2_ep.req , *))
                         ),
         *
@@ -43,17 +43,17 @@ interface crossbar_itfc_D(server1_ep : right server_r_ch, server2_ep : right ser
         // A response whose source names no client is never taken.
         #server1_ep.req : (
                             (^(#arb_cl_ep_le11.req : #server1_ep.fire;#client_ep1.res , *))
-                                                                    +
+                                                                    ++
                             (^(#arb_cl_ep_le21.req : #server1_ep.fire;#client_ep2.res , *))
-                                                                    +
+                                                                    ++
                             ()
                          ),
 
         #server2_ep.req : (
                             (^(#arb_cl_ep_le12.req : #server2_ep.fire;#client_ep1.res , *))
-                                                                    +
+                                                                    ++
                             (^(#arb_cl_ep_le22.req : #server2_ep.fire;#client_ep2.res , *))
-                                                                    +
+                                                                    ++
                             ()
                         ),
         *
@@ -64,13 +64,13 @@ interface crossbar_itfc_D(server1_ep : right server_r_ch, server2_ep : right ser
 )
 
 interface client_itfc(client_ep : left client_ch, res_arb_client : right arbiter_server_ch, client_crossbar_ep : right client_r_ch) =
-   (^(#res_arb_client.rdy : ^(#client_crossbar_ep.res : #1, * : #1), * : #1) + #1) || (^(#client_ep.req: ^(#client_ep.fire : #1, * : #1), * : #1) + (#1))
+   (^(#res_arb_client.rdy : ^(#client_crossbar_ep.res : #1, * : #1), * : #1) ++ #1) || (^(#client_ep.req: ^(#client_ep.fire : #1, * : #1), * : #1) ++ (#1))
 
 // Each cycle the manager is ready for a request, offers a response beat, or waits.
 interface manager_itfc(manager_ep : right arbiter_server_ch, manager_crossbar_ep : left server_ch, manager_crossbar_d_ep : left server_r_ch) =
     ^(#manager_ep.rdy : ^(#manager_crossbar_ep.req : #1, * : #1), * : #1)
-    + ^(#manager_crossbar_d_ep.req : ^(#manager_crossbar_d_ep.fire : #1, * : #1), * : #1)
-    + #1
+    ++ ^(#manager_crossbar_d_ep.req : ^(#manager_crossbar_d_ep.fire : #1, * : #1), * : #1)
+    ++ #1
 
 pool tilelink{
     client_ep_le1 -- client_ep_ri1 : client_ch,

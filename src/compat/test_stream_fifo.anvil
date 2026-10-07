@@ -7,7 +7,7 @@ proc stream_fifo<T : type>(stream_fifo_if){
     reg full : logic;
 
     loop{
-        if(*full){
+        fair if(*full){
             send pop_ep.pop(*data[*read_ptr]) >>
             try x = irecv push_ep.push {
                 set data[*write_ptr] := x;
@@ -19,7 +19,7 @@ proc stream_fifo<T : type>(stream_fifo_if){
                 set read_ptr := *read_ptr + 3'd1
             }
         }
-        else if (*read_ptr == *write_ptr){
+        else fair if (*read_ptr == *write_ptr){
             let x = recv push_ep.push >>
             set data[*write_ptr] := x;
             set write_ptr := *write_ptr + 3'd1

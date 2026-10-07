@@ -1,4 +1,4 @@
-interface stream_fifo_if (push_ep : left push_ch<T>, pop_ep : left pop_ch<T>) = ((&(push_ep.push: #1,pop_ep.pop:#1)) + (pop_ep.pop;^(#push_ep.push: #1,*: #1)) + (push_ep.push; #1)) 
+interface stream_fifo_if (push_ep : left push_ch<T>, pop_ep : left pop_ch<T>) = ((&(push_ep.push: #1,pop_ep.pop:#1)) ++ (pop_ep.pop;^(#push_ep.push: #1,*: #1)) ++ (push_ep.push; #1)) 
 
 interface master_itfc(fifo_ep : right push_ch<T>) = F fifo_ep.push ; #1
 

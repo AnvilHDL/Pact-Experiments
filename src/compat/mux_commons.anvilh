@@ -6,25 +6,25 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<T>, pop_ep : right fifo_deque
     ));
     // Push first, then pop in the same cycle; only a lone push fills it, only a lone pop empties it.
     ((rec Middle . ^(
-        #push_ep.push : ^(#pop_ep.pop : #1; (Middle + ()),
+        #push_ep.push : ^(#pop_ep.pop : #1; (Middle ++ ()),
                          * : #1; (Middle + (rec FullMiddle . (
                              ^(#push_ep.full, *);
-                             ^(#pop_ep.pop : #1; (Middle + ()), * : #1; FullMiddle)
+                             ^(#pop_ep.pop : #1; (Middle ++ ()), * : #1; FullMiddle)
                          )))),
-        * : ^(#pop_ep.pop : #1; (Middle + ()),
+        * : ^(#pop_ep.pop : #1; (Middle ++ ()),
               * : #1; Middle)
     ))
      + (rec Full . (
         ^(#push_ep.full, *);
         ^(#pop_ep.pop : #1; ((rec AfterFull . ^(
-                #push_ep.push : ^(#pop_ep.pop : #1; (AfterFull + ()),
+                #push_ep.push : ^(#pop_ep.pop : #1; (AfterFull ++ ()),
                                  * : #1; (AfterFull + (rec FullAfterFull . (
                                      ^(#push_ep.full, *);
-                                     ^(#pop_ep.pop : #1; (AfterFull + ()), * : #1; FullAfterFull)
+                                     ^(#pop_ep.pop : #1; (AfterFull ++ ()), * : #1; FullAfterFull)
                                  )))),
-                * : ^(#pop_ep.pop : #1; (AfterFull + ()),
+                * : ^(#pop_ep.pop : #1; (AfterFull ++ ()),
                       * : #1; AfterFull)
-            )) + ()), * : #1; Full)
+            )) ++ ()), * : #1; Full)
     )))
 
 // Depth-8 FIFO: push first, then pop in the same cycle.
@@ -53,7 +53,7 @@ proc fifo<T : type>(fifo_itfc){
                         set read_ptr := *read_ptr + 3'd1
                     } >>
                     // Same empty check as after a lone pop; it never holds here, but the type needs it.
-                    if (*write_ptr == *read_ptr) { () } else { recurse Middle }
+                    fair if (*write_ptr == *read_ptr) { () } else { recurse Middle }
                 }
                 else {
                     {
@@ -71,7 +71,8 @@ proc fifo<T : type>(fifo_itfc){
                                 recurse Full
                             }
                         } >>
-                        recurse Middle
+                        // As in the type, a pop from full may leave it empty; it never does here.
+                        fair if (*write_ptr == *read_ptr) { () } else { recurse Middle }
                     }
                     else {
                         recurse Middle
@@ -81,7 +82,7 @@ proc fifo<T : type>(fifo_itfc){
             else {
                 try isend pop_ep.pop(*mem[*read_ptr]) {
                     set read_ptr := *read_ptr + 3'd1 >>
-                    if (*write_ptr == *read_ptr) {
+                    fair if (*write_ptr == *read_ptr) {
                         ()
                     }
                     else {

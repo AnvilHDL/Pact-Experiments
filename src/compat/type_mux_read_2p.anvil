@@ -8,7 +8,7 @@ interface slave_read_itfc(read_req_ep :left r_slv_ch<ar_pack_t>, read_res_ep : l
 
 interface r_rr_arbiter_itfc(slv_ep1 : right r_slv_ch<ar_pack_t>, slv_ep2 : right r_slv_ch<ar_pack_t>, ar_req_ep : left r_mux_ch<ar_sel_pack_t>) =
 
-^(
+^^(
    slv_ep1.req : ar_req_ep.req;ar_req_ep.gnt;#slv_ep1.gnt,
    slv_ep2.req : ar_req_ep.req;ar_req_ep.gnt;#slv_ep2.gnt
 ) ; #1
@@ -28,8 +28,8 @@ interface mux_r_main (
 ) =^(
         #fifo_ep.empty ,
         * : ^(#r_res_ep.rdy : #fifo_ep.pop ; rec X . ^(
-                                        #slv_ep1.rdy : ((#r_res_ep.res;#slv_ep1.res) + (#1;X)),
-                                        #slv_ep2.rdy : ((#r_res_ep.res;#slv_ep2.res) + (#1;X)),
+                                        #slv_ep1.rdy : ((#r_res_ep.res;#slv_ep1.res) ++ (#1;X)),
+                                        #slv_ep2.rdy : ((#r_res_ep.res;#slv_ep2.res) ++ (#1;X)),
                                         * : #1;X
                                 ),
                 *

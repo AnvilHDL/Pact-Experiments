@@ -8,7 +8,7 @@ proc fifo<T : type>(fifo_itfc){
     // reg cyc : logic[8]; // debug/bookkeeping only
 
     loop{
-        if (*full == 1'b1){
+        fair if (*full == 1'b1){
             μ X {
                 try isend pop_ep.pop(*data[*read_ptr]){
                     try isend push_ep.full(()){()} >>
@@ -22,7 +22,7 @@ proc fifo<T : type>(fifo_itfc){
                 }
             } 
         }
-        else if(*read_ptr == *write_ptr){
+        else fair if(*read_ptr == *write_ptr){
          μ X {
             try x = irecv push_ep.push {
                 try isend pop_ep.empty(()){()} >>

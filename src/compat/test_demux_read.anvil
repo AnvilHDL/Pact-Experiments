@@ -6,7 +6,7 @@ proc demux_ar_main(demux_ar_main){
     loop{
         let req = recv slv_ep.ar_req >>
         let sel = req.select >>
-        if (sel == 2'd0){
+        fair if (sel == 2'd0){
             let _ = recv mst_ep1.rdy >>
             rec X {
                 try _ = irecv fifo_ep.full {
@@ -20,7 +20,7 @@ proc demux_ar_main(demux_ar_main){
                 }
             }
         }
-        else if (sel == 2'd1){
+        else fair if (sel == 2'd1){
             let _ = recv mst_ep2.rdy >>
             rec X {
                 try _ = irecv fifo_ep.full {
@@ -34,7 +34,7 @@ proc demux_ar_main(demux_ar_main){
                 }
             }
         }
-        else if (sel == 2'd2){
+        else fair if (sel == 2'd2){
             let _ = recv mst_ep3.rdy >>
             rec X {
                 try _ = irecv fifo_ep.full {
@@ -82,7 +82,7 @@ proc demux_r_main(demux_r_main){
 
                 xoffer rprio{
                     _  = irecv mst_ep1.rdy => (
-                        if (rprio == 2'd0){
+                        fair if (rprio == 2'd0){
                             let r = irecv mst_ep1.res >>
                             isend slv_ep.r_res(r)
                         }
@@ -93,7 +93,7 @@ proc demux_r_main(demux_r_main){
                         }
                     ),
                     _ = irecv mst_ep2.rdy => (
-                        if (rprio == 2'd1){
+                        fair if (rprio == 2'd1){
                             let r = irecv mst_ep2.res >>
                             isend slv_ep.r_res(r)
                         }
@@ -104,7 +104,7 @@ proc demux_r_main(demux_r_main){
                         }
                     ),
                     _ = irecv mst_ep3.rdy => (
-                        if (rprio == 2'd2){
+                        fair if (rprio == 2'd2){
                             let r = irecv mst_ep3.res >>
                             isend slv_ep.r_res(r)
                         }
@@ -115,7 +115,7 @@ proc demux_r_main(demux_r_main){
                         }
                     ),
                     _ = irecv mst_ep4.rdy => (
-                        if (rprio == 2'd3){
+                        fair if (rprio == 2'd3){
                             let r = irecv mst_ep4.res >>
                             isend slv_ep.r_res(r)
                         }
