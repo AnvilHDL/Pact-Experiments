@@ -98,7 +98,7 @@ proc mux_w_main(mux_w_main){
             _ = irecv w_fifo_ep.empty =>  (),
             _ = irecv b_fifo_ep.full => (),
             # => (
-                    try _ = recv w_mst_ep.rdy {
+                    try _ = irecv w_mst_ep.rdy {
                         let wentry = irecv w_fifo_ep.pop >>
                         isend b_fifo_ep.push(wentry) >>
                         rec X  {
@@ -165,7 +165,7 @@ proc mux_aw_main(mux_aw_main){
         let x = recv aw_req_ep.req >>
         let _ = recv aw_mst_ep.rdy >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -181,9 +181,9 @@ proc mux_aw_main(mux_aw_main){
 
 proc mux_b_main(mux_b_main){
     loop{
-        try _ = recv b_fifo_ep.empty { ()}
+        try _ = irecv b_fifo_ep.empty { ()}
         else{
-            try _ = recv b_mst_ep.rdy {
+            try _ = irecv b_mst_ep.rdy {
                 let bentry = irecv b_fifo_ep.pop >>
                 rec X{
                     xoffer bentry{
@@ -293,7 +293,7 @@ proc slave_write<id : int>(slave_write_itfc){
         rec x {
             send write_data_ep.rdy(()) >>
             let w = w_pack_t::{data = *data + aid; strb = 4'd1} >>
-            try send write_data_ep.data(w) {
+            try isend write_data_ep.data(w) {
                 let w_cyc = *cyc >>
                 dprint "[Cycle %d] Slave %d write data %d granted" (w_cyc, id[0+:2], w.data)
             }
@@ -304,7 +304,7 @@ proc slave_write<id : int>(slave_write_itfc){
         } >>
         rec Y {
             send write_res_ep.rdy(()) >>
-            try res = recv write_res_ep.res {
+            try res = irecv write_res_ep.res {
                 let b_cyc = *cyc >>
                 dprint "[Cycle %d] Slave %d write response received" (b_cyc, id[0+:2])
             }

@@ -24,12 +24,12 @@ proc crossbar_A(crossbar_itfc_A){
                 let beat = tl_a_t::{opcode = x.opcode; param = x.param; size = x.size; source = x.source | 2'd1;
                                     address = x.address; mask = x.mask; data = x.data; corrupt = x.corrupt} >>
                 if (x.address[0] == 1'd0){
-                    try send arb_cl_ep_le11.req(()) {
+                    try isend arb_cl_ep_le11.req(()) {
                         let _ = irecv client_ep1.fire >>
                         isend server1_ep.req(beat)
                     }
                 }else{
-                    try send arb_cl_ep_le21.req(()) {
+                    try isend arb_cl_ep_le21.req(()) {
                         let _ = irecv client_ep1.fire >>
                         isend server2_ep.req(beat)
                     }
@@ -37,12 +37,12 @@ proc crossbar_A(crossbar_itfc_A){
             ),
             y = irecv client_ep2.req => (
                 if (y.address[0] == 1'd0){
-                    try send arb_cl_ep_le12.req(()) {
+                    try isend arb_cl_ep_le12.req(()) {
                         let _ = irecv client_ep2.fire >>
                         isend server1_ep.req(y)
                     }
                 }else{
-                    try send arb_cl_ep_le22.req(()) {
+                    try isend arb_cl_ep_le22.req(()) {
                         let _ = irecv client_ep2.fire >>
                         isend server2_ep.req(y)
                     }
@@ -64,12 +64,12 @@ proc crossbar_D(crossbar_itfc_D){
                 let beat = tl_d_t::{opcode = a.opcode; param = a.param; size = a.size; source = 2'd0;
                                     sink = 2'd1; denied = a.denied; data = a.data; corrupt = a.corrupt} >>
                 if (a.source == 2'd1){
-                    try send arb_cl_ep_le11.req(()) {
+                    try isend arb_cl_ep_le11.req(()) {
                         let _ = irecv server1_ep.fire >>
                         isend client_ep1.res(beat)
                     }
                 }else if (a.source == 2'd0){
-                    try send arb_cl_ep_le21.req(()) {
+                    try isend arb_cl_ep_le21.req(()) {
                         let _ = irecv server1_ep.fire >>
                         isend client_ep2.res(beat)
                     }
@@ -81,12 +81,12 @@ proc crossbar_D(crossbar_itfc_D){
                 let beat = tl_d_t::{opcode = b.opcode; param = b.param; size = b.size; source = 2'd0;
                                     sink = 2'd0; denied = b.denied; data = b.data; corrupt = b.corrupt} >>
                 if (b.source == 2'd1){
-                    try send arb_cl_ep_le12.req(()) {
+                    try isend arb_cl_ep_le12.req(()) {
                         let _ = irecv server2_ep.fire >>
                         isend client_ep1.res(beat)
                     }
                 }else if (b.source == 2'd0){
-                    try send arb_cl_ep_le22.req(()) {
+                    try isend arb_cl_ep_le22.req(()) {
                         let _ = irecv server2_ep.fire >>
                         isend client_ep2.res(beat)
                     }
@@ -115,8 +115,8 @@ proc client<id : int>(client_itfc){
             (
                 // D side: not ready four cycles in sixteen.
                 if (c[2+:2] != #{id[0+:1], 1'd1}) {
-                    try send res_arb_client.rdy(()) {
-                        try x = recv client_crossbar_ep.res {
+                    try isend res_arb_client.rdy(()) {
+                        try x = irecv client_crossbar_ep.res {
                             dprint "[Cycle %d] Client %d received D op %d param %d size %d source %d sink %d denied %d data %d corrupt %d\n" (c, id[0+:2], x.opcode, x.param, x.size, x.source, x.sink, x.denied, x.data, x.corrupt) >>
                             cycle 1
                         }
@@ -139,8 +139,8 @@ proc client<id : int>(client_itfc){
                 let a = tl_a_t::{opcode = m[0+:3] ^ #{id[0+:1], 2'd0}; param = #{id[0+:1], m[0+:2]}; size = size; source = 2'd0;
                                  address = #{id[0+:1], m, 10'd0, tgt}; mask = m[0+:2]; data = #{~lo, lo}; corrupt = m[3]} >>
                 if (*idle == 1'd0) {
-                    try send client_ep.req(a) {
-                        try send client_ep.fire(()) {
+                    try isend client_ep.req(a) {
+                        try isend client_ep.fire(()) {
                             dprint "[Cycle %d] Client %d sent A op %d param %d size %d source %d address %d mask %d data %d corrupt %d\n" (c, id[0+:2], a.opcode, a.param, a.size, a.source, a.address, a.mask, a.data, a.corrupt) >>
                             set idle := 1'd1;
                             set msg := m + 4'd1
@@ -180,8 +180,8 @@ proc manager<id : int>(manager_itfc){
     loop{
         let c = *cyc + 16'd1 >>
         if (*responding == 1'd0) {
-            try send manager_ep.rdy(()) {
-                try req = recv manager_crossbar_ep.req {
+            try isend manager_ep.rdy(()) {
+                try req = irecv manager_crossbar_ep.req {
                     dprint "[Cycle %d] Manager %d received A op %d param %d size %d source %d address %d mask %d data %d corrupt %d\n" (c, id[0+:2], req.opcode, req.param, req.size, req.source, req.address, req.mask, req.data, req.corrupt) >>
                     set pending_source := req.source;
                     set pending_size := req.size;
@@ -198,8 +198,8 @@ proc manager<id : int>(manager_itfc){
         } else {
             let d = tl_d_t::{opcode = 3'd1; param = #{2'd0, *pending_size}; size = *pending_size; source = *pending_source;
                              sink = id[0+:2]; denied = (*pending_data)[2]; data = *pending_data + #{id[0+:1], 15'd0}; corrupt = (*pending_data)[3]} >>
-            try send manager_crossbar_d_ep.req(d) {
-                try send manager_crossbar_d_ep.fire(()) {
+            try isend manager_crossbar_d_ep.req(d) {
+                try isend manager_crossbar_d_ep.fire(()) {
                     dprint "[Cycle %d] Manager %d sent D op %d param %d size %d source %d sink %d denied %d data %d corrupt %d\n" (c, id[0+:2], d.opcode, d.param, d.size, d.source, d.sink, d.denied, d.data, d.corrupt) >>
                     set d_valid := 1'd0;
                     set responding := 1'd0

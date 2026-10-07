@@ -9,7 +9,7 @@ proc demux_aw_main(demux_aw_main){
         if (sel == 2'd0){
             let _ = recv mst_ep1.rdy >>
             rec X {
-                try _ = recv w_fifo_ep.full {
+                try _ = irecv w_fifo_ep.full {
                     cycle 1 >>
                     recurse X
                 }
@@ -23,7 +23,7 @@ proc demux_aw_main(demux_aw_main){
         else if (sel == 2'd1){
             let _ = recv mst_ep2.rdy >>
             rec X {
-                try _ = recv w_fifo_ep.full {
+                try _ = irecv w_fifo_ep.full {
                     cycle 1 >>
                     recurse X
                 }
@@ -37,7 +37,7 @@ proc demux_aw_main(demux_aw_main){
         else if (sel == 2'd2){
             let _ = recv mst_ep3.rdy >>
             rec X {
-                try _ = recv w_fifo_ep.full {
+                try _ = irecv w_fifo_ep.full {
                     cycle 1 >>
                     recurse X
                 }
@@ -51,7 +51,7 @@ proc demux_aw_main(demux_aw_main){
         else{
             let _ = recv mst_ep4.rdy >>
             rec X {
-                try _ = recv w_fifo_ep.full {
+                try _ = irecv w_fifo_ep.full {
                     cycle 1 >>
                     recurse X
                 }
@@ -78,7 +78,7 @@ proc demux_w_main(demux_w_main){
             _ = irecv w_fifo_ep.empty =>(),
             _ = irecv b_fifo_ep.full =>(),
             # => (
-                try x = recv slv_ep.req {
+                try x = irecv slv_ep.req {
                     let wentry = irecv w_fifo_ep.pop >>
                     isend b_fifo_ep.push(wentry) >>
                     rec X  {
@@ -151,7 +151,7 @@ proc demux_b_main(demux_b_main){
     reg bentry : select_t;
     reg bset : logic;
     loop{
-        try _ = recv b_fifo_ep.empty { () }
+        try _ = irecv b_fifo_ep.empty { () }
         else{
             let bentry = irecv b_fifo_ep.pop >>
             rec X {
@@ -229,7 +229,7 @@ proc master<id : int>(master_itfc){
         dprint "[Cycle %d] Master %d received aw addr %d" (aw_cyc, id[0+:2], aw.addr) >>
         rec X {
             send demux_ep_w.rdy(()) >>
-            try w = recv demux_ep_w.req {
+            try w = irecv demux_ep_w.req {
                 set mem[*addr] := w.data >>
                 let w_cyc = *cyc - 8'd1 >>
                 dprint "[Cycle %d] Master %d received w data %d" (w_cyc, id[0+:2], w.data)
@@ -240,8 +240,11 @@ proc master<id : int>(master_itfc){
             }
         } >>
         cycle 1 >>
-        send demux_ep_b.rdy(()) >>
-        send demux_ep_b.res(b_pack_t::{resp = 2'd0}) >>
+        // Offer the response for one cycle; if it is not taken, signal ready again.
+        rec Y {
+            send demux_ep_b.rdy(()) >>
+            try isend demux_ep_b.res(b_pack_t::{resp = 2'd0}) { () } else { cycle 1 >> recurse Y }
+        } >>
         cycle 1 >>
         let b_cyc = *cyc - 8'd1 >>
         dprint "[Cycle %d] Master %d sent b response" (b_cyc, id[0+:2]) >>

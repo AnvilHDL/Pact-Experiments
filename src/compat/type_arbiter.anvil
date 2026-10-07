@@ -9,7 +9,7 @@ interface rr_arbiter_itfc(slv_ep1 : right arbiter_slave_ch<Tp>, slv_ep2 : right 
 
 interface slave_interface(slv_ep : left arbiter_slave_ch<Tp>) = F slv_ep.req ; slv_ep.gnt;#1
 
-interface master_interface(mst_ep : right arbiter_master_ch<Tp>) = F ^(mst_ep.req, *) ; #1
+interface master_interface(mst_ep : right arbiter_master_ch<Tp>) = F ^(#mst_ep.req, *) ; #1
 
 pool arbiter_pool{
     slv_ep1 -- slv_ep_ri1 : arbiter_slave_ch<logic>,

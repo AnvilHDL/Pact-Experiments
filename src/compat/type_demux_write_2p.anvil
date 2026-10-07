@@ -1,33 +1,34 @@
 interface fifo_itfc(push_ep : right fifo_insert_ch<select_t>, pop_ep : right fifo_dequeue_ch<select_t>) =
     // FIFO of any depth >= 1. Empty until a push.
     (rec Empty . (
-        ^(pop_ep.empty, *);
-        ^(push_ep.push : #1, * : #1; Empty)
+        ^(#pop_ep.empty, *);
+        ^(#push_ep.push : #1, * : #1; Empty)
     ));
-    // Push and pop are independent unless full; the arms taken pick the next
-    // state. Only a push alone can fill it and only a pop alone can empty it.
-    ((rec Middle . &(push_ep.push : #1, pop_ep.pop : #1).(
-        push_ep.push : (Middle + (rec FullMiddle . (
-            ^(push_ep.full, *);
-            ^(pop_ep.pop : #1; (Middle + ()), * : #1; FullMiddle)
-        ))),
-        pop_ep.pop : (Middle + ()),
-        {push_ep.push, pop_ep.pop} : Middle
+    // Push first, then pop in the same cycle; only a lone push fills it, only a lone pop empties it.
+    ((rec Middle . ^(
+        #push_ep.push : ^(#pop_ep.pop : #1; Middle,
+                         * : #1; (Middle + (rec FullMiddle . (
+                             ^(#push_ep.full, *);
+                             ^(#pop_ep.pop : #1; (Middle + ()), * : #1; FullMiddle)
+                         )))),
+        * : ^(#pop_ep.pop : #1; (Middle + ()),
+              * : #1; Middle)
     ))
      + (rec Full . (
-        ^(push_ep.full, *);
-        ^(pop_ep.pop : #1; ((rec AfterFull . &(push_ep.push : #1, pop_ep.pop : #1).(
-                push_ep.push : (AfterFull + (rec FullAfterFull . (
-                    ^(push_ep.full, *);
-                    ^(pop_ep.pop : #1; (AfterFull + ()), * : #1; FullAfterFull)
-                ))),
-                pop_ep.pop : (AfterFull + ()),
-                {push_ep.push, pop_ep.pop} : AfterFull
+        ^(#push_ep.full, *);
+        ^(#pop_ep.pop : #1; ((rec AfterFull . ^(
+                #push_ep.push : ^(#pop_ep.pop : #1; AfterFull,
+                                 * : #1; (AfterFull + (rec FullAfterFull . (
+                                     ^(#push_ep.full, *);
+                                     ^(#pop_ep.pop : #1; (AfterFull + ()), * : #1; FullAfterFull)
+                                 )))),
+                * : ^(#pop_ep.pop : #1; (AfterFull + ()),
+                      * : #1; AfterFull)
             )) + ()), * : #1; Full)
     )))
 
 interface master_itfc(mux_ep_aw : right mast_ch<aw_pack_t>, demux_ep_w : right mast_ch<w_pack_t>, demux_ep_b : right mast_rdy_ch<b_pack_t>) =
-        mux_ep_aw.rdy; mux_ep_aw.req ;  rec X . (demux_ep_w.rdy;^(demux_ep_w.res, * : #1;X)) ; rec Y . (demux_ep_b.rdy;^(demux_ep_b.res, * : #1;Y));#1
+        mux_ep_aw.rdy; mux_ep_aw.req ;  rec X . (demux_ep_w.rdy;^(#demux_ep_w.res, * : #1;X)) ; rec Y . (demux_ep_b.rdy;^(#demux_ep_b.res, * : #1;Y));#1
 
 interface slave_itfc(slv_ep_aw : left slv_ch<aw_ch> , slv_ep_w : left slv_ch<w_pack_t> , slv_ep_b : left slv_res_ch<b_pack_t>) =
          F ((slv_ep_aw.req;slv_ep_aw.gnt); (slv_ep_w.req;slv_ep_w.gnt)) ; slv_ep_b.res;#1
@@ -38,8 +39,8 @@ interface demux_aw_main (
     mst_ep1 : left mast_ch<aw_pack_t>,
     mst_ep2 : left mast_ch<aw_pack_t>
 ) = ^(
-    slv_ep.req : (mst_ep1.rdy; rec X . ^(w_fifo_ep.full : #1;X, * : w_fifo_ep.push;#mst_ep1.req;#slv_ep.gnt))+ 
-                 (mst_ep2.rdy; rec Y . ^(w_fifo_ep.full : #1;Y, * : w_fifo_ep.push;#mst_ep2.req;#slv_ep.gnt)),
+    #slv_ep.req : (mst_ep1.rdy; rec X . ^(#w_fifo_ep.full : #1;X, * : w_fifo_ep.push;#mst_ep1.req;#slv_ep.gnt))+ 
+                 (mst_ep2.rdy; rec Y . ^(#w_fifo_ep.full : #1;Y, * : w_fifo_ep.push;#mst_ep2.req;#slv_ep.gnt)),
     *
     ) ; #1
 
@@ -50,9 +51,9 @@ interface demux_w_main (
     mst_ep1 : left mast_ch<w_pack_t>,
     mst_ep2 : left mast_ch<w_pack_t>
 ) = ^(
-        w_fifo_ep.empty,
-        * : ^(b_fifo_ep.full, 
-              * :        ^(slv_ep.req : #w_fifo_ep.pop ; #b_fifo_ep.push;rec X . ^(mst_ep1.rdy: (#mst_ep1.res;#slv_ep.gnt)+(#1;X),
+        #w_fifo_ep.empty,
+        * : ^(#b_fifo_ep.full, 
+              * :        ^(#slv_ep.req : #w_fifo_ep.pop ; #b_fifo_ep.push;rec X . ^(mst_ep1.rdy: (#mst_ep1.res;#slv_ep.gnt)+(#1;X),
                                                                                    mst_ep2.rdy : (#mst_ep2.res;#slv_ep.gnt) + (#1;X)), 
                           *)
              ) 
@@ -64,7 +65,7 @@ interface demux_b_main (
     mst_ep1 : left mast_rdy_ch<b_pack_t>,
     mst_ep2 : left mast_rdy_ch<b_pack_t>
 ) = ^(
-        b_fifo_ep.empty,
+        #b_fifo_ep.empty,
         * : #b_fifo_ep.pop ; rec X . ^(
                        mst_ep1.rdy : ((#mst_ep1.res;slv_ep.res) + (#1;X)), 
                        mst_ep2.rdy : ((#mst_ep2.res;slv_ep.res) + (#1;X))

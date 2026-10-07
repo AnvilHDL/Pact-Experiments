@@ -21,7 +21,7 @@ proc spill_reg <T: type> (spill_register_itfc){
                 *a
             } >>
             // dprint "[Cycle %d] Spill Register: Ready to send data %d" (*cyc, out) >>
-            try send out_ep.data(out) {()} >>
+            try isend out_ep.data(out) {()} >>
             // dprint "[Cycle %d] Spill Register: Sent data %d, waiting for spill signal" (*cyc, out) >>
             (
             offer {
@@ -74,7 +74,7 @@ proc spill_reg <T: type> (spill_register_itfc){
         else{
             rec X  {
                 let out = *b >>
-                try send out_ep.data(out) {()} >>
+                try isend out_ep.data(out) {()} >>
                 try _ = irecv out_ep.spill{
                     set b := *a;
                     set afull := 1'b0;

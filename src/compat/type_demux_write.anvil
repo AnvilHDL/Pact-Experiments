@@ -1,7 +1,7 @@
 import "mux_commons.anvilh"
 
 interface master_itfc(mux_ep_aw : right mast_ch<aw_pack_t>, demux_ep_w : right mast_ch<w_pack_t>, demux_ep_b : left mast_res_ch<b_pack_t>) =
-       F mux_ep_aw.rdy; mux_ep_aw.req ; #2; rec X . (demux_ep_w.rdy;^(demux_ep_w.req, * : #1;X)) ; #2; rec Y . (demux_ep_b.rdy;^(demux_ep_b.res, * : #1;Y));#1
+       F mux_ep_aw.rdy; mux_ep_aw.req ; #2; rec X . (demux_ep_w.rdy;^(#demux_ep_w.req, * : #1;X)) ; #2; rec Y . (demux_ep_b.rdy;^(#demux_ep_b.res, * : #1;Y));#1
 
 interface slave_itfc(slv_ep_aw : left slv_ch<aw_ch> , slv_ep_w : left slv_ch<w_pack_t> , slv_ep_b : left slv_res_ch<b_pack_t>) =
         F slv_ep_aw.req;slv_ep_aw.gnt; slv_ep_w.req;slv_ep_w.gnt; slv_ep_b.res;#1
@@ -13,10 +13,10 @@ interface demux_aw_main (
     mst_ep2 : left mast_ch<aw_pack_t>,
     mst_ep3 : left mast_ch<aw_pack_t>,
     mst_ep4 : left mast_ch<aw_pack_t>
-) = slv_ep.req ; ((mst_ep1.rdy; rec X . ^(w_fifo_ep.full : #1;X, * : #w_fifo_ep.push;#mst_ep1.req;#slv_ep.gnt))+
-                 (mst_ep2.rdy; rec Y . ^(w_fifo_ep.full : #1;Y, * : #w_fifo_ep.push;#mst_ep2.req;#slv_ep.gnt)) +
-                 (mst_ep3.rdy; rec Z . ^(w_fifo_ep.full : #1;Z, * : #w_fifo_ep.push;#mst_ep3.req;#slv_ep.gnt)) +
-                 (mst_ep4.rdy; rec W . ^(w_fifo_ep.full : #1;W, * : #w_fifo_ep.push;#mst_ep4.req;#slv_ep.gnt))
+) = slv_ep.req ; ((mst_ep1.rdy; rec X . ^(#w_fifo_ep.full : #1;X, * : #w_fifo_ep.push;#mst_ep1.req;#slv_ep.gnt))+
+                 (mst_ep2.rdy; rec Y . ^(#w_fifo_ep.full : #1;Y, * : #w_fifo_ep.push;#mst_ep2.req;#slv_ep.gnt)) +
+                 (mst_ep3.rdy; rec Z . ^(#w_fifo_ep.full : #1;Z, * : #w_fifo_ep.push;#mst_ep3.req;#slv_ep.gnt)) +
+                 (mst_ep4.rdy; rec W . ^(#w_fifo_ep.full : #1;W, * : #w_fifo_ep.push;#mst_ep4.req;#slv_ep.gnt))
 
     ) ; #1
 
@@ -31,7 +31,7 @@ interface demux_w_main (
 ) = &(
         #w_fifo_ep.empty,
         #b_fifo_ep.full,
-              * : ^(slv_ep.req : #w_fifo_ep.pop ; #b_fifo_ep.push; rec X . ^(
+              * : ^(#slv_ep.req : #w_fifo_ep.pop ; #b_fifo_ep.push; rec X . ^(
                                 #mst_ep1.rdy : (#mst_ep1.req;#slv_ep.gnt)+(#1;X),
                                 #mst_ep2.rdy : (#mst_ep2.req;#slv_ep.gnt)+(#1;X),
                                 #mst_ep3.rdy : (#mst_ep3.req;#slv_ep.gnt)+(#1;X),
@@ -49,7 +49,7 @@ interface demux_b_main (
     mst_ep3 : right mast_res_ch<b_pack_t>,
     mst_ep4 : right mast_res_ch<b_pack_t>
 ) = ^(
-        b_fifo_ep.empty,
+        #b_fifo_ep.empty,
         * : #b_fifo_ep.pop ; rec X . ^(
                        #mst_ep1.rdy : ((#mst_ep1.res;#slv_ep.res) + (#1;X)),
                        #mst_ep2.rdy : ((#mst_ep2.res;#slv_ep.res) + (#1;X)),

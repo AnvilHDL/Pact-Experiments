@@ -9,7 +9,7 @@ proc demux_ar_main(demux_ar_main){
         if (sel == 2'd0){
             let _ = recv mst_ep1.rdy >>
             rec X {
-                try _ = recv fifo_ep.full {
+                try _ = irecv fifo_ep.full {
                     cycle 1 >>
                     recurse X
                 }
@@ -23,7 +23,7 @@ proc demux_ar_main(demux_ar_main){
         else if (sel == 2'd1){
             let _ = recv mst_ep2.rdy >>
             rec X {
-                try _ = recv fifo_ep.full {
+                try _ = irecv fifo_ep.full {
                     cycle 1 >>
                     recurse X
                 }
@@ -37,7 +37,7 @@ proc demux_ar_main(demux_ar_main){
         else if (sel == 2'd2){
             let _ = recv mst_ep3.rdy >>
             rec X {
-                try _ = recv fifo_ep.full {
+                try _ = irecv fifo_ep.full {
                     cycle 1 >>
                     recurse X
                 }
@@ -51,7 +51,7 @@ proc demux_ar_main(demux_ar_main){
         else{
             let _ = recv mst_ep4.rdy >>
             rec X {
-                try _ = recv fifo_ep.full {
+                try _ = irecv fifo_ep.full {
                     cycle 1 >>
                     recurse X
                 }
@@ -74,7 +74,7 @@ proc demux_r_main(demux_r_main){
     reg rset : logic;
     reg rentry : select_t;
     loop{
-        try _ = recv fifo_ep.empty { () }
+        try _ = irecv fifo_ep.empty { () }
         else{
             let rentry = irecv fifo_ep.pop >>
             rec X {
@@ -158,8 +158,11 @@ proc master<id : int>(master_itfc){
         let aid = id[0+:32] >>
         let rdata = (aid * 32'd10) + *count >>
         let r = r_pack_t::{data = rdata; resp = 2'd0} >>
-        send demux_ep_r.rdy(()) >>
-        send demux_ep_r.res(r) >>
+        // Offer the response for one cycle; if it is not taken, signal ready again.
+        rec X {
+            send demux_ep_r.rdy(()) >>
+            try isend demux_ep_r.res(r) { () } else { cycle 1 >> recurse X }
+        } >>
         cycle 1 >>
         let sent_cyc = *cyc - 8'd1 >>
         dprint "[Cycle %d] Master %d sent r data %d" (sent_cyc, id, r.data) >>

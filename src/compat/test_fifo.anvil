@@ -10,13 +10,13 @@ proc fifo<T : type>(fifo_itfc){
     loop{
         if (*full == 1'b1){
             μ X {
-                try send pop_ep.pop(*data[*read_ptr]){
-                    try send push_ep.full(()){()} >>
+                try isend pop_ep.pop(*data[*read_ptr]){
+                    try isend push_ep.full(()){()} >>
                     set read_ptr := *read_ptr + 3'd1;
                     set full := 1'b0
                 }
                 else{
-                    try send push_ep.full(()){()} >>
+                    try isend push_ep.full(()){()} >>
                     cycle 1 >>
                     recurse X
                 }
@@ -24,13 +24,13 @@ proc fifo<T : type>(fifo_itfc){
         }
         else if(*read_ptr == *write_ptr){
          μ X {
-            try x = recv push_ep.push {
-                try send pop_ep.empty(()){()} >>
+            try x = irecv push_ep.push {
+                try isend pop_ep.empty(()){()} >>
                 set data[*write_ptr] := x;
                 set write_ptr := *write_ptr + 3'd1
             }
             else {
-                try send pop_ep.empty(()){()} >>
+                try isend pop_ep.empty(()){()} >>
                 cycle 1 >>
                 recurse X
             }
@@ -61,7 +61,7 @@ proc fifo_master(master_itfc){
     loop{
         cycle 2 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -72,7 +72,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -83,7 +83,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -94,7 +94,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -105,7 +105,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -116,7 +116,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -127,7 +127,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -138,7 +138,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -149,7 +149,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -160,7 +160,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -171,7 +171,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -182,7 +182,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -193,7 +193,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -204,7 +204,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -215,7 +215,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -226,7 +226,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -237,7 +237,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
         cycle 5 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -248,7 +248,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
         cycle 7 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -259,7 +259,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
         cycle 7 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -270,7 +270,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd0) >>
         cycle 7 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -281,7 +281,7 @@ proc fifo_master(master_itfc){
         dprint "[Cycle %d] Pushed %d\n" (*cyc, 2'd1) >>
         cycle 7 >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -301,7 +301,7 @@ proc fifo_slave(slave_itfc){
     loop{
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -312,7 +312,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 6 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -323,7 +323,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 6 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -334,7 +334,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 7 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -345,7 +345,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 8 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -356,7 +356,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -367,7 +367,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 3 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -378,7 +378,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 7 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -389,7 +389,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 7 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -400,7 +400,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 7 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -411,7 +411,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 7 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -422,7 +422,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 7 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }
@@ -433,7 +433,7 @@ proc fifo_slave(slave_itfc){
         } >>
         cycle 7 >>
         rec X {
-            try _ = recv fifo_ep.empty {
+            try _ = irecv fifo_ep.empty {
                 cycle 1 >>
                 recurse X
             }

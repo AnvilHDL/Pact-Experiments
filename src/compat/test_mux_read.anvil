@@ -88,7 +88,7 @@ proc mux_ar_main(mux_ar_main){
         let x = recv ar_req_ep.req >>
         let _ = recv ar_mst_ep.rdy >>
         rec X {
-            try _ = recv fifo_ep.full {
+            try _ = irecv fifo_ep.full {
                 cycle 1 >>
                 recurse X
             }
@@ -109,9 +109,9 @@ proc mux_r_main(mux_r_main){
     reg rentry : select_t;
     reg rset : logic;
     loop{
-        try _ = recv fifo_ep.empty { ()}
+        try _ = irecv fifo_ep.empty { ()}
         else{
-            try _ = recv r_res_ep.rdy {
+            try _ = irecv r_res_ep.rdy {
                 let rentry = irecv fifo_ep.pop >>
                 rec X{
                     let rprio = (if(*rset == 1'd0){rentry} else {*rentry}) >>
@@ -222,7 +222,7 @@ proc slave_read<id : int>(slave_read_itfc){
         dprint "[Cycle %d] Slave %d read req selected with addr %d" (*cyc, id[0+:2], req.addr) >>
         rec X {
             send read_res_ep.rdy(()) >>
-            try r = recv read_res_ep.res{
+            try r = irecv read_res_ep.res{
                 dprint "[Cycle %d] Slave %d read response received with data %d" (*cyc, id[0+:2], r.data)
             }
             else{

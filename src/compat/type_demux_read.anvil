@@ -8,10 +8,10 @@ interface demux_ar_main (
     mst_ep3 : left mast_ch<ar_pack_t>,
     mst_ep4 : left mast_ch<ar_pack_t>
 ) = 
-    slv_ep.ar_req;((mst_ep1.rdy; rec X . ^(fifo_ep.full : #1;X, * : #fifo_ep.push;#mst_ep1.req;#slv_ep.gnt))+ 
-                    (mst_ep2.rdy; rec Y . ^(fifo_ep.full : #1;Y, * : #fifo_ep.push;#mst_ep2.req;#slv_ep.gnt))+
-                    (mst_ep3.rdy; rec Z . ^(fifo_ep.full : #1;Z, * : #fifo_ep.push;#mst_ep3.req;#slv_ep.gnt))+
-                    (mst_ep4.rdy; rec W . ^(fifo_ep.full : #1;W, * : #fifo_ep.push;#mst_ep4.req;#slv_ep.gnt))
+    slv_ep.ar_req;((mst_ep1.rdy; rec X . ^(#fifo_ep.full : #1;X, * : #fifo_ep.push;#mst_ep1.req;#slv_ep.gnt))+ 
+                    (mst_ep2.rdy; rec Y . ^(#fifo_ep.full : #1;Y, * : #fifo_ep.push;#mst_ep2.req;#slv_ep.gnt))+
+                    (mst_ep3.rdy; rec Z . ^(#fifo_ep.full : #1;Z, * : #fifo_ep.push;#mst_ep3.req;#slv_ep.gnt))+
+                    (mst_ep4.rdy; rec W . ^(#fifo_ep.full : #1;W, * : #fifo_ep.push;#mst_ep4.req;#slv_ep.gnt))
                 )
      ; #1
 
@@ -23,7 +23,7 @@ interface demux_r_main (
     mst_ep3 : right mast_r_ch<r_pack_t>,
     mst_ep4 : right mast_r_ch<r_pack_t>
 ) =^(
-        fifo_ep.empty,
+        #fifo_ep.empty,
         * :  #fifo_ep.pop; (rec X . 
                                                     ^(
                                                       #mst_ep1.rdy : ((#mst_ep1.res;#slv_ep.r_res) + (#1;X)),
@@ -35,7 +35,7 @@ interface demux_r_main (
                             )
 ); #1
 
-interface master_itfc(mux_ep_ar : right mast_ch<ar_pack_t>, demux_ep_r : left mast_r_ch<r_pack_t>) = F mux_ep_ar.rdy; mux_ep_ar.req; #2; rec X . (demux_ep_r.rdy; ^(demux_ep_r.res,*:#1;X)) ; #1
+interface master_itfc(mux_ep_ar : right mast_ch<ar_pack_t>, demux_ep_r : left mast_r_ch<r_pack_t>) = F mux_ep_ar.rdy; mux_ep_ar.req; #2; rec X . (demux_ep_r.rdy; ^(#demux_ep_r.res,*:#1;X)) ; #1
 
 interface slave_itfc(slv_ep_ar : left slv_ar_ch<ar_ch> , slv_ep_r : left slv_r_ch<r_pack_t>) =
          F slv_ep_ar.ar_req;slv_ep_ar.gnt ; slv_ep_r.r_res;#1

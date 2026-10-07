@@ -1,41 +1,41 @@
 interface fifo_itfc(push_ep : right fifo_insert_ch<T>, pop_ep : right fifo_dequeue_ch<T>) =
     // FIFO of any depth >= 1. Empty until a push.
     (rec Empty . (
-        ^(pop_ep.empty, *);
-        ^(push_ep.push : #1, * : #1; Empty)
+        ^(#pop_ep.empty, *);
+        ^(#push_ep.push : #1, * : #1; Empty)
     ));
-    // Push and pop are independent unless full; the arms taken pick the next
-    // state. Only a push alone can fill it and only a pop alone can empty it.
-    ((rec Middle . &(push_ep.push : #1, pop_ep.pop : #1).(
-        push_ep.push : (Middle + (rec FullMiddle . (
-            ^(push_ep.full, *);
-            ^(pop_ep.pop : #1; (Middle + ()), * : #1; FullMiddle)
-        ))),
-        pop_ep.pop : (Middle + ()),
-        {push_ep.push, pop_ep.pop} : Middle
+    // Push first, then pop in the same cycle; only a lone push fills it, only a lone pop empties it.
+    ((rec Middle . ^(
+        #push_ep.push : ^(#pop_ep.pop : #1; Middle,
+                         * : #1; (Middle + (rec FullMiddle . (
+                             ^(#push_ep.full, *);
+                             ^(#pop_ep.pop : #1; (Middle + ()), * : #1; FullMiddle)
+                         )))),
+        * : ^(#pop_ep.pop : #1; (Middle + ()),
+              * : #1; Middle)
     ))
      + (rec Full . (
-        ^(push_ep.full, *);
-        ^(pop_ep.pop : #1; ((rec AfterFull . &(push_ep.push : #1, pop_ep.pop : #1).(
-                push_ep.push : (AfterFull + (rec FullAfterFull . (
-                    ^(push_ep.full, *);
-                    ^(pop_ep.pop : #1; (AfterFull + ()), * : #1; FullAfterFull)
-                ))),
-                pop_ep.pop : (AfterFull + ()),
-                {push_ep.push, pop_ep.pop} : AfterFull
+        ^(#push_ep.full, *);
+        ^(#pop_ep.pop : #1; ((rec AfterFull . ^(
+                #push_ep.push : ^(#pop_ep.pop : #1; AfterFull,
+                                 * : #1; (AfterFull + (rec FullAfterFull . (
+                                     ^(#push_ep.full, *);
+                                     ^(#pop_ep.pop : #1; (AfterFull + ()), * : #1; FullAfterFull)
+                                 )))),
+                * : ^(#pop_ep.pop : #1; (AfterFull + ()),
+                      * : #1; AfterFull)
             )) + ()), * : #1; Full)
     )))
 
-// Depth-8 FIFO. Push and pop are independent unless it is empty or full; the
-// arms taken decide whether equal pointers mean full or empty.
+// Depth-8 FIFO: push first, then pop in the same cycle.
 proc fifo<T : type>(fifo_itfc){
     reg mem : T[8];
     reg read_ptr : logic[3];
     reg write_ptr : logic[3];
     loop{
         rec Empty {
-            try send pop_ep.empty(()) {()} >>
-            try x = recv push_ep.push {
+            try isend pop_ep.empty(()) {()} >>
+            try x = irecv push_ep.push {
                 set mem[*write_ptr] := x;
                 set write_ptr := *write_ptr + 3'd1
             }
@@ -45,20 +45,24 @@ proc fifo<T : type>(fifo_itfc){
             }
         } >>
         rec Middle {
-            offer {
-                x = recv push_ep.push => (
-                    set mem[*write_ptr] := x;
-                    set write_ptr := *write_ptr + 3'd1
-                ),
-                send pop_ep.pop(*mem[*read_ptr]) => (
-                    set read_ptr := *read_ptr + 3'd1
-                )
-            } match {
-                push_ep.push => (
+            try x = irecv push_ep.push {
+                try isend pop_ep.pop(*mem[*read_ptr]) {
+                    {
+                        set mem[*write_ptr] := x;
+                        set write_ptr := *write_ptr + 3'd1;
+                        set read_ptr := *read_ptr + 3'd1
+                    } >>
+                    recurse Middle
+                }
+                else {
+                    {
+                        set mem[*write_ptr] := x;
+                        set write_ptr := *write_ptr + 3'd1
+                    } >>
                     if (*write_ptr == *read_ptr) {
                         rec Full {
-                            try send push_ep.full(()) {()} >>
-                            try send pop_ep.pop(*mem[*read_ptr]) {
+                            try isend push_ep.full(()) {()} >>
+                            try isend pop_ep.pop(*mem[*read_ptr]) {
                                 set read_ptr := *read_ptr + 3'd1
                             }
                             else {
@@ -71,16 +75,22 @@ proc fifo<T : type>(fifo_itfc){
                     else {
                         recurse Middle
                     }
-                ),
-                pop_ep.pop => (
+                }
+            }
+            else {
+                try isend pop_ep.pop(*mem[*read_ptr]) {
+                    set read_ptr := *read_ptr + 3'd1 >>
                     if (*write_ptr == *read_ptr) {
                         ()
                     }
                     else {
                         recurse Middle
                     }
-                ),
-                {push_ep.push, pop_ep.pop} => recurse Middle
+                }
+                else {
+                    cycle 1 >>
+                    recurse Middle
+                }
             }
         }
     }
