@@ -50,7 +50,7 @@ For individual cases:
 
 ```sh
 ./run_pact -jc src/compat/test_demux_read.anvil
-python3 run_compat.py 3 --only type_demux_read_2p,type_mux_read_simplified_2p --jobs 2
+python3 run_compat.py 3 --only type_demux_read_2p,type_mux_read_2p --jobs 2
 bash scripts/run_axi_demux_read_cycle_equiv.sh
 ```
 

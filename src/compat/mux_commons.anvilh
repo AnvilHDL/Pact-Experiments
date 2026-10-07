@@ -6,7 +6,7 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<T>, pop_ep : right fifo_deque
     ));
     // Push first, then pop in the same cycle; only a lone push fills it, only a lone pop empties it.
     ((rec Middle . ^(
-        #push_ep.push : ^(#pop_ep.pop : #1; Middle,
+        #push_ep.push : ^(#pop_ep.pop : #1; (Middle + ()),
                          * : #1; (Middle + (rec FullMiddle . (
                              ^(#push_ep.full, *);
                              ^(#pop_ep.pop : #1; (Middle + ()), * : #1; FullMiddle)
@@ -17,7 +17,7 @@ interface fifo_itfc(push_ep : right fifo_insert_ch<T>, pop_ep : right fifo_deque
      + (rec Full . (
         ^(#push_ep.full, *);
         ^(#pop_ep.pop : #1; ((rec AfterFull . ^(
-                #push_ep.push : ^(#pop_ep.pop : #1; AfterFull,
+                #push_ep.push : ^(#pop_ep.pop : #1; (AfterFull + ()),
                                  * : #1; (AfterFull + (rec FullAfterFull . (
                                      ^(#push_ep.full, *);
                                      ^(#pop_ep.pop : #1; (AfterFull + ()), * : #1; FullAfterFull)
@@ -52,7 +52,8 @@ proc fifo<T : type>(fifo_itfc){
                         set write_ptr := *write_ptr + 3'd1;
                         set read_ptr := *read_ptr + 3'd1
                     } >>
-                    recurse Middle
+                    // Same empty check as after a lone pop; it never holds here, but the type needs it.
+                    if (*write_ptr == *read_ptr) { () } else { recurse Middle }
                 }
                 else {
                     {

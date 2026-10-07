@@ -1,0 +1,125 @@
+import "mux_commons.anvilh"
+
+
+interface master_read_itfc(mst_ep_ar : right r_mst_ch<ar_pack_t>, mst_ep_r : left mst_r_ch<r_pack_t>) = F mst_ep_ar.rdy;mst_ep_ar.req ;#2;mst_ep_r.rdy;mst_ep_r.res;#1
+
+interface slave_read_itfc(read_req_ep :left r_slv_ch<ar_pack_t>, read_res_ep : left slv_r_ch<r_pack_t>) =
+            F read_req_ep.req ; read_req_ep.gnt;rec X . (read_res_ep.rdy ; ^(#read_res_ep.res,*:#1;X)); #1
+
+interface r_rr_arbiter_itfc(slv_ep1 : right r_slv_ch<ar_pack_t>, slv_ep2 : right r_slv_ch<ar_pack_t>, ar_req_ep : left r_mux_ch<ar_sel_pack_t>) =
+
+^(
+   slv_ep1.req : ar_req_ep.req;ar_req_ep.gnt;#slv_ep1.gnt,
+   slv_ep2.req : ar_req_ep.req;ar_req_ep.gnt;#slv_ep2.gnt
+) ; #1
+
+
+interface mux_ar_main (
+    ar_req_ep : right r_mux_ch<ar_sel_pack_t>,
+    ar_mst_ep : left r_mst_ch <ar_pack_t>,
+    fifo_ep : left fifo_insert_ch<select_t>
+) = ar_req_ep.req ; ar_mst_ep.rdy ; rec X . ^(#fifo_ep.full: #1;X, * : #fifo_ep.push;#ar_mst_ep.req;#ar_req_ep.gnt); #1
+
+interface mux_r_main (
+    r_res_ep : right mst_r_ch<r_pack_t>,
+    fifo_ep : left fifo_dequeue_ch<select_t>,
+    slv_ep1 : right slv_r_ch<r_pack_t>,
+    slv_ep2 : right slv_r_ch<r_pack_t>
+) =^(
+        #fifo_ep.empty ,
+        * : ^(#r_res_ep.rdy : #fifo_ep.pop ; rec X . ^(
+                                        #slv_ep1.rdy : ((#r_res_ep.res;#slv_ep1.res) + (#1;X)),
+                                        #slv_ep2.rdy : ((#r_res_ep.res;#slv_ep2.res) + (#1;X)),
+                                        * : #1;X
+                                ),
+                *
+            )
+); #1
+
+pool mux_read_transaction_pool {
+    slv_ep1 -- arb_ep1 : r_slv_ch<ar_pack_t>,
+    slv_ep2 -- arb_ep2 : r_slv_ch<ar_pack_t>,
+    slv_res_ep1 -- mux_res_ep1 : slv_r_ch<r_pack_t>,
+    slv_res_ep2 -- mux_res_ep2 : slv_r_ch<r_pack_t>,
+
+    ar_req_ep -- mux_ar_req_ep : r_mux_ch<ar_sel_pack_t>,
+
+    mux_ep_ar -- mst_ep_ar : r_mst_ch<ar_pack_t>,
+    mst_ep_r -- mux_ep_r : mst_r_ch<r_pack_t>,
+
+
+    fifo_push_ep -- fifo_push_ep_ri : fifo_insert_ch<select_t>,
+    fifo_pop_ep -- fifo_pop_ep_ri : fifo_dequeue_ch<select_t>;
+
+    islv1 : slave_read_itfc(slv_ep1, slv_res_ep1),
+    islv2 : slave_read_itfc(slv_ep2, slv_res_ep2),
+
+
+    iarb : r_rr_arbiter_itfc(arb_ep1, arb_ep2, ar_req_ep),
+
+    imst : master_read_itfc(mst_ep_ar, mst_ep_r),
+    imux_ar : mux_ar_main(mux_ar_req_ep, mux_ep_ar,  fifo_push_ep),
+    imux_r : mux_r_main(mux_ep_r, fifo_pop_ep, mux_res_ep1, mux_res_ep2),
+    ififo : fifo_itfc(fifo_push_ep_ri, fifo_pop_ep_ri)
+}
+
+
+
+chan fifo_insert_ch<Tp : type> {
+    right push : (Tp@#1),
+    left full : (void@#1)
+}
+
+chan fifo_dequeue_ch<Tp : type> {
+    left pop : (Tp@#1) ,
+    left empty : (void@#1)
+}
+
+type prot_t = logic[3];
+type resp_t = logic[2];
+
+type select_t = logic[2];
+type A = logic[32];
+type T = logic[32];
+
+struct ar_pack_t {
+    addr : A,
+    prot : prot_t
+}
+
+struct r_pack_t {
+    data : T,
+    resp : resp_t
+}
+
+struct ar_sel_pack_t {
+    ar_pack : ar_pack_t,
+    select : select_t
+}
+
+chan r_slv_ch<Tp : type> {
+    right req : (Tp@gnt+1),
+    left gnt : (void@#1)
+}
+
+chan r_mux_ch<Tp : type> {
+    right req : (Tp@gnt+1),
+    left gnt : (void@#1)
+}
+
+chan r_mst_ch<Tp : type> {
+    left rdy : (void@#1),
+    right req : (Tp@#1)
+}
+
+chan slv_r_ch<Tp : type> {
+    right rdy : (void@#1),
+    left res : (Tp@#1)
+}
+
+chan mst_r_ch<Tp : type> {
+    right rdy : (void@#1),
+    right res : (Tp@#1)
+}
+
+type byte = logic[32];

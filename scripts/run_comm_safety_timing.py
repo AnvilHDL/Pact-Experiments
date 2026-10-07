@@ -56,8 +56,8 @@ SHORT_CASES = [
 
 BIG_CASES = [
     Case("axi_demux_write", "big", "formal/comm_safety/axi_demux_write.sby", "type_demux_write.anvil", "comm_axi_demux_write_formal"),
-    Case("axi_mux_read", "big", "formal/comm_safety/axi_mux_read.sby", "type_mux_read_simplified.anvil", "comm_axi_mux_read_formal"),
-    Case("axi_mux_write", "big", "formal/comm_safety/axi_mux_write.sby", "type_mux_4p_write.anvil", "comm_axi_mux_write_formal"),
+    Case("axi_mux_read", "big", "formal/comm_safety/axi_mux_read.sby", "type_mux_read.anvil", "comm_axi_mux_read_formal"),
+    Case("axi_mux_write", "big", "formal/comm_safety/axi_mux_write.sby", "type_mux_write.anvil", "comm_axi_mux_write_formal"),
     Case("ace", "big", "formal/comm_safety/ace.sby", "type_ace.anvil", "comm_ace_formal"),
     Case("tilelink", "big", "formal/comm_safety/tilelink.sby", "type_tilelink.anvil", "comm_tilelink_formal"),
 ]

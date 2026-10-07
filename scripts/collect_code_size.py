@@ -38,8 +38,8 @@ CASES = [
     Case("arbiter", "test_arbiter.anvil", "type_arbiter.anvil", ("rr_arbiter_itfc",), "arbiter_test.sv", "comm_arbiter_formal"),
     Case("axi_demux_read", "test_demux_read.anvil", "type_demux_read.anvil", ("demux_ar_main", "demux_r_main"), "axi_lite_demux_read.sv", "comm_axi_demux_read_formal"),
     Case("axi_demux_write", "test_demux_write.anvil", "type_demux_write.anvil", ("demux_aw_main", "demux_w_main", "demux_b_main"), "axi_lite_demux_write.sv", "comm_axi_demux_write_formal"),
-    Case("axi_mux_read", "test_mux_read.anvil", "type_mux_read_simplified.anvil", ("r_rr_arbiter_itfc",), "axi_lite_mux_read.sv", "comm_axi_mux_read_formal"),
-    Case("axi_mux_write", "test_mux_write.anvil", "type_mux_4p_write.anvil", ("w_rr_arbiter_itfc",), "axi_lite_mux_write.sv", "comm_axi_mux_write_formal"),
+    Case("axi_mux_read", "test_mux_read.anvil", "type_mux_read.anvil", ("r_rr_arbiter_itfc",), "axi_lite_mux_read.sv", "comm_axi_mux_read_formal"),
+    Case("axi_mux_write", "test_mux_write.anvil", "type_mux_write.anvil", ("w_rr_arbiter_itfc",), "axi_lite_mux_write.sv", "comm_axi_mux_write_formal"),
     Case("ace", "test_ace.anvil", "type_ace.anvil", ("ace_itfc",), "ccu_fsm_tb.sv", "comm_ace_formal"),
     Case("tilelink", "test_tilelink.anvil", "type_tilelink.anvil", ("crossbar_itfc_A", "crossbar_itfc_D"), "TLCrossBar_test.sv", "comm_tilelink_formal"),
 ]

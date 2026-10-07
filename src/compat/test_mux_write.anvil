@@ -1,4 +1,4 @@
-import "type_mux_4p_write.anvil"
+import "type_mux_write.anvil"
 
 proc arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
     reg prio : logic[2];

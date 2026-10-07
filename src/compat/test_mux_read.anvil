@@ -1,4 +1,4 @@
-import "type_mux_read_simplified.anvil"
+import "type_mux_read.anvil"
 
 
 proc arbiter<T : type, T1 : type> (r_rr_arbiter_itfc){
