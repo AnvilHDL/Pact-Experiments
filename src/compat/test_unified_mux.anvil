@@ -60,7 +60,7 @@ proc test_unified_mux(){
     spawn slave_read<2>[p1.islv2];
     spawn slave_read<3>[p1.islv3];
     spawn slave_read<4>[p1.islv4];
-    spawn arbiter<ar_pack_t, ar_sel_pack_t>[p1.iarb];
+    spawn r_arbiter<ar_pack_t, ar_sel_pack_t>[p1.iarb];
     spawn mux_ar_main[p1.imux_ar];
     spawn mux_r_main[p1.imux_r];
     spawn fifo<select_t>[p1.ififo];
@@ -71,7 +71,7 @@ proc test_unified_mux(){
     spawn slave_write<2>[p2.islv2];
     spawn slave_write<3>[p2.islv3];
     spawn slave_write<4>[p2.islv4];
-    spawn arbiter<aw_pack_t, aw_sel_pack_t>[p2.iarb];
+    spawn w_arbiter<aw_pack_t, aw_sel_pack_t>[p2.iarb];
     spawn mux_aw_main[p2.iaw];
     spawn mux_w_main[p2.iw];
     spawn mux_b_main[p2.ib];

@@ -24,60 +24,63 @@ struct req_pack_t {
     clean : logic, is_unique : logic, no_snoop : logic
 }
 struct res_pack_t { data : logic[8], ack : logic }
-struct mem_write_t { addr : logic[8], line : logic }
 chan cache_req_ch {
     right req : (req_pack_t@#1),
+    right req_wr : (req_pack_t@#1),
     right w_data : (logic[8]@#1),
     left res : (res_pack_t@#1)
 }
 chan main_req_ch {
     left rdy : (void@#1),
     right req : (req_pack_t@#1),
+    right req_wr : (req_pack_t@#1),
     right w_data : (logic[8]@#1),
     left res : (res_pack_t@#1)
 }
 chan snoop_ch {
     left req : (req_pack_t@#1),
-    right res : (logic@#1),
+    right res_data : (void@#1),
+    right res_nodata : (void@#1),
     right data : (logic[8]@#1)
 }
 chan mem_ch {
-    right aw_req : (mem_write_t@#1),
+    right aw_req : (logic[8]@#1),
+    right aw_line : (logic[8]@#1),
     right w_req : (logic[8]@#1),
     left b_res : (void@#1),
     right ar_req : (logic[8]@#1),
     left r_res : (logic[8]@#1)
 }
 interface client_itfc(cache_ep : left cache_req_ch) =
-    F cache_ep.req; ((cache_ep.w_data; cache_ep.res) + cache_ep.res); #1
+    ((F cache_ep.req; cache_ep.res) + (F cache_ep.req_wr; cache_ep.w_data; cache_ep.res)); #1
 interface snoop_itfc(cs_ep : left snoop_ch) =
-    cs_ep.req; #1; cs_ep.res; #1; ((cs_ep.data; #1; cs_ep.data; #1) ++ ())
+    cs_ep.req; #1; ((#cs_ep.res_data; #1; #cs_ep.data; #1; #cs_ep.data; #1) ++ (#cs_ep.res_nodata; #1))
 interface mem_itfc(mem_ep : right mem_ch) =
-    ^(mem_ep.ar_req : #2; mem_ep.r_res; #1,
-      mem_ep.aw_req : #1; mem_ep.w_req; #1; ((mem_ep.w_req; #1) ++ ()); mem_ep.b_res; #1)
+    ^(mem_ep.ar_req : #2; #mem_ep.r_res; #1,
+      mem_ep.aw_req : #1; #mem_ep.w_req; #1; #mem_ep.b_res; #1,
+      mem_ep.aw_line : #1; mem_ep.w_req; #1; #mem_ep.w_req; #1; #mem_ep.b_res; #1)
 interface arb_itfc(cache_ep1 : right cache_req_ch, cache_ep2 : right cache_req_ch,
                    req_ep : left main_req_ch) =
     ^^(
-        cache_ep1.req : #1; req_ep.rdy; #1; req_ep.req; ((cache_ep1.w_data; req_ep.w_data) ++ ()); req_ep.res; cache_ep1.res,
-        cache_ep2.req : #1; req_ep.rdy; #1; req_ep.req; ((cache_ep2.w_data; req_ep.w_data) ++ ()); req_ep.res; cache_ep2.res
+        cache_ep1.req : #1; req_ep.rdy; #1; #req_ep.req; req_ep.res; #cache_ep1.res,
+        cache_ep1.req_wr : #1; req_ep.rdy; #1; #req_ep.req_wr; #cache_ep1.w_data; req_ep.w_data; req_ep.res; #cache_ep1.res,
+        cache_ep2.req : #1; req_ep.rdy; #1; #req_ep.req; req_ep.res; #cache_ep2.res,
+        cache_ep2.req_wr : #1; req_ep.rdy; #1; #req_ep.req_wr; #cache_ep2.w_data; req_ep.w_data; req_ep.res; #cache_ep2.res
     ); #1
 interface ace_itfc(req_ep : right main_req_ch,
                    cs_ep_1 : right snoop_ch, cs_ep_2 : right snoop_ch,
                    mem_ep : left mem_ch) =
-    req_ep.rdy; req_ep.req; #2; ((cs_ep_1.req ++ ()) || (cs_ep_2.req ++ ())  ); #2; (((cs_ep_1.res; #1) ++ #1) || ((cs_ep_2.res; #1) ++ #1)  );
-    (
-        (req_ep.res; ((#1; mem_ep.aw_req; #1;
-            &(cs_ep_1.data : #1, cs_ep_2.data : #1); (mem_ep.w_req ||
-            &(cs_ep_1.data : #1, cs_ep_2.data : #1)); mem_ep.w_req; #1;
-            mem_ep.b_res) ++ ()); #1)
-        ++ (#1; (
-            (((mem_ep.aw_req; #1; &(cs_ep_1.data : #1, cs_ep_2.data : #1);
-                (mem_ep.w_req || &(cs_ep_1.data : #1, cs_ep_2.data : #1));
-                mem_ep.w_req; #1; mem_ep.b_res; #1) ++ ()); mem_ep.aw_req; #1; req_ep.w_data; mem_ep.w_req; #1;
-                mem_ep.b_res; req_ep.res; #1)
-            ++ ((mem_ep.ar_req; #1; mem_ep.r_res; req_ep.res; #1)
-               ++ (&(cs_ep_1.data : #1, cs_ep_2.data : #1);
-                   (&(cs_ep_1.data : #1, cs_ep_2.data : #1) || ((req_ep.res;
-                   #1) ++ (#1; req_ep.res; #1)))))
-        ))
+    req_ep.rdy; ^(
+      req_ep.req : #1; (
+        ((#cs_ep_1.req; ^(cs_ep_1.res_data : cs_ep_1.data; #1; #cs_ep_1.data; #1, cs_ep_1.res_nodata)) ++ ()) ||
+        ((#cs_ep_2.req; ^(cs_ep_2.res_data : cs_ep_2.data; #1; #cs_ep_2.data; #1, cs_ep_2.res_nodata)) ++ ()) ||
+        #4);
+        ((#req_ep.res; ((#1; #mem_ep.aw_line; #2; #mem_ep.w_req; #1; #mem_ep.w_req; #1; #mem_ep.b_res) ++ ()); #1)
+              ++ (#1; ((#1; ((#req_ep.res; #1) ++ (#1; #req_ep.res; #1)))
+                       ++ (#mem_ep.ar_req; #1; mem_ep.r_res; #req_ep.res; #1)))),
+      req_ep.req_wr : #1; (
+        ((#cs_ep_1.req; ^(cs_ep_1.res_data : cs_ep_1.data; #1; #cs_ep_1.data; #1, cs_ep_1.res_nodata)) ++ ()) ||
+        ((#cs_ep_2.req; ^(cs_ep_2.res_data : cs_ep_2.data; #1; #cs_ep_2.data; #1, cs_ep_2.res_nodata)) ++ ()) ||
+        #4);
+        #1; ((#mem_ep.aw_line; #2; #mem_ep.w_req; #1; #mem_ep.w_req; #1; #mem_ep.b_res; #1) ++ ()); #mem_ep.aw_req; #1; #req_ep.w_data; #mem_ep.w_req; #1; #mem_ep.b_res; #req_ep.res; #1
     )

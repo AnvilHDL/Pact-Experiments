@@ -1,6 +1,6 @@
 import "type_mux_write_2p.anvil"
 
-proc arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
+proc w_arbiter<T : type, T1 : type> (w_rr_arbiter_itfc){
     reg prio : logic[1];
     loop{
         let prio = *prio >>
@@ -189,7 +189,7 @@ proc slave_write<id : int>(slave_write_itfc){
         // The SV stimulus starts a request on power-of-two idle cycles;
         // SEND_AW registers valid one cycle before the handshake.
         rec WaitReq {
-            if ((*cyc != 32'd0) && ((*cyc & (*cyc - 32'd1)) == 32'd0)) {
+            fair if ((*cyc != 32'd0) && ((*cyc & (*cyc - 32'd1)) == 32'd0)) {
                 cycle 2
             } else {
                 cycle 1 >> recurse WaitReq
@@ -238,7 +238,7 @@ proc test_mux_write_2p(){
     spawn slave_write<0>[p.islv1];
     spawn slave_write<1>[p.islv2];
     spawn master_write[p.imst];
-    spawn arbiter<aw_pack_t, aw_sel_pack_t>[p.iarb];
+    spawn w_arbiter<aw_pack_t, aw_sel_pack_t>[p.iarb];
     spawn mux_aw_main[p.iaw];
     spawn mux_w_main[p.iw];
     spawn mux_b_main[p.ib];
