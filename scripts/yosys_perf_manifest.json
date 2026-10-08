@@ -135,7 +135,7 @@
       "pact_core_patterns": [
         "^mux_ar_main$",
         "^mux_r_main$",
-        "^arbiter_.*",
+        "^r_arbiter_.*",
         "^fifo_.*"
       ],
       "sv_top": "perf_axi_mux_read_sv",
@@ -159,7 +159,7 @@
         "^mux_aw_main$",
         "^mux_w_main$",
         "^mux_b_main$",
-        "^arbiter_.*",
+        "^w_arbiter_.*",
         "^fifo_.*"
       ],
       "sv_top": "perf_axi_mux_write_sv",
