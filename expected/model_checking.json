@@ -1,0 +1,145 @@
+{
+  "machine": "2x AMD EPYC 9115 (32 cores, 64 threads), 125 GB",
+  "cases": {
+    "fifo": {
+      "full": {
+        "status": "PASS",
+        "wall_s": 3354.69
+      },
+      "safety": {
+        "status": "PASS",
+        "wall_s": 6469.95
+      },
+      "live": {
+        "status": "PASS",
+        "wall_s": 2026.21
+      }
+    },
+    "stream_fifo": {
+      "full": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      },
+      "safety": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      },
+      "live": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      }
+    },
+    "spill_register": {
+      "full": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      },
+      "safety": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      },
+      "live": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      }
+    },
+    "arbiter": {
+      "full": {
+        "status": "PASS",
+        "wall_s": 3306.85
+      },
+      "safety": {
+        "status": "PASS",
+        "wall_s": 27.32
+      },
+      "live": {
+        "status": "PASS",
+        "wall_s": 3148.85
+      }
+    },
+    "ace": {
+      "full": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      },
+      "safety": {
+        "status": "UNKNOWN",
+        "wall_s": 3824.59
+      },
+      "live": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      }
+    },
+    "tilelink": {
+      "full": {
+        "status": "PASS",
+        "wall_s": 2839.34
+      },
+      "safety": {
+        "status": "PASS",
+        "wall_s": 2862.3
+      },
+      "live": {
+        "status": "PASS",
+        "wall_s": 2143.49
+      }
+    },
+    "axi_demux_read": {
+      "full": {
+        "status": "UNKNOWN",
+        "wall_s": 313.82
+      },
+      "safety": {
+        "status": "UNKNOWN",
+        "wall_s": 108.8
+      },
+      "live": {
+        "status": "UNKNOWN",
+        "wall_s": 3138.0
+      }
+    },
+    "axi_demux_write": {
+      "full": {
+        "status": "UNKNOWN",
+        "wall_s": 515.96
+      },
+      "safety": {
+        "status": "UNKNOWN",
+        "wall_s": 79.15
+      },
+      "live": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      }
+    },
+    "axi_mux_read": {
+      "full": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      },
+      "safety": {
+        "status": "UNKNOWN",
+        "wall_s": 248.87
+      },
+      "live": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      }
+    },
+    "axi_mux_write": {
+      "full": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      },
+      "safety": {
+        "status": "UNKNOWN",
+        "wall_s": 514.94
+      },
+      "live": {
+        "status": "TIMEOUT",
+        "wall_s": 7200.0
+      }
+    }
+  }
+}

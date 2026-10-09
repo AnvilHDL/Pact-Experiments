@@ -25,7 +25,7 @@ Expected values were measured on 2× AMD EPYC 9115 (32 cores, 64 threads) with 1
 | Experiment | Time on the reference machine |
 |---|---|
 | `make compat` | about 1.5 h |
-| `make modelcheck` | about 35 h of run time in total (30 runs, 14 of them reach the 2 h limit): about 9 h with `SV_JOBS=4`, about 4 h with `SV_JOBS=15` |
+| `make modelcheck` | about 35 h of run time in total (30 runs, 13 of them reach the 2 h limit): about 9 h with `SV_JOBS=4`, about 4 h with `SV_JOBS=15` |
 | `make synthesis` | about 10 min |
 | `make equiv` | a few minutes per benchmark |
 

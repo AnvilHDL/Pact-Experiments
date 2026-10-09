@@ -1,0 +1,86 @@
+{
+  "machine": "2x AMD EPYC 9115 (32 cores, 64 threads), 125 GB",
+  "compiler": "9867d09e693fbf33e632dfc1fff401f9cd65001f",
+  "cases": {
+    "fifo": {
+      "members": 3,
+      "verdict": "compatible",
+      "times_s": {
+        "m3_j1": 0.007,
+        "m3_j8": 0.015
+      }
+    },
+    "stream_fifo": {
+      "members": 3,
+      "verdict": "compatible",
+      "times_s": {
+        "m3_j1": 0.007,
+        "m3_j8": 0.015
+      }
+    },
+    "spill_register": {
+      "members": 3,
+      "verdict": "compatible",
+      "times_s": {
+        "m3_j1": 0.015,
+        "m3_j8": 0.015
+      }
+    },
+    "arbiter": {
+      "members": 6,
+      "verdict": "compatible",
+      "times_s": {
+        "m3_j1": 0.114,
+        "m3_j8": 0.064
+      }
+    },
+    "ace": {
+      "members": 9,
+      "verdict": "compatible",
+      "times_s": {
+        "m3_j1": 127.278,
+        "m3_j8": 20.594
+      }
+    },
+    "tilelink": {
+      "members": 10,
+      "verdict": "compatible",
+      "times_s": {
+        "m3_j1": 8.025,
+        "m3_j8": 1.315
+      }
+    },
+    "axi_demux_read": {
+      "members": 8,
+      "verdict": "compatible",
+      "times_s": {
+        "m3_j1": 30.268,
+        "m3_j8": 5.17
+      }
+    },
+    "axi_demux_write": {
+      "members": 10,
+      "verdict": "compatible",
+      "times_s": {
+        "m3_j1": 563.863,
+        "m3_j8": 85.795
+      }
+    },
+    "axi_mux_read": {
+      "members": 9,
+      "verdict": "compatible",
+      "times_s": {
+        "m3_j1": 108.725,
+        "m3_j8": 16.636
+      }
+    },
+    "axi_mux_write": {
+      "members": 11,
+      "verdict": "compatible",
+      "times_s": {
+        "m3_j1": 1188.352,
+        "m3_j8": 173.151
+      }
+    }
+  }
+}

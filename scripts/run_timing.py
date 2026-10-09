@@ -434,7 +434,7 @@ def load_expected(name):
 def write_expected(table, configs, env):
     """Store this directory's results as the expected values (maintainers only)."""
     EXPECTED_DIR.mkdir(exist_ok=True)
-    compat = {"machine": f"{env.get('cpu', '')}, {env.get('cores', '')} cores",
+    compat = {"machine": f"{env.get('cpu', '')}, {env.get('cores', '')} hardware threads",
               "compiler": env.get("revisions", {}).get("Pact", {}).get("commit", ""), "cases": {}}
     sv = {"machine": compat["machine"], "cases": {}}
     for e in table:
