@@ -11,13 +11,13 @@ Run all cases with `make equiv`. Run scripts sequentially because they share
 
 | Cases | Script | Output directory |
 | --- | --- | --- |
-| FIFO, stream FIFO, spill register, arbiter | `scripts/run_common_cells_cycle_equiv.sh` | `logs/equiv/common_cells/` |
-| Read demux | `scripts/run_axi_demux_read_cycle_equiv.sh` | `logs/equiv/axi/demux_read_cycle_equiv/` |
-| Write demux | `scripts/run_axi_demux_write_cycle_equiv.sh` | `logs/equiv/axi/demux_write_cycle_equiv/` |
-| Read mux | `scripts/run_axi_mux_read_cycle_equiv.sh` | `logs/equiv/axi/mux_read_cycle_equiv/` |
-| Write mux | `scripts/run_axi_mux_write_cycle_equiv.sh` | `logs/equiv/axi/mux_write_cycle_equiv/` |
-| ACE | `scripts/run_ace_cycle_equiv.sh` | `logs/equiv/ace/cycle_equiv/` |
-| TileLink | `scripts/run_tilelink_cycle_equiv.sh` | `logs/equiv/tilelink/tilelink_cycle_equiv/` |
+| FIFO, stream FIFO, spill register, arbiter | `scripts/run_common_cells_cycle_equiv.sh` | `results/equiv/common_cells/` |
+| Read demux | `scripts/run_axi_demux_read_cycle_equiv.sh` | `results/equiv/axi/demux_read_cycle_equiv/` |
+| Write demux | `scripts/run_axi_demux_write_cycle_equiv.sh` | `results/equiv/axi/demux_write_cycle_equiv/` |
+| Read mux | `scripts/run_axi_mux_read_cycle_equiv.sh` | `results/equiv/axi/mux_read_cycle_equiv/` |
+| Write mux | `scripts/run_axi_mux_write_cycle_equiv.sh` | `results/equiv/axi/mux_write_cycle_equiv/` |
+| ACE | `scripts/run_ace_cycle_equiv.sh` | `results/equiv/ace/cycle_equiv/` |
+| TileLink | `scripts/run_tilelink_cycle_equiv.sh` | `results/equiv/tilelink/tilelink_cycle_equiv/` |
 
 Each directory contains raw logs, normalized `*.logic.log` traces, build logs,
 and `logic.diff`. An empty diff with a successful script exit indicates a match.

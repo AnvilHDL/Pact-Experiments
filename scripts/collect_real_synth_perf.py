@@ -5,6 +5,7 @@ See synthesis/README.md for inputs, dependencies, and commands.
 import argparse
 import csv
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -35,10 +36,11 @@ def newest_yosys_perf_generated_dir():
             newest = max(run_dirs, key=lambda p: p.name)
             return newest / "generated"
     return YOSYS_PERF_RESULTS_BASE / "generated"
-DEFAULT_PDK_LIB = Path(
-    str(Path.home() / ".volare/volare/sky130/versions") + "/" +
-    "c6d73a35f524070e85faff4a6a9eef49553ebc2b/sky130A/libs.ref/sky130_fd_sc_hd/lib/"
-    "sky130_fd_sc_hd__tt_025C_1v80.lib"
+# volare installs under $PDK_ROOT (default ~/.volare).
+DEFAULT_PDK_LIB = (
+    Path(os.environ.get("PDK_ROOT", Path.home() / ".volare")) / "volare/sky130/versions"
+    / "c6d73a35f524070e85faff4a6a9eef49553ebc2b/sky130A/libs.ref/sky130_fd_sc_hd/lib"
+    / "sky130_fd_sc_hd__tt_025C_1v80.lib"
 )
 DEFAULT_STA_IMAGE = "docker.io/openroad/opensta:latest"
 DEFAULT_CLOCK_PERIOD_NS = 10.0

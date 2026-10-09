@@ -7,7 +7,7 @@ Benchmarks and scripts for the evaluation of Pact. Ten hardware designs are writ
 | Compatibility-checking time (Pact) | `make compat` | `results/timing_<time>/comparison.md` |
 | Model-checking time (SV, SymbiYosys) | `make modelcheck` | `results/timing_<time>/comparison.md` |
 | Area and timing (Pact vs. SV) | `make synthesis` | `results/synthesis_<time>/comparison.md` |
-| Cycle-level trace equivalence (Pact vs. SV) | `make equiv` | `logs/equiv/` |
+| Cycle-level trace equivalence (Pact vs. SV) | `make equiv` | `results/equiv/` |
 
 Every `comparison.md` lists each value as `expected / measured`. Expected values are stored in `expected/*.json`.
 
@@ -31,14 +31,31 @@ Expected values were measured on 2× AMD EPYC 9115 (32 cores, 64 threads) with 1
 
 ## Setup
 
+Build the image (`podman` accepts the same commands as `docker`):
+
 ```sh
 git clone --recurse-submodules https://github.com/AnvilHDL/Pact-Experiments.git
 cd Pact-Experiments
 docker build -t pact-experiments .
-docker run -it --rm -v "$PWD/results:/artifact/Pact-Experiments/results" pact-experiments
 ```
 
-`podman` accepts the same commands. The image clones the Pact compiler into `/artifact/Pact` at the commit given by `PACT_COMMIT` in the `Dockerfile`, and contains OCaml 5.2.0, oss-cad-suite 2026-09-10 (Yosys 0.69+10 with yosys-slang, SymbiYosys, Yices, Verilator 5.053), the sky130 PDK (volare `c6d73a35`), OpenSTA, and the TileLink reference RTL. Run all commands below inside the container, in `/artifact/Pact-Experiments`. Results are written to `results/`, which the command above maps to the host.
+The image clones the Pact compiler into `/artifact/Pact` at the commit given by `PACT_COMMIT` in the `Dockerfile`, and contains OCaml 5.2.0, oss-cad-suite 2026-09-10 (Yosys 0.69+10 with yosys-slang, SymbiYosys, Yices, Verilator 5.053), the sky130 PDK (volare `c6d73a35`), OpenSTA, and the TileLink reference RTL.
+
+All experiments write to `results/` in `/artifact/Pact-Experiments`. Mount a host directory there to keep the results; files in it are given the owner of that directory.
+
+Run one experiment without an interactive session:
+
+```sh
+mkdir -p results
+docker run --rm -v "$PWD/results:/artifact/Pact-Experiments/results" pact-experiments make compat
+docker run --rm -v "$PWD/results:/artifact/Pact-Experiments/results" pact-experiments make all
+```
+
+Or open a shell in the container and run the commands below:
+
+```sh
+docker run -it --rm -v "$PWD/results:/artifact/Pact-Experiments/results" pact-experiments
+```
 
 ## Compatibility-checking time
 

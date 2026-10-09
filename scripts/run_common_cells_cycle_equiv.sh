@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 PACT_SRC_DIR="$ROOT/src/compat"
 SV_DIR="$ROOT/src/testbenches"
-LOG_ROOT="$ROOT/logs/equiv/common_cells"
+LOG_ROOT="$ROOT/results/equiv/common_cells"
 BUILD_ROOT="$ROOT/src/build/common_cells_cycle_equiv"
 SV_TIMEOUT="${SV_TIMEOUT:-180}"
 PACT_TIMEOUT="${PACT_TIMEOUT:-220}"

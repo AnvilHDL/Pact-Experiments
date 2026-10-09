@@ -1,7 +1,9 @@
 # Environment for all experiments: Pact compiler, Yosys/SymbiYosys/Verilator, sky130 PDK, OpenSTA.
 # Build from the repository root with submodules checked out:
-#   git submodule update --init axi common_cells ace tilelink
 #   docker build -t pact-experiments .
+# Run one experiment, writing to ./results on the host:
+#   mkdir -p results
+#   docker run --rm -v "$PWD/results:/artifact/Pact-Experiments/results" pact-experiments make compat
 
 FROM docker.io/openroad/opensta@sha256:d5aa34eed86e49a5d36afc2a81961cabb802f0439b472fe07e178289389ae1a0 AS opensta
 
@@ -33,7 +35,8 @@ RUN curl -fsSL "https://github.com/YosysHQ/oss-cad-suite-build/releases/download
       | tar -xz -C /opt
 ENV PATH=/opt/oss-cad-suite/bin:$PATH
 
-# sky130 standard cells (installed under /root/.volare, the scripts' default location).
+# sky130 standard cells.
+ENV PDK_ROOT=/opt/pdk
 RUN pip3 install --no-cache-dir volare \
     && volare enable --pdk sky130 ${SKY130_VERSION}
 
@@ -51,4 +54,5 @@ WORKDIR /artifact/Pact-Experiments
 # TileLink reference RTL (Chisel; downloads its build tools on first use).
 RUN bash scripts/build_tilelink_rtl.sh
 
+ENTRYPOINT ["/artifact/Pact-Experiments/scripts/container_entry.sh"]
 CMD ["bash"]

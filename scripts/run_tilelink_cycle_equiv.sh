@@ -6,7 +6,7 @@ ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 PACT_SRC_DIR="$ROOT/src/compat"
 TILELINK_DIR="$ROOT/tilelink"
 TB_DIR="$ROOT/src/testbenches"
-LOG_DIR="$ROOT/logs/equiv/tilelink/tilelink_cycle_equiv"
+LOG_DIR="$ROOT/results/equiv/tilelink/tilelink_cycle_equiv"
 SV_OBJ_DIR="$ROOT/src/build/tilelink/tb_tlcrossbar_obj"
 SV_DRIVER="$ROOT/src/build/tilelink/tb_tlcrossbar_driver.cpp"
 # The SV testbench starts its trace counter one cycle after the PACT model.

@@ -1,7 +1,10 @@
 SV_JOBS ?= 4
 JOBS ?= 4
 
-.PHONY: compat modelcheck synthesis equiv check
+.PHONY: all compat modelcheck synthesis equiv check
+
+# Every experiment, shortest first.
+all: synthesis equiv compat modelcheck
 
 # Pact compatibility-checking time (mode 3, 1 and 8 threads).
 compat:
