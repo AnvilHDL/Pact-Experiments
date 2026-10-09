@@ -1,0 +1,9 @@
+results
+logs
+error_logs
+synthesis_reports
+formal/comm_safety/results
+src/build
+**/obj_dir
+**/__pycache__
+Handoff.md

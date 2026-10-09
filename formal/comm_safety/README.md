@@ -1,56 +1,25 @@
-# Communication-safety checks
+# Model checking of the SV designs
 
-The SymbiYosys harnesses check closed RTL compositions: a DUT and its modeled
-participants. Assertions cover handshake agreement, transaction accounting,
-and bounded completion of open obligations. Each harness defines its own
-properties, bounds, and reset assumptions.
+Each `<benchmark>.sby` checks one SV design inside its testbench (`src/testbenches/`), which drives every interface. The harness modules in `sv/` read the handshake signals and add two groups of assertions:
 
-The bounds turn progress obligations into safety assertions. These checks are
-not a proof of the compiler's unbounded fairness semantics, and a completed
-simulation trace is not a formal proof.
+- `COMM_S_ASSERT` (safety): every handshake a participant commits to completes in the same cycle, and both sides of a channel agree on every exchange.
+- `COMM_L_ASSERT` (bounded liveness): every started exchange completes within a fixed number of cycles; the bound is a parameter of each harness.
 
-## Run
+Defining `COMM_ONLY_S` or `COMM_ONLY_L` keeps only one group. SymbiYosys runs `mode prove` (k-induction, depth 500) with the `smtbmc` engine and Yices. Payload values are not checked.
 
-Install Yosys with the `slang` plugin, SymbiYosys, and Yices. EBMC is optional.
-Initialize the dependencies described in the [root setup](../../README.md).
-Before checking TileLink, generate its RTL:
+`scripts/run_timing.py --part sv` (`make modelcheck`) runs every configuration three times (all assertions, `COMM_ONLY_S`, `COMM_ONLY_L`) with a 2 h limit per run and writes `results/timing_<time>/comparison.md`. SymbiYosys work directories, logs and counterexample traces are kept under `results/timing_<time>/sby/`.
 
-```sh
-bash scripts/build_tilelink_rtl.sh
-```
+| Status | Meaning |
+|---|---|
+| proved | k-induction proved the assertions |
+| counterexample | the base case found a reachable violation (`engine_0/trace.vcd`) |
+| unproved | no violation up to depth 500; the induction step did not succeed |
+| timeout | no result within the limit |
 
-Run a selected RTL check alongside its PACT compatibility check:
+Run one configuration directly:
 
 ```sh
-python3 scripts/run_comm_safety_timing.py --case fifo --mode 3 --timeout 300
+sby -f formal/comm_safety/fifo.sby
 ```
 
-Run only the RTL checks, or select multiple cases:
-
-```sh
-python3 scripts/run_comm_safety_timing.py --case fifo --skip-pact --timeout 300
-python3 scripts/run_comm_safety_timing.py --phase all --mode 3 --jobs 4 --timeout 3600
-```
-
-`--checker both` also runs EBMC. `--setup-only --skip-pact` prepares SBY
-work directories without proving the properties. `--timeout` applies separately
-to each subprocess; omitting it leaves the run unbounded in wall-clock time.
-
-## Results
-
-Each run writes logs and `timing.csv` to a timestamped directory under
-`formal/comm_safety/results/`. `--results-dir` selects an explicit directory.
-
-`SETUP` means the work directory was prepared without running a proof.
-`PASS` means the configured proof completed. `FAIL`, `UNKNOWN`, `TIMEOUT`,
-`EXTERNAL_TIMEOUT`, and `ERROR` are distinct outcomes. In particular, an
-unfinished induction step is not a successful proof.
-
-The `.sby` files use `mode prove`; `depth` controls the bounded base case and
-induction search. Inspect each case's source and solver output when interpreting
-its result. Instrumentation guarded by `FORMAL_COMM_SAFETY` is inactive during
-normal simulation.
-
-The formal and simulation configurations can use different stimuli or bounds.
-ACE's formal harness uses `ccu_fsm_tb.sv`; cycle equivalence uses
-`ccu_fsm_tb2.sv`. Preserve this distinction when comparing measurements.
+TileLink requires `bash scripts/build_tilelink_rtl.sh` first.

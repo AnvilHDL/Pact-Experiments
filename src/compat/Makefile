@@ -10,8 +10,8 @@ all: obj_dir/V$(MODULE_NAME)
 .PHONY: run clean
 .DELETE_ON_ERROR:
 
-# Optimisation level; synthesis uses 3.
-PACT_OPT ?= 2
+# Optimisation level (as in synthesis).
+PACT_OPT ?= 3
 PACT_FLAGS=
 ifdef LTOFF
     PACT_FLAGS = -disable-lt-checks -O $(PACT_OPT)

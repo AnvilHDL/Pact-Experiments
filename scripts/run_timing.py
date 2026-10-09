@@ -1,30 +1,21 @@
 #!/usr/bin/env python3
-"""Reproduce the paper's compatibility-checking table (RQ3).
+"""Compatibility-checking time (Pact) and model-checking time (SymbiYosys) for the ten benchmarks.
 
-For each of the ten benchmarks this measures
-  * Pact compatibility checking on the full type pool, in modes 2 (fast) and
-    3 (simultaneous), each with -j 1 and -j 8;
-  * the SystemVerilog baseline: SymbiYosys k-induction on the comm-safety
-    harness, run three times: all assertions, S (synchronization safety) only,
-    and L (bounded liveness) only.
+Pact: `pact -just-check -debug-choice 3 -j N` on each benchmark's type pool, N = 1 and 8,
+median of 5 runs (1 run once a run exceeds --rep-cutoff seconds).
+SymbiYosys: k-induction (depth 500) on the communication-safety harness, three runs per
+benchmark: S assertions only (safety), L assertions only (liveness), all assertions.
 
-Results go to a new directory (default formal/comm_safety/results/paper_<time>/):
-  pact_runs.csv     one row per Pact run
-  sv_runs.csv       one row per SBY run
-  members.json      pool size per benchmark (the paper's "Part." column)
-  invocations.json  machine, revisions and arguments of every invocation
-  summary.json      per-benchmark table built from all rows in the directory
-  table.tex         rows for the paper's compatibility table
+Output directory (default results/timing_<time>/):
+  comparison.md     expected / measured values for every benchmark
+  summary.json      measured values
+  pact_runs.csv, sv_runs.csv, members.json, invocations.json, pact_logs/, sby/
 
-Rerunning into an existing directory replaces only the rows of the selected
-cases, modes and variants. Rows are merged under a file lock, so several
-invocations can write into one directory at the same time.
-
-Example:
-  python3 scripts/run_paper_timing.py                       # everything
-  python3 scripts/run_paper_timing.py --part pact --modes 2 --reps 5
-  python3 scripts/run_paper_timing.py --part pact --modes 3 --pact-jobs 2 --pact-timeout 28800
-  python3 scripts/run_paper_timing.py --part sv --sv-jobs 10 --case fifo
+Examples:
+  python3 scripts/run_timing.py                          # Pact and SymbiYosys, all benchmarks
+  python3 scripts/run_timing.py --part pact
+  python3 scripts/run_timing.py --part sv --sv-jobs 15
+  python3 scripts/run_timing.py --part pact --case fifo --case arbiter
 """
 import argparse
 import csv
@@ -46,6 +37,7 @@ from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+EXPECTED_DIR = ROOT / "expected"
 COMPAT_DIR = ROOT / "src" / "compat"
 PACT_DIR = Path(os.environ.get("PACT_DIR", ROOT.parent / "Pact")).resolve()
 
@@ -82,7 +74,7 @@ def parse_args():
     p.add_argument("--case", action="append", dest="cases", help="Run only this case (repeatable)")
     p.add_argument("--results-dir", help="Output directory (default: new timestamped directory)")
     p.add_argument("--pact", help="Pact binary (default: $PACT_DIR/_build/default/bin/main.exe, copied into the results)")
-    p.add_argument("--modes", default="2,3", help="Comma-separated Pact -debug-choice modes (default 2,3)")
+    p.add_argument("--modes", default="3", help="Comma-separated Pact -debug-choice modes (default 3)")
     p.add_argument("--threads", default="1,8", help="Comma-separated -j values (default 1,8)")
     p.add_argument("--reps", type=int, default=5, help="Pact repetitions per configuration; the median is reported")
     p.add_argument("--rep-cutoff", type=float, default=300.0,
@@ -95,6 +87,8 @@ def parse_args():
     p.add_argument("--sv-timeout", type=float, default=7200.0, help="SBY timeout per run in seconds (paper: 2 h)")
     p.add_argument("--sv-jobs", type=int, default=1, help="SBY runs in parallel (each uses two solver processes)")
     p.add_argument("--sv-mem", default="16G", help="Memory cap per SBY run (systemd-run), '' to disable")
+    p.add_argument("--report-only", metavar="DIR", help="Only rebuild comparison.md for an existing results directory")
+    p.add_argument("--write-expected", action="store_true", help="Store the results as expected/*.json (maintainers)")
     return p.parse_args()
 
 
@@ -377,59 +371,128 @@ def fmt_s(v):
     return f"{v:.2f}" if v < 1000 else f"{v:.0f}"
 
 
-def latex(table, configs):
-    marks = {"PASS": r"\okmark", "FAIL": r"\badmark"}
-    header = ["Benchmark", "Part.", "SV safety", "SV live", "SV time (s)", "Pact result"]
-    header += [f"Pact m{m} -j{j} (s)" for m, j in configs]
-    lines = ["% " + " & ".join(header) + r" \\"]
+SV_WORDS = {"PASS": "proved", "FAIL": "counterexample", "UNKNOWN": "unproved", "TIMEOUT": "timeout", "ERROR": "error"}
+
+
+def sv_word(entry):
+    return SV_WORDS.get(entry["status"], entry["status"] or "error") if entry else "--"
+
+
+def pact_cell(p):
+    if not p:
+        return "--"
+    if p["median_s"] is not None:
+        return fmt_s(p["median_s"])
+    return p["verdict"]
+
+
+def compat_table(table, expected, configs):
+    exp_cases = expected.get("cases", {})
+    head = ["Benchmark", "Part.", "Verdict"]
+    for m, j in configs:
+        head += [f"Mode {m}, {j} thr. (s)"]
+    lines = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     for e in table:
-        s, l, full = e.get("sv_safety"), e.get("sv_live"), e.get("sv_full")
-        pact = [e.get(f"pact_m{m}_j{j}") for m, j in configs]
-        verdicts = {p["verdict"] for p in pact if p}
-        verdict = r"\okmark" if verdicts == {"compatible"} else r"\badmark" if "incompatible" in verdicts \
-            else r"\unkmark" if verdicts else "--"
-
-        def pcell(p):
-            if not p:
-                return "--"
-            if p["median_s"] is not None:
-                return fmt_s(p["median_s"])
-            return f"$>${fmt_s(float(p['timeout_s']))}" if p["verdict"] == "timeout" and p.get("timeout_s") else p["verdict"]
-
-        cells = [
-            e["label"],
-            str(sum(e["members"])) if e.get("members") else "--",
-            marks.get(s["status"], r"\unkmark") if s else "--",
-            marks.get(l["status"], r"\unkmark") if l else "--",
-            fmt_s(full["wall_s"]) if full else "--",
-            verdict,
-            *[pcell(p) for p in pact],
-        ]
-        lines.append(" & ".join(cells) + r" \\")
-    return "\n".join(lines) + "\n"
+        x = exp_cases.get(e["case"], {})
+        part = sum(e["members"]) if e.get("members") else None
+        verdicts = {e[k]["verdict"] for k in e if k.startswith("pact_m")}
+        got_verdict = "compatible" if verdicts == {"compatible"} else ",".join(sorted(verdicts)) or "--"
+        row = [e["label"],
+               f"{x.get('members', '--')} / {part if part is not None else '--'}",
+               f"{x.get('verdict', '--')} / {got_verdict}"]
+        for m, j in configs:
+            key = f"m{m}_j{j}"
+            exp_s = x.get("times_s", {}).get(key)
+            row.append(f"{fmt_s(exp_s)} / {pact_cell(e.get(f'pact_{key}'))}")
+        lines.append("| " + " | ".join(row) + " |")
+    return "\n".join(lines)
 
 
-def report(out_dir):
+def sv_table(table, expected):
+    exp_cases = expected.get("cases", {})
+    head = ["Benchmark", "Safety", "Live", "All assertions", "Time, all assertions (s)"]
+    lines = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
+    for e in table:
+        if not any(k.startswith("sv_") for k in e):
+            continue
+        x = exp_cases.get(e["case"], {})
+        row = [e["label"]]
+        for v in ("safety", "live", "full"):
+            xs = x.get(v)
+            row.append(f"{SV_WORDS.get(xs['status'], xs['status']) if xs else '--'} / {sv_word(e.get(f'sv_{v}'))}")
+        xf, gf = x.get("full"), e.get("sv_full")
+        row.append(f"{fmt_s(xf['wall_s']) if xf else '--'} / {fmt_s(gf['wall_s']) if gf else '--'}")
+        lines.append("| " + " | ".join(row) + " |")
+    return "\n".join(lines)
+
+
+def load_expected(name):
+    path = EXPECTED_DIR / name
+    return json.loads(path.read_text()) if path.exists() else {}
+
+
+def write_expected(table, configs, env):
+    """Store this directory's results as the expected values (maintainers only)."""
+    EXPECTED_DIR.mkdir(exist_ok=True)
+    compat = {"machine": f"{env.get('cpu', '')}, {env.get('cores', '')} cores",
+              "compiler": env.get("revisions", {}).get("Pact", {}).get("commit", ""), "cases": {}}
+    sv = {"machine": compat["machine"], "cases": {}}
+    for e in table:
+        times = {f"m{m}_j{j}": e[f"pact_m{m}_j{j}"]["median_s"] for m, j in configs if f"pact_m{m}_j{j}" in e}
+        if times:
+            verdicts = {e[f"pact_m{m}_j{j}"]["verdict"] for m, j in configs if f"pact_m{m}_j{j}" in e}
+            compat["cases"][e["case"]] = {"members": sum(e["members"]) if e.get("members") else None,
+                                          "verdict": verdicts.pop() if len(verdicts) == 1 else "mixed",
+                                          "times_s": times}
+        runs = {v: {"status": e[f"sv_{v}"]["status"], "wall_s": round(e[f"sv_{v}"]["wall_s"], 2)}
+                for v in SV_VARIANTS if f"sv_{v}" in e}
+        if runs:
+            sv["cases"][e["case"]] = runs
+    if compat["cases"]:
+        (EXPECTED_DIR / "compat.json").write_text(json.dumps(compat, indent=2) + "\n")
+    if sv["cases"]:
+        (EXPECTED_DIR / "model_checking.json").write_text(json.dumps(sv, indent=2) + "\n")
+
+
+def report(out_dir, write_exp=False):
     with locked(out_dir):
         pact_rows = load_csv(out_dir / "pact_runs.csv")
         sv_rows = load_csv(out_dir / "sv_runs.csv")
         members_path = out_dir / "members.json"
         members = json.loads(members_path.read_text()) if members_path.exists() else {}
+        inv_path = out_dir / "invocations.json"
+        env = (json.loads(inv_path.read_text()) or [{}])[-1] if inv_path.exists() else {}
     present = {r["case"] for r in pact_rows + sv_rows}
     table = summarize([c for c in CASES if c.name in present], pact_rows, members, sv_rows)
     configs = sorted({(r["mode"], int(r["threads"])) for r in pact_rows})
     (out_dir / "summary.json").write_text(json.dumps({"table": table}, indent=2))
-    (out_dir / "table.tex").write_text(latex(table, configs))
-    return (out_dir / "table.tex").read_text()
+    if write_exp:
+        write_expected(table, configs, env)
+    text = ["Each cell: expected / measured. Times are wall-clock seconds; expected times are from "
+            "the machine named in expected/*.json."]
+    if pact_rows:
+        exp = load_expected("compat.json")
+        text += ["", "## Pact compatibility checking", "", f"Expected values: {exp.get('machine', '--')}", "",
+                 compat_table(table, exp, configs)]
+    if sv_rows:
+        exp = load_expected("model_checking.json")
+        text += ["", "## SystemVerilog model checking (SymbiYosys)", "", f"Expected values: {exp.get('machine', '--')}", "",
+                 sv_table(table, exp)]
+    (out_dir / "comparison.md").write_text("\n".join(text) + "\n")
+    return "\n".join(text)
 
 
 def main():
     args = parse_args()
+    if args.report_only:
+        out_dir = Path(args.report_only).resolve()
+        print(report(out_dir, args.write_expected))
+        return
     cases = [c for c in CASES if not args.cases or c.name in args.cases]
     if not cases:
         sys.exit("no matching case")
     out_dir = Path(args.results_dir) if args.results_dir else \
-        ROOT / "formal" / "comm_safety" / "results" / datetime.now().strftime("paper_%Y%m%d_%H%M%S")
+        ROOT / "results" / datetime.now().strftime("timing_%Y%m%d_%H%M%S")
     out_dir = out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     print(f"Results: {out_dir}", flush=True)
@@ -446,7 +509,7 @@ def main():
                 pact_bin.unlink(missing_ok=True)
                 shutil.copy2(src, pact_bin)
     if args.part in ("sv", "all") and not shutil.which("sby"):
-        sys.exit("sby not on PATH (e.g. export PATH=$HOME/tools/oss-cad-suite/bin:$PATH)")
+        sys.exit("sby not on PATH")
 
     env = environment(pact_bin)
     # Pact first: its timings are short and sensitive to load from the SBY runs.
@@ -458,8 +521,8 @@ def main():
     env["loadavg_end"] = os.getloadavg()
     env["args"] = vars(args)
     update_json(out_dir, "invocations.json", lambda d: d + [env], [])
-    print(report(out_dir))
-    print(f"Wrote {out_dir / 'summary.json'}")
+    print(report(out_dir, args.write_expected))
+    print(f"\nWrote {out_dir / 'comparison.md'}")
 
 
 if __name__ == "__main__":

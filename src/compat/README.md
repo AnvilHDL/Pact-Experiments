@@ -1,35 +1,23 @@
-# Protocols and processes
+# Pact benchmarks
 
-`type_*.anvil` defines interfaces and compatibility pools. `test_*.anvil` adds
-process implementations and simulation stimuli. `complexity/` contains
-additional protocol-size and topology inputs.
+| File | Contents |
+|---|---|
+| `type_<benchmark>.anvil` | Interface types and the compatibility pool used for timing |
+| `test_<benchmark>.anvil` | Process implementations of every pool member and the simulation stimulus |
+| `type_*_2p.anvil`, `test_*_2p.anvil` | Two-party variants of the routers and ACE |
+| `test_unified_mux*.anvil` | Combined read and write mux |
+| `mux_commons.anvilh` | Shared process definitions of the AXI routers (8-entry FIFO, arbiters) |
 
-From the repository root:
-
-```sh
-make check
-python3 run_compat.py 3 --only type_fifo,type_demux_read_2p --jobs 2
-```
-
-To compile and simulate one process model:
+Check one pool's compatibility (mode 3: simultaneous product of all members):
 
 ```sh
-make -B -C src/compat run MODULE_NAME=test_demux_read LTOFF=1 COMPATOFF=1 SILENT=1 TIMEOUT=200
+../../scripts/pact -just-check -debug-choice 3 -j 8 type_demux_read.anvil
 ```
 
-`LTOFF=1` disables lifetime checks. `COMPATOFF=1` skips compatibility games during
-code generation; session type checking remains enabled. Run compatibility
-separately with `run_compat.py`. `PACT_DIR` selects the compiler checkout.
+Compile and simulate one benchmark:
 
-The four-endpoint AXI models use combined master/slave interfaces. Their shared
-`mux_commons.anvilh` implementation contains a one-entry FIFO: it starts empty,
-accepts a push, and waits for a pop before accepting another entry.
-The protocol also includes a neither-full-nor-empty branch; the concrete FIFO
-implements the full branch after a push.
+```sh
+make -B run MODULE_NAME=test_demux_read LTOFF=1 COMPATOFF=1 SILENT=1
+```
 
-The two-endpoint router files are standalone protocol models. The unified mux
-combines the read and write process models over shared memory. Its trace can be
-checked against a saved run; the repository has no separate unified-mux RTL
-reference test.
-
-See [cycle equivalence](../../testbench.md) for the RTL comparison commands.
+`PACT_OPT` selects the optimization level (default 3), `COMPATOFF=1` skips the compatibility check during compilation, and `LTOFF=1` disables lifetime checks. `PACT_DIR` selects the compiler checkout (default `../../../Pact`).

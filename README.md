@@ -1,94 +1,115 @@
-# PACT benchmarks
+# Pact experiments
 
-This repository contains PACT protocol models, executable PACT processes, and
-SystemVerilog references for ten hardware case studies: FIFO, stream FIFO, spill
-register, arbiter, four AXI-Lite routers, ACE, and TileLink.
+Benchmarks and scripts for the evaluation of Pact. Ten hardware designs are written both in Pact and as SystemVerilog (SV) references: FIFO, stream FIFO, spill register, arbiter, ACE cache-coherence controller, TileLink crossbar, and four AXI-Lite routers.
+
+| Experiment | Command | Output |
+|---|---|---|
+| Compatibility-checking time (Pact) | `make compat` | `results/timing_<time>/comparison.md` |
+| Model-checking time (SV, SymbiYosys) | `make modelcheck` | `results/timing_<time>/comparison.md` |
+| Area and timing (Pact vs. SV) | `make synthesis` | `results/synthesis_<time>/comparison.md` |
+| Cycle-level trace equivalence (Pact vs. SV) | `make equiv` | `logs/equiv/` |
+
+Every `comparison.md` lists each value as `expected / measured`. Expected values are stored in `expected/*.json`.
+
+## Requirements
+
+| | |
+|---|---|
+| CPU | x86-64, 8 or more cores (Pact runs use up to 8 threads; each parallel SymbiYosys run uses 2 processes) |
+| Memory | 16 GB (about 4 GB per parallel SymbiYosys run) |
+| Disk | 15 GB for the Docker image |
+| Software | Docker |
+
+Expected values were measured on 2× AMD EPYC 9115 (32 cores, 64 threads) with 125 GB of memory. Times depend on the machine; verdicts, areas and flip-flop counts do not.
+
+| Experiment | Time on the reference machine |
+|---|---|
+| `make compat` | about 1.5 h |
+| `make modelcheck` | about 35 h of run time in total (30 runs, 14 of them reach the 2 h limit): about 9 h with `SV_JOBS=4`, about 4 h with `SV_JOBS=15` |
+| `make synthesis` | about 10 min |
+| `make equiv` | a few minutes per benchmark |
 
 ## Setup
 
-Place the compiler and benchmarks beside each other:
-
 ```sh
-git clone https://github.com/arj4web/Pact.git Pact
-git clone https://github.com/project-starch/Anvil-Experiments.git PACT-Experiments
-cd PACT-Experiments
-git submodule update --init axi common_cells ace tilelink
+git clone --recurse-submodules https://github.com/AnvilHDL/Pact-Experiments.git
+cd Pact-Experiments
+docker build -t pact-experiments .
+docker run -it --rm -v "$PWD/results:/artifact/Pact-Experiments/results" pact-experiments
 ```
 
-Use the compiler revision recorded with the experiment being reproduced.
-The compiler requires OCaml 4.14 or newer, Dune 3.20 or newer, Menhir, and Yojson.
-Install its dependencies in an active opam switch, then build:
+`podman` accepts the same commands. The image clones the Pact compiler into `/artifact/Pact` at the commit given by `PACT_COMMIT` in the `Dockerfile`, and contains OCaml 5.2.0, oss-cad-suite 2026-09-10 (Yosys 0.69+10 with yosys-slang, SymbiYosys, Yices, Verilator 5.053), the sky130 PDK (volare `c6d73a35`), OpenSTA, and the TileLink reference RTL. Run all commands below inside the container, in `/artifact/Pact-Experiments`. Results are written to `results/`, which the command above maps to the host.
+
+## Compatibility-checking time
 
 ```sh
-opam install ../Pact --deps-only
-eval "$(opam env)"
-dune build --root ../Pact @install
+make compat                                      # all ten benchmarks, about 1.5 h
+python3 scripts/run_timing.py --part pact --case fifo --case ace
 ```
 
-Scripts use `../Pact` by default. Set `PACT_DIR` to use another checkout.
-Python 3.10 or newer runs the benchmark tools. Simulation also needs Make,
-a C++ compiler, and Verilator 5 with timing support. TileLink generation needs
-JDK 17 or newer; [its generator](src/tilelink_generator/README.md) downloads
-pinned Mill, Scala, and Chisel dependencies on the first run.
+For each benchmark, Pact checks that all members of the benchmark's type pool (`src/compat/type_*.anvil`) are compatible, using the simultaneous product of all members (`-debug-choice 3`). Each check runs with 1 and with 8 threads (`-j`), 5 times; the median is reported (one run when a run exceeds 300 s).
 
-## Run
+| Column | Meaning |
+|---|---|
+| Part. | Number of members (participants) in the pool |
+| Verdict | Result of the compatibility check: `compatible` or `incompatible` |
+| Mode 3, N thr. | Wall-clock time of the check with N threads, in seconds |
 
-Run these commands from the repository root:
+## Model-checking time
 
 ```sh
-make check                      # Session type-check every benchmark
-make compat MODE=3 JOBS=4        # Check protocol pools concurrently
-make equiv                      # Compare all ten simulation traces with RTL
+make modelcheck SV_JOBS=4                        # 30 runs of up to 2 h each, SV_JOBS in parallel
+python3 scripts/run_timing.py --part sv --case arbiter
 ```
 
-Type checking checks each process against its interfaces. Compatibility checks
-whether the interfaces can execute together. These are separate checks.
-Cycle equivalence compares the supplied process and RTL stimuli at exact cycle
-numbers; it does not prove equivalence for every possible input.
+Each SV design runs inside its testbench, which drives every interface. A harness (`formal/comm_safety/sv/`) adds two groups of assertions:
 
-For individual cases:
+- **Safety (S):** every handshake a participant commits to completes in the same cycle, and both sides of a channel agree on every exchange.
+- **Liveness (L):** every started exchange completes within a fixed number of cycles (bounded liveness).
+
+SymbiYosys proves the assertions by k-induction to depth 500 with Yices (`formal/comm_safety/*.sby`). Each benchmark has three runs with a 2 h limit each: S only, L only, and all assertions.
+
+| Result | Meaning |
+|---|---|
+| proved | k-induction proved the assertions |
+| counterexample | the base case found a reachable violation |
+| unproved | no violation up to depth 500, but the induction step did not succeed |
+| timeout | no result within 2 h |
+
+The time column is the run with all assertions.
+
+## Area and timing
 
 ```sh
-./run_pact -jc src/compat/test_demux_read.anvil
-python3 run_compat.py 3 --only type_demux_read_2p,type_mux_read_2p --jobs 2
-bash scripts/run_axi_demux_read_cycle_equiv.sh
+make synthesis                                   # about 10 min
 ```
 
-Compatibility modes:
+Each Pact benchmark is compiled at `-O 3`. The Pact design modules (testbench processes excluded; a module instantiated several times counts once per instance) and the SV reference design are synthesized with Yosys to `sky130_fd_sc_hd__tt_025C_1v80` cells. OpenSTA reports setup slack at a 10 ns clock (100 MHz) with 1 ns input and output delays.
 
-| Mode | Construction |
-| --- | --- |
-| `2` | Fast closed-product checker |
-| `3` | Simultaneous product of all pool members |
-| `4` | Pairwise composition with the successful residual passed to the next member |
+| Column | Meaning |
+|---|---|
+| Pact area, SV area | Total cell area in µm² |
+| Pact/SV | Area ratio |
+| Pact FFs, SV FFs | Number of flip-flops after synthesis |
+| Pact setup slack | Worst setup slack in ns; positive means the design meets 100 MHz |
 
-Compatibility logs and incremental `results.csv` files are written under
-`logs/compat/<run>/`. A running check has no verdict until it finishes.
-Type-check logs are under `logs/typecheck/<run>/`.
-
-## Other measurements
-
-- [Cycle-equivalence scripts and outputs](testbench.md)
-- [RTL formal checks and compatibility timing](formal/comm_safety/README.md)
-- [Synthesis, state-space estimates, and code-size measurements](synthesis/README.md)
-- [Protocol and process sources](src/compat/README.md)
-
-RTL references are tracked in `src/testbenches/`; upstream dependencies are
-pinned by the submodule revisions.
-
-Record both repository revisions, local changes, submodule revisions, tool
-versions, commands, and result directories with each measurement:
+## Trace equivalence
 
 ```sh
-git rev-parse HEAD
-git diff HEAD
-git submodule status
-git -C ../Pact rev-parse HEAD
-git -C ../Pact diff HEAD
-verilator --version
-python3 --version
-dune --version
+make equiv                                       # Pact compiled at -O 3; PACT_OPT=2 selects -O 2
 ```
 
-Generated RTL, build objects, and run outputs are ignored by Git. Keep the
-reported output directories when comparing measurements.
+Each script simulates the Pact design and the SV testbench with Verilator, using matching stimuli, and compares the logged events (cycle number, event, data). `Logical logs match` means both designs produce the same events in the same cycles, so Pact adds no cycle latency for that stimulus; a mismatch exits with a nonzero status and leaves the difference in `logic.diff`. Per-script output directories are listed in `testbench.md`.
+
+## Repository layout
+
+| Path | Contents |
+|---|---|
+| `src/compat/type_*.anvil` | Pact interface types and compatibility pools |
+| `src/compat/test_*.anvil` | Pact process implementations and simulation stimulus |
+| `src/testbenches/` | SV reference designs and testbenches |
+| `formal/comm_safety/` | SymbiYosys configurations and assertion harnesses |
+| `synthesis/`, `scripts/yosys_perf_manifest.json` | Synthesis wrappers and the module list per benchmark |
+| `axi`, `common_cells`, `ace`, `tilelink` | Upstream SV sources (git submodules) |
+| `expected/` | Expected values for `comparison.md` |
+| `scripts/` | Experiment scripts |

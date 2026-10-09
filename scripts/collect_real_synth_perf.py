@@ -6,6 +6,7 @@ import argparse
 import csv
 import json
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -83,6 +84,7 @@ class RunConfig:
     clock_period_ns: float
     timeout_seconds: int
     podman_bin: str
+    sta_bin: str
 
 
 def parse_args() -> RunConfig:
@@ -109,6 +111,8 @@ def parse_args() -> RunConfig:
     parser.add_argument("--clock-period-ns", type=float, default=DEFAULT_CLOCK_PERIOD_NS)
     parser.add_argument("--timeout-seconds", type=int, default=180)
     parser.add_argument("--podman-bin", default="podman")
+    parser.add_argument("--sta-bin", default=shutil.which("sta") or "",
+                        help="Run this OpenSTA binary directly (default: `sta` on PATH); empty runs --sta-image in a container")
     args = parser.parse_args()
 
     if args.results_dir is None:
@@ -138,6 +142,7 @@ def parse_args() -> RunConfig:
         clock_period_ns=args.clock_period_ns,
         timeout_seconds=args.timeout_seconds,
         podman_bin=args.podman_bin,
+        sta_bin=args.sta_bin,
     )
 
 
@@ -297,11 +302,12 @@ def run_sta(
     tcl_path: Path, log_path: Path,
 ) -> dict:
     tcl_path.parent.mkdir(parents=True, exist_ok=True)
+    pdk_dir, work_dir = ("/pdk", "/work") if not config.sta_bin else (config.pdk_lib.parent.resolve(), netlist_v.parent.resolve())
     tcl_path.write_text("\n".join([
-        f"read_liberty /pdk/{config.pdk_lib.name}",
-        f"read_verilog /work/{netlist_v.name}",
+        f"read_liberty {pdk_dir}/{config.pdk_lib.name}",
+        f"read_verilog {work_dir}/{netlist_v.name}",
         f"link_design {top}",
-        f"read_sdc /work/{sdc_path.name}",
+        f"read_sdc {work_dir}/{sdc_path.name}",
         "puts \"=== WORST_SLACK_SETUP ===\"",
         "report_worst_slack -max",
         "puts \"=== WORST_SLACK_HOLD ===\"",
@@ -312,14 +318,16 @@ def run_sta(
         "report_power",
         "",
     ]))
-    work_dir = netlist_v.parent
-    command = [
-        config.podman_bin, "run", "--rm",
-        "-v", f"{config.pdk_lib.parent}:/pdk:ro",
-        "-v", f"{work_dir}:/work:ro",
-        config.sta_image,
-        f"/work/{tcl_path.name}",
-    ]
+    if config.sta_bin:
+        command = [config.sta_bin, "-no_splash", "-exit", str(tcl_path.resolve())]
+    else:
+        command = [
+            config.podman_bin, "run", "--rm",
+            "-v", f"{config.pdk_lib.parent}:/pdk:ro",
+            "-v", f"{netlist_v.parent}:/work:ro",
+            config.sta_image,
+            f"/work/{tcl_path.name}",
+        ]
     rc, output = run_logged(command, log_path, timeout_seconds=config.timeout_seconds)
     result = {"status": "PASS" if rc == 0 else f"STA_FAIL({rc})"}
     if rc != 0:

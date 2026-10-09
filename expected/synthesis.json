@@ -1,0 +1,95 @@
+{
+  "flow": "Pact -O 3; Yosys + yosys-slang; sky130_fd_sc_hd__tt_025C_1v80; OpenSTA, 10 ns clock",
+  "cases": {
+    "fifo": {
+      "pact_um2": 11658.7,
+      "sv_um2": 11616.1,
+      "pact_seq": 270,
+      "sv_seq": 266,
+      "pact_slack_ns": 4.65,
+      "sv_slack_ns": 4.8,
+      "status": "PASS"
+    },
+    "stream_fifo": {
+      "pact_um2": 11671.2,
+      "sv_um2": 11486.0,
+      "pact_seq": 270,
+      "sv_seq": 264,
+      "pact_slack_ns": 4.52,
+      "sv_slack_ns": 4.76,
+      "status": "PASS"
+    },
+    "spill_register": {
+      "pact_um2": 3363.2,
+      "sv_um2": 2770.2,
+      "pact_seq": 72,
+      "sv_seq": 66,
+      "pact_slack_ns": 5.28,
+      "sv_slack_ns": 6.01,
+      "status": "PASS"
+    },
+    "arbiter": {
+      "pact_um2": 1044.8,
+      "sv_um2": 1386.3,
+      "pact_seq": 7,
+      "sv_seq": 7,
+      "pact_slack_ns": 4.85,
+      "sv_slack_ns": 4.93,
+      "status": "PASS"
+    },
+    "ace": {
+      "pact_um2": 4792.1,
+      "sv_um2": 8423.1,
+      "pact_seq": 106,
+      "sv_seq": 173,
+      "pact_slack_ns": 6.79,
+      "sv_slack_ns": 6.12,
+      "status": "PASS"
+    },
+    "tilelink": {
+      "pact_um2": 1941.9,
+      "sv_um2": 2279.7,
+      "pact_seq": 14,
+      "sv_seq": 20,
+      "pact_slack_ns": 6.8,
+      "sv_slack_ns": 5.04,
+      "status": "PASS"
+    },
+    "axi_demux_read": {
+      "pact_um2": 2947.8,
+      "sv_um2": 1978.1,
+      "pact_seq": 46,
+      "sv_seq": 26,
+      "pact_slack_ns": 4.13,
+      "sv_slack_ns": 6.13,
+      "status": "PASS"
+    },
+    "axi_demux_write": {
+      "pact_um2": 4461.8,
+      "sv_um2": 2726.4,
+      "pact_seq": 86,
+      "sv_seq": 53,
+      "pact_slack_ns": 5.72,
+      "sv_slack_ns": 6.8,
+      "status": "PASS"
+    },
+    "axi_mux_read": {
+      "pact_um2": 3489.6,
+      "sv_um2": 2602.5,
+      "pact_seq": 52,
+      "sv_seq": 33,
+      "pact_slack_ns": 4.34,
+      "sv_slack_ns": 4.7,
+      "status": "PASS"
+    },
+    "axi_mux_write": {
+      "pact_um2": 6035.8,
+      "sv_um2": 4216.5,
+      "pact_seq": 89,
+      "sv_seq": 60,
+      "pact_slack_ns": 4.38,
+      "sv_slack_ns": 5.91,
+      "status": "PASS"
+    }
+  }
+}
