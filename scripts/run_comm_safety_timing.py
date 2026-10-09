@@ -95,7 +95,7 @@ def harness_assertion_counts(module_name):
         end += len("\nendmodule")
         body = text[start:end]
         active_body = "\n".join(line for line in body.splitlines() if not line.lstrip().startswith("//"))
-        return len(body.splitlines()), len(re.findall(r"\bassert\s*\(", active_body)), len(re.findall(r"\bassume\s*\(", active_body))
+        return len(body.splitlines()), len(re.findall(r"(?:\bassert|`COMM_[SL]_ASSERT)\s*\(", active_body)), len(re.findall(r"\bassume\s*\(", active_body))
     return None, None, None
 
 

@@ -1,4 +1,18 @@
 `ifdef FORMAL_COMM_SAFETY
+// COMM_ONLY_S / COMM_ONLY_L keep only the S or L assertions; by default both are checked.
+`ifndef COMM_ASSERT_MACROS
+`define COMM_ASSERT_MACROS
+`ifdef COMM_ONLY_L
+`define COMM_S_ASSERT(e)
+`else
+`define COMM_S_ASSERT(e) assert(e)
+`endif
+`ifdef COMM_ONLY_S
+`define COMM_L_ASSERT(e)
+`else
+`define COMM_L_ASSERT(e) assert(e)
+`endif
+`endif
 // =============================================================================
 // Communication-safety harnesses for the common_cells case studies
 // (FIFO, stream FIFO, spill register, round-robin arbiter).
@@ -125,45 +139,45 @@ module comm_fifo_formal(input logic clk_i, input logic rst_ni);
       fifo_prog_age <= '0;
     end else begin
       // ---- S: a committed push/pop is accepted in the same cycle ----
-      assert(!push_i || !full_o);
-      assert(!pop_i || !empty_o);
+      `COMM_S_ASSERT(!push_i || !full_o);
+      `COMM_S_ASSERT(!pop_i || !empty_o);
 
       // ---- S: the FIFO's own accept flags agree with the wire handshakes ----
-      assert(shadow_push_req == push_fire);
-      assert(shadow_pop_req == pop_fire);
+      `COMM_S_ASSERT(shadow_push_req == push_fire);
+      `COMM_S_ASSERT(shadow_pop_req == pop_fire);
 
       // ---- S: full/empty status messages are seen by the peer exactly when raised ----
-      assert(shadow_full_req == full_o);
-      assert(shadow_empty_req == empty_o);
+      `COMM_S_ASSERT(shadow_full_req == full_o);
+      `COMM_S_ASSERT(shadow_empty_req == empty_o);
 
       // ---- S: exactly one push per master attempt ----
       if (mst_attempt) begin
-        assert(!mst_open || mst_fires == 2'd1);          // previous attempt: one push
+        `COMM_S_ASSERT(!mst_open || mst_fires == 2'd1);          // previous attempt: one push
       end
-      assert(!(mst_open || mst_attempt) || mst_fires_now <= 2'd1); // never two
-      assert(mst_open || mst_attempt || !push_fire);     // none outside an attempt
+      `COMM_S_ASSERT(!(mst_open || mst_attempt) || mst_fires_now <= 2'd1); // never two
+      `COMM_S_ASSERT(mst_open || mst_attempt || !push_fire);     // none outside an attempt
       mst_open <= mst_open | mst_attempt;
       if (mst_open || mst_attempt) mst_fires <= mst_fires_now;
 
       // ---- S: exactly one pop per slave attempt ----
       if (slv_attempt) begin
-        assert(!slv_open || slv_fires == 2'd1);
+        `COMM_S_ASSERT(!slv_open || slv_fires == 2'd1);
       end
-      assert(!(slv_open || slv_attempt) || slv_fires_now <= 2'd1);
-      assert(slv_open || slv_attempt || !pop_fire);
+      `COMM_S_ASSERT(!(slv_open || slv_attempt) || slv_fires_now <= 2'd1);
+      `COMM_S_ASSERT(slv_open || slv_attempt || !pop_fire);
       slv_open <= slv_open | slv_attempt;
       if (slv_open || slv_attempt) slv_fires <= slv_fires_now;
 
       // ---- L: an in-flight attempt completes within AttemptBound ----
       if (mst_busy) begin
         mst_age <= mst_age + 1'b1;
-        assert(mst_age < AttemptBound);
+        `COMM_L_ASSERT(mst_age < AttemptBound);
       end else begin
         mst_age <= '0;
       end
       if (slv_busy) begin
         slv_age <= slv_age + 1'b1;
-        assert(slv_age < AttemptBound);
+        `COMM_L_ASSERT(slv_age < AttemptBound);
       end else begin
         slv_age <= '0;
       end
@@ -191,19 +205,19 @@ module comm_fifo_formal(input logic clk_i, input logic rst_ni);
         mst_prog_age <= '0;
       end else begin
         mst_prog_age <= mst_prog_age + 1'b1;
-        assert(mst_prog_age < ProgressBound);
+        `COMM_L_ASSERT(mst_prog_age < ProgressBound);
       end
       if (slv_progress) begin
         slv_prog_age <= '0;
       end else begin
         slv_prog_age <= slv_prog_age + 1'b1;
-        assert(slv_prog_age < ProgressBound);
+        `COMM_L_ASSERT(slv_prog_age < ProgressBound);
       end
       if (fifo_progress) begin
         fifo_prog_age <= '0;
       end else begin
         fifo_prog_age <= fifo_prog_age + 1'b1;
-        assert(fifo_prog_age < ProgressBound);
+        `COMM_L_ASSERT(fifo_prog_age < ProgressBound);
       end
     end
   end
@@ -283,24 +297,24 @@ module comm_stream_fifo_formal(input logic clk_i, input logic rst_ni);
       fifo_prog_age <= '0;
     end else begin
       // ---- S: the FIFO's own push/pop enables agree with the wire handshakes ----
-      assert(dut_push == in_fire);
-      assert(dut_pop == out_fire);
+      `COMM_S_ASSERT(dut_push == in_fire);
+      `COMM_S_ASSERT(dut_pop == out_fire);
 
       // ---- S: exactly one push per master attempt ----
       if (mst_attempt) begin
-        assert(!mst_open || mst_fires == 2'd1);
+        `COMM_S_ASSERT(!mst_open || mst_fires == 2'd1);
       end
-      assert(!(mst_open || mst_attempt) || mst_fires_now <= 2'd1);
-      assert(mst_open || mst_attempt || !in_fire);
+      `COMM_S_ASSERT(!(mst_open || mst_attempt) || mst_fires_now <= 2'd1);
+      `COMM_S_ASSERT(mst_open || mst_attempt || !in_fire);
       mst_open <= mst_open | mst_attempt;
       if (mst_open || mst_attempt) mst_fires <= mst_fires_now;
 
       // ---- S: exactly one pop per slave attempt ----
       if (slv_attempt) begin
-        assert(!slv_open || slv_fires == 2'd1);
+        `COMM_S_ASSERT(!slv_open || slv_fires == 2'd1);
       end
-      assert(!(slv_open || slv_attempt) || slv_fires_now <= 2'd1);
-      assert(slv_open || slv_attempt || !out_fire);
+      `COMM_S_ASSERT(!(slv_open || slv_attempt) || slv_fires_now <= 2'd1);
+      `COMM_S_ASSERT(slv_open || slv_attempt || !out_fire);
       slv_open <= slv_open | slv_attempt;
       if (slv_open || slv_attempt) slv_fires <= slv_fires_now;
 
@@ -321,7 +335,7 @@ module comm_stream_fifo_formal(input logic clk_i, input logic rst_ni);
       // ---- L: an offered push is accepted within AttemptBound ----
       if (valid_i && !ready_o) begin
         in_wait_age <= in_wait_age + 1'b1;
-        assert(in_wait_age < AttemptBound);
+        `COMM_L_ASSERT(in_wait_age < AttemptBound);
       end else begin
         in_wait_age <= '0;
       end
@@ -329,7 +343,7 @@ module comm_stream_fifo_formal(input logic clk_i, input logic rst_ni);
       // ---- L: an offered item is consumed within DrainBound ----
       if (valid_o && !ready_i) begin
         out_wait_age <= out_wait_age + 1'b1;
-        assert(out_wait_age < DrainBound);
+        `COMM_L_ASSERT(out_wait_age < DrainBound);
       end else begin
         out_wait_age <= '0;
       end
@@ -339,7 +353,7 @@ module comm_stream_fifo_formal(input logic clk_i, input logic rst_ni);
         fifo_prog_age <= '0;
       end else begin
         fifo_prog_age <= fifo_prog_age + 1'b1;
-        assert(fifo_prog_age < ProgressBound);
+        `COMM_L_ASSERT(fifo_prog_age < ProgressBound);
       end
     end
   end
@@ -410,25 +424,25 @@ module comm_spill_formal(input logic clk_i, input logic rst_ni);
       prog_age <= '0;
     end else begin
       // ---- S: the register's own fill enable agrees with the wire handshake ----
-      assert(dut_fill == in_fire);
+      `COMM_S_ASSERT(dut_fill == in_fire);
 
       // ---- S: a committed receive finds the data it was promised ----
-      assert(!slv_pop_commit || valid_o);
-      assert(slv_pop_commit == out_fire);
+      `COMM_S_ASSERT(!slv_pop_commit || valid_o);
+      `COMM_S_ASSERT(slv_pop_commit == out_fire);
 
       // ---- S: exactly one push per master attempt ----
       if (mst_attempt) begin
-        assert(!mst_open || mst_fires == 2'd1);
+        `COMM_S_ASSERT(!mst_open || mst_fires == 2'd1);
       end
-      assert(!(mst_open || mst_attempt) || mst_fires_now <= 2'd1);
-      assert(mst_open || mst_attempt || !in_fire);
+      `COMM_S_ASSERT(!(mst_open || mst_attempt) || mst_fires_now <= 2'd1);
+      `COMM_S_ASSERT(mst_open || mst_attempt || !in_fire);
       mst_open <= mst_open | mst_attempt;
       if (mst_open || mst_attempt) mst_fires <= mst_fires_now;
 
       // ---- L: a blocked push attempt completes within AttemptBound ----
       if (mst_busy) begin
         mst_age <= mst_age + 1'b1;
-        assert(mst_age < AttemptBound);
+        `COMM_L_ASSERT(mst_age < AttemptBound);
       end else begin
         mst_age <= '0;
       end
@@ -436,7 +450,7 @@ module comm_spill_formal(input logic clk_i, input logic rst_ni);
       // ---- L: an offered push is accepted within AttemptBound ----
       if (valid_i && !ready_o) begin
         in_wait_age <= in_wait_age + 1'b1;
-        assert(in_wait_age < AttemptBound);
+        `COMM_L_ASSERT(in_wait_age < AttemptBound);
       end else begin
         in_wait_age <= '0;
       end
@@ -454,7 +468,7 @@ module comm_spill_formal(input logic clk_i, input logic rst_ni);
         prog_age <= '0;
       end else begin
         prog_age <= prog_age + 1'b1;
-        assert(prog_age < ProgressBound);
+        `COMM_L_ASSERT(prog_age < ProgressBound);
       end
     end
   end
@@ -515,27 +529,27 @@ module comm_arbiter_formal(input logic clk_i, input logic rst_ni);
       req_age <= '0;
     end else begin
       // ---- S: every offered request reaches the master, none is invented ----
-      assert(req_o == (|req_i));
+      `COMM_S_ASSERT(req_o == (|req_i));
 
       // ---- S: the master's grant is delivered to exactly one requester, and
       //         only when there is one; a grant never reaches a non-requester ----
-      assert((|gnt_o) == (gnt_i && req_o));
-      assert((gnt_o & (gnt_o - 1'b1)) == '0);
-      assert(!(gnt_i && req_o) || gnt_o[idx_o[1:0]]);
+      `COMM_S_ASSERT((|gnt_o) == (gnt_i && req_o));
+      `COMM_S_ASSERT((gnt_o & (gnt_o - 1'b1)) == '0);
+      `COMM_S_ASSERT(!(gnt_i && req_o) || gnt_o[idx_o[1:0]]);
 
       // ---- S: the master only grants a pending request ----
-      assert(!mst_gnt || req_o);
+      `COMM_S_ASSERT(!mst_gnt || req_o);
 
       for (int i = 0; i < NumSlaves; i++) begin
         // ---- S: the request wire carries exactly the slave's intent ----
-        assert(slv_req[i] == req_i[i]);
+        `COMM_S_ASSERT(slv_req[i] == req_i[i]);
         // ---- S: a grant only reaches a slave that is waiting for it ----
-        assert(!gnt_o[i] || slv_req[i]);
+        `COMM_S_ASSERT(!gnt_o[i] || slv_req[i]);
 
         // ---- L: a requesting slave is granted within GrantBound ----
         if (slv_req[i] && !gnt_o[i]) begin
           grant_age[i] <= grant_age[i] + 1'b1;
-          assert(grant_age[i] < GrantBound);
+          `COMM_L_ASSERT(grant_age[i] < GrantBound);
         end else begin
           grant_age[i] <= '0;
         end
@@ -544,7 +558,7 @@ module comm_arbiter_formal(input logic clk_i, input logic rst_ni);
       // ---- L: a pending request is answered by the master within RequestBound ----
       if (req_o && !gnt_i) begin
         req_age <= req_age + 1'b1;
-        assert(req_age < RequestBound);
+        `COMM_L_ASSERT(req_age < RequestBound);
       end else begin
         req_age <= '0;
       end

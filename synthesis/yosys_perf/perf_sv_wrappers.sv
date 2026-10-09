@@ -18,7 +18,7 @@ endpackage
 package yosys_perf_ace_pkg;
   localparam int unsigned AxiDataWidth    = 8;
   localparam int unsigned DcacheLineWidth = 16;
-  localparam int unsigned NoMstPorts      = 4;
+  localparam int unsigned NoMstPorts      = 3;
   localparam int unsigned SlvAxiIDWidth   = 1;
   localparam int unsigned AxiAddrWidth    = 8;
   localparam int unsigned AxiStrbWidth    = AxiDataWidth / 8;

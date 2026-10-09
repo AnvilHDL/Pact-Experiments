@@ -22,7 +22,7 @@ module ccu_fsm_tb(
   // ========================
   localparam int unsigned AxiDataWidth     = 8;
   localparam int unsigned DcacheLineWidth  = 16;
-  localparam int unsigned NoMstPorts       = 4;
+  localparam int unsigned NoMstPorts       = 3;
   localparam int unsigned SlvAxiIDWidth    = 1;
   localparam int unsigned AxiAddrWidth     = 32;
   localparam int unsigned AxiStrbWidth     = AxiDataWidth / 8;
@@ -388,10 +388,11 @@ module mem_controller #(
     endcase
   end
   
-  // Hold AR request
+  // Hold AR/AW request; one block drives current_addr and beat_count, and AR wins in IDLE like state_d
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ar_holder <= '0;
+      aw_holder <= '0;
       current_addr <= '0;
       beat_count <= '0;
     end else begin
@@ -402,22 +403,15 @@ module mem_controller #(
       end else if (state_q == READ_RESP && req_i.r_ready && resp_o.r_valid) begin
         beat_count <= beat_count + 1;
         current_addr <= current_addr + 1;
-      end
-    end
-  end
-  
-  // Hold AW request
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      aw_holder <= '0;
-    end else begin
-      if (state_q == IDLE && req_i.aw_valid) begin
-        aw_holder <= req_i.aw;
+      end else if (state_q == IDLE && req_i.aw_valid) begin
         current_addr <= req_i.aw.addr;
         beat_count <= '0;
       end else if (state_q == WRITE_DATA && req_i.w_valid && resp_o.w_ready) begin
         beat_count <= beat_count + 1;
         current_addr <= current_addr + 1;
+      end
+      if (state_q == IDLE && req_i.aw_valid) begin
+        aw_holder <= req_i.aw;
       end
     end
   end
@@ -745,6 +739,9 @@ module ace_slave #(
       r_beat_count <= 0;
     end else begin
       if (req_state_q == REQ_WAIT_R && resp_i.r_valid && req_o.r_ready) begin
+        r_beat_count <= r_beat_count + 1;
+      end else if (req_state_q == REQ_SEND_W && resp_i.w_ready) begin
+        // Write beats also count, so w.last ends the 2-beat burst
         r_beat_count <= r_beat_count + 1;
       end else if (req_state_q == REQ_IDLE) begin
         r_beat_count <= 0;

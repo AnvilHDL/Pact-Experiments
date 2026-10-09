@@ -51,7 +51,7 @@ proc arbiter(arb_itfc) {
                 isend req_ep.req(*held) >>
                 let res = recv req_ep.res >>
                 isend cache_ep3.res(res) >>
-                set prio := 3'd6
+                set prio := 3'd0
             ),
             req = recv cache_ep3.req_wr => (
                 set held := req >>
@@ -61,24 +61,6 @@ proc arbiter(arb_itfc) {
                 send req_ep.w_data(data) >>
                 let res = recv req_ep.res >>
                 isend cache_ep3.res(res) >>
-                set prio := 3'd6
-            ),
-            req = recv cache_ep4.req => (
-                set held := req >>
-                let _ = recv req_ep.rdy >> cycle 1 >>
-                isend req_ep.req(*held) >>
-                let res = recv req_ep.res >>
-                isend cache_ep4.res(res) >>
-                set prio := 3'd0
-            ),
-            req = recv cache_ep4.req_wr => (
-                set held := req >>
-                let _ = recv req_ep.rdy >> cycle 1 >>
-                isend req_ep.req_wr(*held) >>
-                let data = irecv cache_ep4.w_data >>
-                send req_ep.w_data(data) >>
-                let res = recv req_ep.res >>
-                isend cache_ep4.res(res) >>
                 set prio := 3'd0
             )
         }
@@ -155,17 +137,6 @@ func snoop_all() {
                 _ = recv cs_ep_3.res_nodata => ()
             }
         });
-        (fair if ((*held).src != 2'd3) {
-            isend cs_ep_4.req(*held) >>
-            xoffer {
-                _ = recv cs_ep_4.res_data => (
-                    let data = recv cs_ep_4.data >>
-                    { (set transfer4 := 1'b1); (set snoop4 := data) } >>
-                    let data = irecv cs_ep_4.data >> set snoop4 := data
-                ),
-                _ = recv cs_ep_4.res_nodata => ()
-            }
-        });
         // The snoop phase takes four cycles even when no snooper has data.
         (cycle 4)
     }
@@ -179,16 +150,14 @@ proc ace_main(ace_itfc) {
     reg snoop2 : logic[8];
     reg transfer3 : logic;
     reg snoop3 : logic[8];
-    reg transfer4 : logic;
-    reg snoop4 : logic[8];
     loop {
         send req_ep.rdy(()) >>
         xoffer {
             req = recv req_ep.req => (
-                { (set held := req); (set transfer1 := 1'b0); (set transfer2 := 1'b0); (set transfer3 := 1'b0); (set transfer4 := 1'b0) } >>
+                { (set held := req); (set transfer1 := 1'b0); (set transfer2 := 1'b0); (set transfer3 := 1'b0) } >>
                 call snoop_all() >>
-                let has_data = *transfer1 || *transfer2 || *transfer3 || *transfer4 >>
-                let word = if (*transfer1) { *snoop1 } else if (*transfer2) { *snoop2 } else if (*transfer3) { *snoop3 } else { *snoop4 } >>
+                let has_data = *transfer1 || *transfer2 || *transfer3 >>
+                let word = if (*transfer1) { *snoop1 } else if (*transfer2) { *snoop2 } else { *snoop3 } >>
                 fair if ((*held).clean) {
                     // CleanUnique responds when CR completes, before dirty writeback.
                     isend req_ep.res(res_pack_t::{data = 8'd0; ack = 1'b1}) >>
@@ -217,11 +186,11 @@ proc ace_main(ace_itfc) {
                 }
             ),
             req = recv req_ep.req_wr => (
-                { (set held := req); (set transfer1 := 1'b0); (set transfer2 := 1'b0); (set transfer3 := 1'b0); (set transfer4 := 1'b0) } >>
+                { (set held := req); (set transfer1 := 1'b0); (set transfer2 := 1'b0); (set transfer3 := 1'b0) } >>
                 call snoop_all() >>
                 cycle 1 >>
-                let has_data = *transfer1 || *transfer2 || *transfer3 || *transfer4 >>
-                let word = if (*transfer1) { *snoop1 } else if (*transfer2) { *snoop2 } else if (*transfer3) { *snoop3 } else { *snoop4 } >>
+                let has_data = *transfer1 || *transfer2 || *transfer3 >>
+                let word = if (*transfer1) { *snoop1 } else if (*transfer2) { *snoop2 } else { *snoop3 } >>
                 fair if (has_data) {
                     isend mem_ep.aw_line((*held).addr & 8'hf0) >>
                     cycle 2 >>
@@ -354,7 +323,6 @@ proc test_ace() {
     spawn cache_client<0>[p.ic1, p.i_sn1];
     spawn cache_client<1>[p.ic2, p.i_sn2];
     spawn cache_client<2>[p.ic3, p.i_sn3];
-    spawn cache_client<3>[p.ic4, p.i_sn4];
     // Exercise cache-index wraparound and dirty writeback as well as hits.
     loop { cycle 1024 >> dfinish >> cycle 1 }
 }

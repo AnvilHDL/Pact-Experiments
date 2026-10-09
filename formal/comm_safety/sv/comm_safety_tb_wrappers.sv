@@ -1,4 +1,18 @@
 `ifdef FORMAL_COMM_SAFETY
+// COMM_ONLY_S / COMM_ONLY_L keep only the S or L assertions; by default both are checked.
+`ifndef COMM_ASSERT_MACROS
+`define COMM_ASSERT_MACROS
+`ifdef COMM_ONLY_L
+`define COMM_S_ASSERT(e)
+`else
+`define COMM_S_ASSERT(e) assert(e)
+`endif
+`ifdef COMM_ONLY_S
+`define COMM_L_ASSERT(e)
+`else
+`define COMM_L_ASSERT(e) assert(e)
+`endif
+`endif
 // =============================================================================
 // Communication-safety harnesses for the testbench-driven case studies
 // (AXI-Lite demux read/write, AXI-Lite mux read/write, ACE CCU, TileLink
@@ -112,45 +126,45 @@ module comm_axi_demux_read_formal(input logic clk_i, input logic rst_ni);
       end
     end else begin
       // ---- S: the slave stub and the wire agree on every exchange ----
-      assert(slv_ar_snd == slv_ar_fire);
-      assert(slv_r_rcv == slv_r_fire);
+      `COMM_S_ASSERT(slv_ar_snd == slv_ar_fire);
+      `COMM_S_ASSERT(slv_r_rcv == slv_r_fire);
 
       // ---- S: the demux takes an AR exactly when it hands it to exactly one
       //         master, and its own bookkeeping records exactly that ----
-      assert(dut_ar_accept == slv_ar_fire);
-      assert((|mst_ar_fire) == slv_ar_fire);
-      assert((mst_ar_fire & (mst_ar_fire - 1'b1)) == '0);
+      `COMM_S_ASSERT(dut_ar_accept == slv_ar_fire);
+      `COMM_S_ASSERT((|mst_ar_fire) == slv_ar_fire);
+      `COMM_S_ASSERT((mst_ar_fire & (mst_ar_fire - 1'b1)) == '0);
 
       // ---- S: the demux delivers an R exactly when it takes one from exactly
       //         one master, and retires the matching record ----
-      assert(dut_r_deliver == slv_r_fire);
-      assert((|mst_r_fire) == slv_r_fire);
-      assert((mst_r_fire & (mst_r_fire - 1'b1)) == '0);
+      `COMM_S_ASSERT(dut_r_deliver == slv_r_fire);
+      `COMM_S_ASSERT((|mst_r_fire) == slv_r_fire);
+      `COMM_S_ASSERT((mst_r_fire & (mst_r_fire - 1'b1)) == '0);
 
       for (int i = 0; i < NoPorts; i++) begin
         // ---- S: master stub i and the wire agree on every exchange (the stub
         //         commits on ar_valid alone, so a presented-but-unaccepted AR
         //         would be a dropped exchange) ----
-        assert(mst_ar_rcv[i] == mst_ar_fire[i]);
-        assert(mst_r_snd[i] == mst_r_fire[i]);
+        `COMM_S_ASSERT(mst_ar_rcv[i] == mst_ar_fire[i]);
+        `COMM_S_ASSERT(mst_r_snd[i] == mst_r_fire[i]);
 
         // ---- L: an in-flight master returns to idle within Bound ----
         if (mst_busy[i]) begin
           mst_age[i] <= mst_age[i] + 1'b1;
-          assert(mst_age[i] < Bound);
+          `COMM_L_ASSERT(mst_age[i] < Bound);
         end else begin
           mst_age[i] <= '0;
         end
         // ---- L: messages offered to / by master i are accepted within Bound ----
         if (mst_ar_wait[i]) begin
           mst_ar_age[i] <= mst_ar_age[i] + 1'b1;
-          assert(mst_ar_age[i] < Bound);
+          `COMM_L_ASSERT(mst_ar_age[i] < Bound);
         end else begin
           mst_ar_age[i] <= '0;
         end
         if (mst_r_wait[i]) begin
           mst_r_age[i] <= mst_r_age[i] + 1'b1;
-          assert(mst_r_age[i] < Bound);
+          `COMM_L_ASSERT(mst_r_age[i] < Bound);
         end else begin
           mst_r_age[i] <= '0;
         end
@@ -159,27 +173,27 @@ module comm_axi_demux_read_formal(input logic clk_i, input logic rst_ni);
       // ---- L: an in-flight slave transaction completes within Bound ----
       if (slv_busy) begin
         slv_age <= slv_age + 1'b1;
-        assert(slv_age < Bound);
+        `COMM_L_ASSERT(slv_age < Bound);
       end else begin
         slv_age <= '0;
       end
       // ---- L: the demux drains its outstanding reads within Bound ----
       if (dut_outstanding) begin
         dut_age <= dut_age + 1'b1;
-        assert(dut_age < Bound);
+        `COMM_L_ASSERT(dut_age < Bound);
       end else begin
         dut_age <= '0;
       end
       // ---- L: messages offered on the slave port are accepted within Bound ----
       if (slv_ar_wait) begin
         slv_ar_age <= slv_ar_age + 1'b1;
-        assert(slv_ar_age < Bound);
+        `COMM_L_ASSERT(slv_ar_age < Bound);
       end else begin
         slv_ar_age <= '0;
       end
       if (slv_r_wait) begin
         slv_r_age <= slv_r_age + 1'b1;
-        assert(slv_r_age < Bound);
+        `COMM_L_ASSERT(slv_r_age < Bound);
       end else begin
         slv_r_age <= '0;
       end
@@ -272,53 +286,53 @@ module comm_axi_demux_write_formal(input logic clk_i, input logic rst_ni);
       end
     end else begin
       // ---- S: the slave stub and the wire agree on every exchange ----
-      assert(slv_aw_snd == slv_aw_fire);
-      assert(slv_w_snd == slv_w_fire);
-      assert(slv_b_rcv == slv_b_fire);
+      `COMM_S_ASSERT(slv_aw_snd == slv_aw_fire);
+      `COMM_S_ASSERT(slv_w_snd == slv_w_fire);
+      `COMM_S_ASSERT(slv_b_rcv == slv_b_fire);
 
       // ---- S: each message taken on the slave port is handed to exactly one
       //         master in the same cycle, and vice versa ----
-      assert((|mst_aw_fire) == slv_aw_fire);
-      assert((mst_aw_fire & (mst_aw_fire - 1'b1)) == '0);
-      assert((|mst_w_fire) == slv_w_fire);
-      assert((mst_w_fire & (mst_w_fire - 1'b1)) == '0);
-      assert((|mst_b_fire) == slv_b_fire);
-      assert((mst_b_fire & (mst_b_fire - 1'b1)) == '0);
+      `COMM_S_ASSERT((|mst_aw_fire) == slv_aw_fire);
+      `COMM_S_ASSERT((mst_aw_fire & (mst_aw_fire - 1'b1)) == '0);
+      `COMM_S_ASSERT((|mst_w_fire) == slv_w_fire);
+      `COMM_S_ASSERT((mst_w_fire & (mst_w_fire - 1'b1)) == '0);
+      `COMM_S_ASSERT((|mst_b_fire) == slv_b_fire);
+      `COMM_S_ASSERT((mst_b_fire & (mst_b_fire - 1'b1)) == '0);
 
       // ---- S: the demux's own bookkeeping moves exactly with the W and B exchanges ----
-      assert(dut_w_deliver == slv_w_fire);
-      assert(dut_b_deliver == slv_b_fire);
+      `COMM_S_ASSERT(dut_w_deliver == slv_w_fire);
+      `COMM_S_ASSERT(dut_b_deliver == slv_b_fire);
 
       for (int i = 0; i < NoPorts; i++) begin
         // ---- S: master stub i and the wire agree on every exchange (the stub
         //         commits on aw_valid alone) ----
-        assert(mst_aw_rcv[i] == mst_aw_fire[i]);
-        assert(mst_w_rcv[i] == mst_w_fire[i]);
-        assert(mst_b_snd[i] == mst_b_fire[i]);
+        `COMM_S_ASSERT(mst_aw_rcv[i] == mst_aw_fire[i]);
+        `COMM_S_ASSERT(mst_w_rcv[i] == mst_w_fire[i]);
+        `COMM_S_ASSERT(mst_b_snd[i] == mst_b_fire[i]);
 
         // ---- L: an in-flight master returns to idle within Bound ----
         if (mst_busy[i]) begin
           mst_age[i] <= mst_age[i] + 1'b1;
-          assert(mst_age[i] < Bound);
+          `COMM_L_ASSERT(mst_age[i] < Bound);
         end else begin
           mst_age[i] <= '0;
         end
         // ---- L: messages offered to / by master i are accepted within Bound ----
         if (mst_aw_wait[i]) begin
           mst_aw_age[i] <= mst_aw_age[i] + 1'b1;
-          assert(mst_aw_age[i] < Bound);
+          `COMM_L_ASSERT(mst_aw_age[i] < Bound);
         end else begin
           mst_aw_age[i] <= '0;
         end
         if (mst_w_wait[i]) begin
           mst_w_age[i] <= mst_w_age[i] + 1'b1;
-          assert(mst_w_age[i] < Bound);
+          `COMM_L_ASSERT(mst_w_age[i] < Bound);
         end else begin
           mst_w_age[i] <= '0;
         end
         if (mst_b_wait[i]) begin
           mst_b_age[i] <= mst_b_age[i] + 1'b1;
-          assert(mst_b_age[i] < Bound);
+          `COMM_L_ASSERT(mst_b_age[i] < Bound);
         end else begin
           mst_b_age[i] <= '0;
         end
@@ -327,33 +341,33 @@ module comm_axi_demux_write_formal(input logic clk_i, input logic rst_ni);
       // ---- L: an in-flight slave transaction completes within Bound ----
       if (slv_busy) begin
         slv_age <= slv_age + 1'b1;
-        assert(slv_age < Bound);
+        `COMM_L_ASSERT(slv_age < Bound);
       end else begin
         slv_age <= '0;
       end
       // ---- L: the demux drains its outstanding writes within Bound ----
       if (dut_outstanding) begin
         dut_age <= dut_age + 1'b1;
-        assert(dut_age < Bound);
+        `COMM_L_ASSERT(dut_age < Bound);
       end else begin
         dut_age <= '0;
       end
       // ---- L: messages offered on the slave port are accepted within Bound ----
       if (slv_aw_wait) begin
         slv_aw_age <= slv_aw_age + 1'b1;
-        assert(slv_aw_age < Bound);
+        `COMM_L_ASSERT(slv_aw_age < Bound);
       end else begin
         slv_aw_age <= '0;
       end
       if (slv_w_wait) begin
         slv_w_age <= slv_w_age + 1'b1;
-        assert(slv_w_age < Bound);
+        `COMM_L_ASSERT(slv_w_age < Bound);
       end else begin
         slv_w_age <= '0;
       end
       if (slv_b_wait) begin
         slv_b_age <= slv_b_age + 1'b1;
-        assert(slv_b_age < Bound);
+        `COMM_L_ASSERT(slv_b_age < Bound);
       end else begin
         slv_b_age <= '0;
       end
@@ -434,43 +448,43 @@ module comm_axi_mux_read_formal(input logic clk_i, input logic rst_ni);
       end
     end else begin
       // ---- S: the master stub and the wire agree on every exchange ----
-      assert(mst_ar_rcv == mst_ar_fire);
-      assert(mst_r_snd == mst_r_fire);
+      `COMM_S_ASSERT(mst_ar_rcv == mst_ar_fire);
+      `COMM_S_ASSERT(mst_r_snd == mst_r_fire);
 
       // ---- S: the mux hands an AR to the master exactly when it takes one
       //         from exactly one slave, and records exactly that ----
-      assert(dut_ar_accept == mst_ar_fire);
-      assert((|slv_ar_fire) == mst_ar_fire);
-      assert((slv_ar_fire & (slv_ar_fire - 1'b1)) == '0);
+      `COMM_S_ASSERT(dut_ar_accept == mst_ar_fire);
+      `COMM_S_ASSERT((|slv_ar_fire) == mst_ar_fire);
+      `COMM_S_ASSERT((slv_ar_fire & (slv_ar_fire - 1'b1)) == '0);
 
       // ---- S: the mux takes an R from the master exactly when it delivers
       //         it to exactly one slave, and retires the matching record ----
-      assert(dut_r_deliver == mst_r_fire);
-      assert((|slv_r_fire) == mst_r_fire);
-      assert((slv_r_fire & (slv_r_fire - 1'b1)) == '0);
+      `COMM_S_ASSERT(dut_r_deliver == mst_r_fire);
+      `COMM_S_ASSERT((|slv_r_fire) == mst_r_fire);
+      `COMM_S_ASSERT((slv_r_fire & (slv_r_fire - 1'b1)) == '0);
 
       for (int i = 0; i < NoPorts; i++) begin
         // ---- S: slave stub i and the wire agree on every exchange ----
-        assert(slv_ar_snd[i] == slv_ar_fire[i]);
-        assert(slv_r_rcv[i] == slv_r_fire[i]);
+        `COMM_S_ASSERT(slv_ar_snd[i] == slv_ar_fire[i]);
+        `COMM_S_ASSERT(slv_r_rcv[i] == slv_r_fire[i]);
 
         // ---- L: an in-flight slave transaction completes within Bound ----
         if (slv_busy[i]) begin
           slv_age[i] <= slv_age[i] + 1'b1;
-          assert(slv_age[i] < Bound);
+          `COMM_L_ASSERT(slv_age[i] < Bound);
         end else begin
           slv_age[i] <= '0;
         end
         // ---- L: messages offered by / to slave i are accepted within Bound ----
         if (slv_ar_wait[i]) begin
           slv_ar_age[i] <= slv_ar_age[i] + 1'b1;
-          assert(slv_ar_age[i] < Bound);
+          `COMM_L_ASSERT(slv_ar_age[i] < Bound);
         end else begin
           slv_ar_age[i] <= '0;
         end
         if (slv_r_wait[i]) begin
           slv_r_age[i] <= slv_r_age[i] + 1'b1;
-          assert(slv_r_age[i] < Bound);
+          `COMM_L_ASSERT(slv_r_age[i] < Bound);
         end else begin
           slv_r_age[i] <= '0;
         end
@@ -479,27 +493,27 @@ module comm_axi_mux_read_formal(input logic clk_i, input logic rst_ni);
       // ---- L: an in-flight master returns to idle within Bound ----
       if (mst_busy) begin
         mst_age <= mst_age + 1'b1;
-        assert(mst_age < Bound);
+        `COMM_L_ASSERT(mst_age < Bound);
       end else begin
         mst_age <= '0;
       end
       // ---- L: the mux drains its outstanding reads within Bound ----
       if (dut_outstanding) begin
         dut_age <= dut_age + 1'b1;
-        assert(dut_age < Bound);
+        `COMM_L_ASSERT(dut_age < Bound);
       end else begin
         dut_age <= '0;
       end
       // ---- L: messages offered on the master port are accepted within Bound ----
       if (mst_ar_wait) begin
         mst_ar_age <= mst_ar_age + 1'b1;
-        assert(mst_ar_age < Bound);
+        `COMM_L_ASSERT(mst_ar_age < Bound);
       end else begin
         mst_ar_age <= '0;
       end
       if (mst_r_wait) begin
         mst_r_age <= mst_r_age + 1'b1;
-        assert(mst_r_age < Bound);
+        `COMM_L_ASSERT(mst_r_age < Bound);
       end else begin
         mst_r_age <= '0;
       end
@@ -592,52 +606,52 @@ module comm_axi_mux_write_formal(input logic clk_i, input logic rst_ni);
       end
     end else begin
       // ---- S: the master stub and the wire agree on every exchange ----
-      assert(mst_aw_rcv == mst_aw_fire);
-      assert(mst_w_rcv == mst_w_fire);
-      assert(mst_b_snd == mst_b_fire);
+      `COMM_S_ASSERT(mst_aw_rcv == mst_aw_fire);
+      `COMM_S_ASSERT(mst_w_rcv == mst_w_fire);
+      `COMM_S_ASSERT(mst_b_snd == mst_b_fire);
 
       // ---- S: each message handed to the master is taken from exactly one
       //         slave in the same cycle, and vice versa ----
-      assert((|slv_aw_fire) == mst_aw_fire);
-      assert((slv_aw_fire & (slv_aw_fire - 1'b1)) == '0);
-      assert((|slv_w_fire) == mst_w_fire);
-      assert((slv_w_fire & (slv_w_fire - 1'b1)) == '0);
-      assert((|slv_b_fire) == mst_b_fire);
-      assert((slv_b_fire & (slv_b_fire - 1'b1)) == '0);
+      `COMM_S_ASSERT((|slv_aw_fire) == mst_aw_fire);
+      `COMM_S_ASSERT((slv_aw_fire & (slv_aw_fire - 1'b1)) == '0);
+      `COMM_S_ASSERT((|slv_w_fire) == mst_w_fire);
+      `COMM_S_ASSERT((slv_w_fire & (slv_w_fire - 1'b1)) == '0);
+      `COMM_S_ASSERT((|slv_b_fire) == mst_b_fire);
+      `COMM_S_ASSERT((slv_b_fire & (slv_b_fire - 1'b1)) == '0);
 
       // ---- S: the mux's own bookkeeping moves exactly with the W and B exchanges ----
-      assert(dut_w_deliver == mst_w_fire);
-      assert(dut_b_deliver == mst_b_fire);
+      `COMM_S_ASSERT(dut_w_deliver == mst_w_fire);
+      `COMM_S_ASSERT(dut_b_deliver == mst_b_fire);
 
       for (int i = 0; i < NoPorts; i++) begin
         // ---- S: slave stub i and the wire agree on every exchange ----
-        assert(slv_aw_snd[i] == slv_aw_fire[i]);
-        assert(slv_w_snd[i] == slv_w_fire[i]);
-        assert(slv_b_rcv[i] == slv_b_fire[i]);
+        `COMM_S_ASSERT(slv_aw_snd[i] == slv_aw_fire[i]);
+        `COMM_S_ASSERT(slv_w_snd[i] == slv_w_fire[i]);
+        `COMM_S_ASSERT(slv_b_rcv[i] == slv_b_fire[i]);
 
         // ---- L: an in-flight slave transaction completes within Bound ----
         if (slv_busy[i]) begin
           slv_age[i] <= slv_age[i] + 1'b1;
-          assert(slv_age[i] < Bound);
+          `COMM_L_ASSERT(slv_age[i] < Bound);
         end else begin
           slv_age[i] <= '0;
         end
         // ---- L: messages offered by / to slave i are accepted within Bound ----
         if (slv_aw_wait[i]) begin
           slv_aw_age[i] <= slv_aw_age[i] + 1'b1;
-          assert(slv_aw_age[i] < Bound);
+          `COMM_L_ASSERT(slv_aw_age[i] < Bound);
         end else begin
           slv_aw_age[i] <= '0;
         end
         if (slv_w_wait[i]) begin
           slv_w_age[i] <= slv_w_age[i] + 1'b1;
-          assert(slv_w_age[i] < Bound);
+          `COMM_L_ASSERT(slv_w_age[i] < Bound);
         end else begin
           slv_w_age[i] <= '0;
         end
         if (slv_b_wait[i]) begin
           slv_b_age[i] <= slv_b_age[i] + 1'b1;
-          assert(slv_b_age[i] < Bound);
+          `COMM_L_ASSERT(slv_b_age[i] < Bound);
         end else begin
           slv_b_age[i] <= '0;
         end
@@ -646,33 +660,33 @@ module comm_axi_mux_write_formal(input logic clk_i, input logic rst_ni);
       // ---- L: an in-flight master returns to idle within Bound ----
       if (mst_busy) begin
         mst_age <= mst_age + 1'b1;
-        assert(mst_age < Bound);
+        `COMM_L_ASSERT(mst_age < Bound);
       end else begin
         mst_age <= '0;
       end
       // ---- L: the mux drains its outstanding writes within Bound ----
       if (dut_outstanding) begin
         dut_age <= dut_age + 1'b1;
-        assert(dut_age < Bound);
+        `COMM_L_ASSERT(dut_age < Bound);
       end else begin
         dut_age <= '0;
       end
       // ---- L: messages offered on the master port are accepted within Bound ----
       if (mst_aw_wait) begin
         mst_aw_age <= mst_aw_age + 1'b1;
-        assert(mst_aw_age < Bound);
+        `COMM_L_ASSERT(mst_aw_age < Bound);
       end else begin
         mst_aw_age <= '0;
       end
       if (mst_w_wait) begin
         mst_w_age <= mst_w_age + 1'b1;
-        assert(mst_w_age < Bound);
+        `COMM_L_ASSERT(mst_w_age < Bound);
       end else begin
         mst_w_age <= '0;
       end
       if (mst_b_wait) begin
         mst_b_age <= mst_b_age + 1'b1;
-        assert(mst_b_age < Bound);
+        `COMM_L_ASSERT(mst_b_age < Bound);
       end else begin
         mst_b_age <= '0;
       end
@@ -686,7 +700,7 @@ endmodule
 //     + testbench arbiter + memory controller)
 // -----------------------------------------------------------------------------
 module comm_ace_formal(input logic clk_i, input logic rst_ni);
-  localparam int unsigned NoPorts = 4;
+  localparam int unsigned NoPorts = 3;
 
   // ccu_fsm state encoding (ace/src/ccu_fsm.sv: anonymous enum, values in
   // declaration order). yosys-slang cannot follow hierarchical references to
@@ -858,26 +872,26 @@ module comm_ace_formal(input logic clk_i, input logic rst_ni);
       m_b_age <= '0;
     end else begin
       // ---- S: the arbiter relays exactly the selected client's handshakes ----
-      assert(a_ar_fire == (|c_ar_fire));
-      assert(a_r_fire == (|c_r_fire));
-      assert(a_aw_fire == (|c_aw_fire));
-      assert(a_w_fire == (|c_w_fire));
-      assert(a_b_fire == (|c_b_fire));
+      `COMM_S_ASSERT(a_ar_fire == (|c_ar_fire));
+      `COMM_S_ASSERT(a_r_fire == (|c_r_fire));
+      `COMM_S_ASSERT(a_aw_fire == (|c_aw_fire));
+      `COMM_S_ASSERT(a_w_fire == (|c_w_fire));
+      `COMM_S_ASSERT(a_b_fire == (|c_b_fire));
 
       // ---- S: the CCU accepts a request exactly in its decode state, i.e. the
       //         request it latched on entry is the one that is handshaken ----
-      assert(a_ar_fire == (ccu_state == CCU_DECODE_R));
-      assert(a_aw_fire == (ccu_state == CCU_DECODE_W));
+      `COMM_S_ASSERT(a_ar_fire == (ccu_state == CCU_DECODE_R));
+      `COMM_S_ASSERT(a_aw_fire == (ccu_state == CCU_DECODE_W));
 
       // ---- S: the CCU passes memory beats straight through in its relay
       //         states and answers the initiator only in its response states ----
-      assert(!m_r_fire || ccu_state == CCU_READ_MEM);
-      assert(ccu_state != CCU_READ_MEM || (m_r_fire == a_r_fire));
-      assert(!a_w_fire || ccu_state == CCU_WRITE_MEM);
-      assert(!a_b_fire || ccu_state == CCU_WRITE_MEM);
-      assert(ccu_state != CCU_WRITE_MEM || (m_w_fire == a_w_fire));
-      assert(ccu_state != CCU_WRITE_MEM || (m_b_fire == a_b_fire));
-      assert(!a_r_fire || ccu_state == CCU_WAIT_INVALID_R ||
+      `COMM_S_ASSERT(!m_r_fire || ccu_state == CCU_READ_MEM);
+      `COMM_S_ASSERT(ccu_state != CCU_READ_MEM || (m_r_fire == a_r_fire));
+      `COMM_S_ASSERT(!a_w_fire || ccu_state == CCU_WRITE_MEM);
+      `COMM_S_ASSERT(!a_b_fire || ccu_state == CCU_WRITE_MEM);
+      `COMM_S_ASSERT(ccu_state != CCU_WRITE_MEM || (m_w_fire == a_w_fire));
+      `COMM_S_ASSERT(ccu_state != CCU_WRITE_MEM || (m_b_fire == a_b_fire));
+      `COMM_S_ASSERT(!a_r_fire || ccu_state == CCU_WAIT_INVALID_R ||
              ccu_state == CCU_READ_SNP_DATA || ccu_state == CCU_READ_MEM);
 
       // ---- S: every accepted request is answered exactly once before the
@@ -887,48 +901,48 @@ module comm_ace_formal(input logic clk_i, input logic rst_ni);
         resp_cnt <= '0;
       end else begin
         resp_cnt <= resp_cnt + {1'b0, resp_inc};
-        assert(resp_cnt + {1'b0, resp_inc} <= 2'd1);
+        `COMM_S_ASSERT(resp_cnt + {1'b0, resp_inc} <= 2'd1);
       end
       if (!ccu_busy && ccu_prev_busy) begin
-        assert(resp_cnt == 2'd1);
+        `COMM_S_ASSERT(resp_cnt == 2'd1);
       end
       ccu_prev_busy <= ccu_busy;
 
       // ---- S: the memory stub and the wire agree on every exchange (an AW
       //         presented together with an AR would be handshaken but dropped) ----
-      assert(mem_ar_rcv == m_ar_fire);
-      assert(mem_aw_rcv == m_aw_fire);
-      assert(mem_r_snd == m_r_fire);
-      assert(mem_w_rcv == m_w_fire);
-      assert(mem_b_snd == m_b_fire);
+      `COMM_S_ASSERT(mem_ar_rcv == m_ar_fire);
+      `COMM_S_ASSERT(mem_aw_rcv == m_aw_fire);
+      `COMM_S_ASSERT(mem_r_snd == m_r_fire);
+      `COMM_S_ASSERT(mem_w_rcv == m_w_fire);
+      `COMM_S_ASSERT(mem_b_snd == m_b_fire);
 
       for (int i = 0; i < NoPorts; i++) begin
         // ---- S: client i's request FSM and the wire agree on every exchange ----
-        assert(c_ar_snd[i] == c_ar_fire[i]);
-        assert(c_r_rcv[i] == c_r_fire[i]);
-        assert(c_aw_snd[i] == c_aw_fire[i]);
-        assert(c_w_snd[i] == c_w_fire[i]);
-        assert(c_b_rcv[i] == c_b_fire[i]);
+        `COMM_S_ASSERT(c_ar_snd[i] == c_ar_fire[i]);
+        `COMM_S_ASSERT(c_r_rcv[i] == c_r_fire[i]);
+        `COMM_S_ASSERT(c_aw_snd[i] == c_aw_fire[i]);
+        `COMM_S_ASSERT(c_w_snd[i] == c_w_fire[i]);
+        `COMM_S_ASSERT(c_b_rcv[i] == c_b_fire[i]);
         // ---- S: client i's snoop FSM and the wire agree on every exchange (the
         //         FSM samples ac_valid one cycle before it raises ac_ready) ----
-        assert(c_ac_rcv[i] == s_ac_fire[i]);
-        assert(c_cr_snd[i] == s_cr_fire[i]);
-        assert(c_cd_snd[i] == s_cd_fire[i]);
+        `COMM_S_ASSERT(c_ac_rcv[i] == s_ac_fire[i]);
+        `COMM_S_ASSERT(c_cr_snd[i] == s_cr_fire[i]);
+        `COMM_S_ASSERT(c_cd_snd[i] == s_cd_fire[i]);
         // ---- S: only the client the arbiter selected exchanges with the CCU ----
-        assert(!(c_ar_fire[i] || c_r_fire[i]) || (arb_read && arb_sel == i[1:0]));
-        assert(!(c_aw_fire[i] || c_w_fire[i] || c_b_fire[i]) || (arb_write && arb_sel == i[1:0]));
+        `COMM_S_ASSERT(!(c_ar_fire[i] || c_r_fire[i]) || (arb_read && arb_sel == i[1:0]));
+        `COMM_S_ASSERT(!(c_aw_fire[i] || c_w_fire[i] || c_b_fire[i]) || (arb_write && arb_sel == i[1:0]));
 
         // ---- L: an in-flight client request completes within TxnBound ----
         if (c_req_busy[i]) begin
           c_req_age[i] <= c_req_age[i] + 1'b1;
-          assert(c_req_age[i] < TxnBound);
+          `COMM_L_ASSERT(c_req_age[i] < TxnBound);
         end else begin
           c_req_age[i] <= '0;
         end
         // ---- L: an in-flight snoop exchange completes within SnoopBound ----
         if (c_snp_busy[i]) begin
           c_snp_age[i] <= c_snp_age[i] + 1'b1;
-          assert(c_snp_age[i] < SnoopBound);
+          `COMM_L_ASSERT(c_snp_age[i] < SnoopBound);
         end else begin
           c_snp_age[i] <= '0;
         end
@@ -937,50 +951,50 @@ module comm_ace_formal(input logic clk_i, input logic rst_ni);
         //         offered to it is taken within ChanBound ----
         if (c_ar_wait[i]) begin
           c_ar_age[i] <= c_ar_age[i] + 1'b1;
-          assert(c_ar_age[i] < TxnBound);
+          `COMM_L_ASSERT(c_ar_age[i] < TxnBound);
         end else begin
           c_ar_age[i] <= '0;
         end
         if (c_aw_wait[i]) begin
           c_aw_age[i] <= c_aw_age[i] + 1'b1;
-          assert(c_aw_age[i] < TxnBound);
+          `COMM_L_ASSERT(c_aw_age[i] < TxnBound);
         end else begin
           c_aw_age[i] <= '0;
         end
         if (c_w_wait[i]) begin
           c_w_age[i] <= c_w_age[i] + 1'b1;
-          assert(c_w_age[i] < TxnBound);
+          `COMM_L_ASSERT(c_w_age[i] < TxnBound);
         end else begin
           c_w_age[i] <= '0;
         end
         if (c_r_wait[i]) begin
           c_r_age[i] <= c_r_age[i] + 1'b1;
-          assert(c_r_age[i] < ChanBound);
+          `COMM_L_ASSERT(c_r_age[i] < ChanBound);
         end else begin
           c_r_age[i] <= '0;
         end
         if (c_b_wait[i]) begin
           c_b_age[i] <= c_b_age[i] + 1'b1;
-          assert(c_b_age[i] < ChanBound);
+          `COMM_L_ASSERT(c_b_age[i] < ChanBound);
         end else begin
           c_b_age[i] <= '0;
         end
         // ---- L: snoop messages offered on port i are taken within SnoopBound ----
         if (s_ac_wait[i]) begin
           s_ac_age[i] <= s_ac_age[i] + 1'b1;
-          assert(s_ac_age[i] < SnoopBound);
+          `COMM_L_ASSERT(s_ac_age[i] < SnoopBound);
         end else begin
           s_ac_age[i] <= '0;
         end
         if (s_cr_wait[i]) begin
           s_cr_age[i] <= s_cr_age[i] + 1'b1;
-          assert(s_cr_age[i] < SnoopBound);
+          `COMM_L_ASSERT(s_cr_age[i] < SnoopBound);
         end else begin
           s_cr_age[i] <= '0;
         end
         if (s_cd_wait[i]) begin
           s_cd_age[i] <= s_cd_age[i] + 1'b1;
-          assert(s_cd_age[i] < SnoopBound);
+          `COMM_L_ASSERT(s_cd_age[i] < SnoopBound);
         end else begin
           s_cd_age[i] <= '0;
         end
@@ -989,19 +1003,19 @@ module comm_ace_formal(input logic clk_i, input logic rst_ni);
       // ---- L: arbiter, CCU and memory return to idle within their bounds ----
       if (arb_busy) begin
         arb_age <= arb_age + 1'b1;
-        assert(arb_age < TxnBound);
+        `COMM_L_ASSERT(arb_age < TxnBound);
       end else begin
         arb_age <= '0;
       end
       if (ccu_busy) begin
         ccu_age <= ccu_age + 1'b1;
-        assert(ccu_age < TxnBound);
+        `COMM_L_ASSERT(ccu_age < TxnBound);
       end else begin
         ccu_age <= '0;
       end
       if (mem_busy) begin
         mem_age <= mem_age + 1'b1;
-        assert(mem_age < MemBound);
+        `COMM_L_ASSERT(mem_age < MemBound);
       end else begin
         mem_age <= '0;
       end
@@ -1009,62 +1023,62 @@ module comm_ace_formal(input logic clk_i, input logic rst_ni);
       //         bounds (W waits for the CCU to finish snooping) ----
       if (a_ar_wait) begin
         a_ar_age <= a_ar_age + 1'b1;
-        assert(a_ar_age < ChanBound);
+        `COMM_L_ASSERT(a_ar_age < ChanBound);
       end else begin
         a_ar_age <= '0;
       end
       if (a_aw_wait) begin
         a_aw_age <= a_aw_age + 1'b1;
-        assert(a_aw_age < ChanBound);
+        `COMM_L_ASSERT(a_aw_age < ChanBound);
       end else begin
         a_aw_age <= '0;
       end
       if (a_w_wait) begin
         a_w_age <= a_w_age + 1'b1;
-        assert(a_w_age < TxnBound);
+        `COMM_L_ASSERT(a_w_age < TxnBound);
       end else begin
         a_w_age <= '0;
       end
       if (a_r_wait) begin
         a_r_age <= a_r_age + 1'b1;
-        assert(a_r_age < ChanBound);
+        `COMM_L_ASSERT(a_r_age < ChanBound);
       end else begin
         a_r_age <= '0;
       end
       if (a_b_wait) begin
         a_b_age <= a_b_age + 1'b1;
-        assert(a_b_age < ChanBound);
+        `COMM_L_ASSERT(a_b_age < ChanBound);
       end else begin
         a_b_age <= '0;
       end
       // ---- L: messages offered between CCU and memory are taken within ChanBound ----
       if (m_ar_wait) begin
         m_ar_age <= m_ar_age + 1'b1;
-        assert(m_ar_age < ChanBound);
+        `COMM_L_ASSERT(m_ar_age < ChanBound);
       end else begin
         m_ar_age <= '0;
       end
       if (m_aw_wait) begin
         m_aw_age <= m_aw_age + 1'b1;
-        assert(m_aw_age < ChanBound);
+        `COMM_L_ASSERT(m_aw_age < ChanBound);
       end else begin
         m_aw_age <= '0;
       end
       if (m_w_wait) begin
         m_w_age <= m_w_age + 1'b1;
-        assert(m_w_age < ChanBound);
+        `COMM_L_ASSERT(m_w_age < ChanBound);
       end else begin
         m_w_age <= '0;
       end
       if (m_r_wait) begin
         m_r_age <= m_r_age + 1'b1;
-        assert(m_r_age < ChanBound);
+        `COMM_L_ASSERT(m_r_age < ChanBound);
       end else begin
         m_r_age <= '0;
       end
       if (m_b_wait) begin
         m_b_age <= m_b_age + 1'b1;
-        assert(m_b_age < ChanBound);
+        `COMM_L_ASSERT(m_b_age < ChanBound);
       end else begin
         m_b_age <= '0;
       end
@@ -1167,40 +1181,40 @@ module comm_tilelink_formal(input logic clk_i, input logic rst_ni);
       s1_d_age <= '0;
     end else begin
       // ---- S: the client stubs and the wire agree on every A exchange ----
-      assert(m0_a_snd == m0_a_fire);
-      assert(m1_a_snd == m1_a_fire);
+      `COMM_S_ASSERT(m0_a_snd == m0_a_fire);
+      `COMM_S_ASSERT(m1_a_snd == m1_a_fire);
 
       // ---- S: a manager takes a request only when it can process it (the
       //         stub raises a_ready only when IDLE; an A handshake while it is
       //         still responding would be a dropped exchange) ----
-      assert(s0_a_rcv == s0_a_fire);
-      assert(s1_a_rcv == s1_a_fire);
+      `COMM_S_ASSERT(s0_a_rcv == s0_a_fire);
+      `COMM_S_ASSERT(s1_a_rcv == s1_a_fire);
 
       // ---- S: the manager stubs and the wire agree on every D exchange ----
-      assert(s0_d_snd == s0_d_fire);
-      assert(s1_d_snd == s1_d_fire);
+      `COMM_S_ASSERT(s0_d_snd == s0_d_fire);
+      `COMM_S_ASSERT(s1_d_snd == s1_d_fire);
 
       // ---- S: the crossbar hands over every message it takes, in the same
       //         cycle, on exactly one port of the other side ----
-      assert(a_in == a_out);
-      assert(d_in == d_out);
+      `COMM_S_ASSERT(a_in == a_out);
+      `COMM_S_ASSERT(d_in == d_out);
 
       // ---- S: no response reaches a client that is not owed one ----
-      assert(!m0_d_fire || m0_out != '0);
-      assert(!m1_d_fire || m1_out != '0);
+      `COMM_S_ASSERT(!m0_d_fire || m0_out != '0);
+      `COMM_S_ASSERT(!m1_d_fire || m1_out != '0);
       m0_out <= m0_out + {{(OW-1){1'b0}}, m0_a_fire} - {{(OW-1){1'b0}}, m0_d_fire};
       m1_out <= m1_out + {{(OW-1){1'b0}}, m1_a_fire} - {{(OW-1){1'b0}}, m1_d_fire};
 
       // ---- L: every request a client sent is answered within Bound ----
       if (m0_out != '0) begin
         m0_out_age <= m0_out_age + 1'b1;
-        assert(m0_out_age < Bound);
+        `COMM_L_ASSERT(m0_out_age < Bound);
       end else begin
         m0_out_age <= '0;
       end
       if (m1_out != '0) begin
         m1_out_age <= m1_out_age + 1'b1;
-        assert(m1_out_age < Bound);
+        `COMM_L_ASSERT(m1_out_age < Bound);
       end else begin
         m1_out_age <= '0;
       end
@@ -1208,25 +1222,25 @@ module comm_tilelink_formal(input logic clk_i, input logic rst_ni);
       // ---- L: in-flight clients and managers return to idle within Bound ----
       if (m0_busy) begin
         m0_age <= m0_age + 1'b1;
-        assert(m0_age < Bound);
+        `COMM_L_ASSERT(m0_age < Bound);
       end else begin
         m0_age <= '0;
       end
       if (m1_busy) begin
         m1_age <= m1_age + 1'b1;
-        assert(m1_age < Bound);
+        `COMM_L_ASSERT(m1_age < Bound);
       end else begin
         m1_age <= '0;
       end
       if (s0_busy) begin
         s0_age <= s0_age + 1'b1;
-        assert(s0_age < Bound);
+        `COMM_L_ASSERT(s0_age < Bound);
       end else begin
         s0_age <= '0;
       end
       if (s1_busy) begin
         s1_age <= s1_age + 1'b1;
-        assert(s1_age < Bound);
+        `COMM_L_ASSERT(s1_age < Bound);
       end else begin
         s1_age <= '0;
       end
@@ -1234,49 +1248,49 @@ module comm_tilelink_formal(input logic clk_i, input logic rst_ni);
       // ---- L: a message offered on any crossbar port is taken within Bound ----
       if (m0_a_wait) begin
         m0_a_age <= m0_a_age + 1'b1;
-        assert(m0_a_age < Bound);
+        `COMM_L_ASSERT(m0_a_age < Bound);
       end else begin
         m0_a_age <= '0;
       end
       if (m1_a_wait) begin
         m1_a_age <= m1_a_age + 1'b1;
-        assert(m1_a_age < Bound);
+        `COMM_L_ASSERT(m1_a_age < Bound);
       end else begin
         m1_a_age <= '0;
       end
       if (m0_d_wait) begin
         m0_d_age <= m0_d_age + 1'b1;
-        assert(m0_d_age < Bound);
+        `COMM_L_ASSERT(m0_d_age < Bound);
       end else begin
         m0_d_age <= '0;
       end
       if (m1_d_wait) begin
         m1_d_age <= m1_d_age + 1'b1;
-        assert(m1_d_age < Bound);
+        `COMM_L_ASSERT(m1_d_age < Bound);
       end else begin
         m1_d_age <= '0;
       end
       if (s0_a_wait) begin
         s0_a_age <= s0_a_age + 1'b1;
-        assert(s0_a_age < Bound);
+        `COMM_L_ASSERT(s0_a_age < Bound);
       end else begin
         s0_a_age <= '0;
       end
       if (s1_a_wait) begin
         s1_a_age <= s1_a_age + 1'b1;
-        assert(s1_a_age < Bound);
+        `COMM_L_ASSERT(s1_a_age < Bound);
       end else begin
         s1_a_age <= '0;
       end
       if (s0_d_wait) begin
         s0_d_age <= s0_d_age + 1'b1;
-        assert(s0_d_age < Bound);
+        `COMM_L_ASSERT(s0_d_age < Bound);
       end else begin
         s0_d_age <= '0;
       end
       if (s1_d_wait) begin
         s1_d_age <= s1_d_age + 1'b1;
-        assert(s1_d_age < Bound);
+        `COMM_L_ASSERT(s1_d_age < Bound);
       end else begin
         s1_d_age <= '0;
       end
