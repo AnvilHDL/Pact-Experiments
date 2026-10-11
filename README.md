@@ -1,5 +1,7 @@
 # Pact experiments
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23301148.svg)](https://doi.org/10.5281/zenodo.23301148)
+
 Benchmarks and scripts for the evaluation of Pact. Ten hardware designs are written both in Pact and as SystemVerilog (SV) references: FIFO, stream FIFO, spill register, arbiter, ACE cache-coherence controller, TileLink crossbar, and four AXI-Lite routers.
 
 | Experiment | Command | Output |
@@ -12,7 +14,9 @@ Benchmarks and scripts for the evaluation of Pact. Ten hardware designs are writ
 
 Every `comparison.md` lists each value as `expected / measured`. Expected values are stored in `expected/*.json`.
 
-> **Note** The results below are revised from the submitted version of the paper, and improve on it: generated circuits are smaller, and compatibility checks are faster. The compiler optimizations behind them are described in [OPTIMIZATIONS.md](OPTIMIZATIONS.md).
+These benchmarks are part of the POPL 2027 artifact, archived on Zenodo: [10.5281/zenodo.23301148](https://doi.org/10.5281/zenodo.23301148).
+
+> **Note** The results below are revised from the submitted version of the paper, and improve on it: generated circuits are smaller, and compatibility checks are faster. The compiler optimizations behind them are described in [result-updates.md](result-updates.md).
 
 ## Main results
 
@@ -182,5 +186,5 @@ Each script simulates the Pact design and the SV testbench with Verilator, using
 | `axi`, `common_cells`, `ace`, `tilelink` | Upstream SV sources (git submodules) |
 | `opencompat/` | Real-world AXI communication-error cases ([README](opencompat/README.md)) |
 | `expected/` | Expected values for `comparison.md` |
-| `OPTIMIZATIONS.md` | Compiler optimizations used for these results |
+| `result-updates.md` | Updates since the paper and the compiler optimizations behind them |
 | `scripts/` | Experiment scripts |
