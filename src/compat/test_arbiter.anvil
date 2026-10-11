@@ -1,7 +1,6 @@
 import "type_arbiter.anvil"
 proc arbiter<Tp : type>(rr_arbiter_itfc){
     reg prio : logic[2];
-    // reg cyc : logic[8]; // debug/bookkeeping only
     loop{
         let prio = *prio >>
         fair xoffer tree prio {
@@ -47,10 +46,7 @@ proc arbiter_slave<Tp : type, id : int, data : int>(slave_interface){
 }
 
 proc arbiter_master<Tp : type>(master_interface){
-    // Schedule re-derived from the SystemVerilog testbench trace after the
-    // stub periods were matched to fifo_test.sv (master %3, slave %7, plus the
-    // power-of-two burst term). Each `cycle N` is the gap to the next event, so
-    // the running sum is that event's absolute cycle in the SV trace.
+    // Each `cycle N` is the gap to the next event in the SV testbench trace.
     // Each request is taken only if it is there in that cycle, as the type says.
     loop{
         cycle 2 >>

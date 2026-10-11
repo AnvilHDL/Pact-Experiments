@@ -30,10 +30,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PACT_SRC_DIR = ROOT / "src" / "compat"
 
-# Simulation-only constructs that read_slang can't synthesize; safe to strip
-# since they don't affect any register/state - unlike collect_yosys_perf.py's
-# core-component scope, this script's --top is the outer driver process
-# itself, which does emit these (mainly $finish on a terminal test event).
+# Simulation-only statements that read_slang cannot synthesize; they hold no state.
 SIM_ONLY_RE = re.compile(r"^\s*\$(display|write|strobe|monitor|finish)\b.*?;\s*$", re.MULTILINE)
 DEFAULT_RESULTS_BASE = ROOT / "formal" / "comm_safety" / "results" / "state_space"
 
@@ -98,15 +95,7 @@ def read_sby_sections(sby_path):
 
 
 STATE_SPACE_RECIPE = [
-    # These full-test tops have no data outputs (only clk_i/rst_ni) - a full
-    # `synth -flatten` run's reachability-based DCE deletes the entire
-    # unreachable design (confirmed empirically: 0 cells without this).
-    # `hierarchy`+`flatten` first, THEN `keep` on every wire, THEN just
-    # `proc`+`opt_clean` (not the rest of synth's optimization/mapping
-    # pipeline) forces every declared register/memory to survive as itself -
-    # `proc` still turns always blocks into real $dff/$mem cells so seq_cells
-    # is meaningful, it just skips the passes that would prune anything
-    # `keep` didn't protect.
+    # The tops have no data outputs, so full synthesis would delete everything; keep every wire and only run proc.
     "hierarchy -top {top}",
     "flatten",
     "setattr -set keep 1 w:*",

@@ -1,10 +1,10 @@
 SV_JOBS ?= 4
 JOBS ?= 4
 
-.PHONY: all compat modelcheck synthesis equiv check
+.PHONY: all compat modelcheck synthesis equiv check opencompat
 
 # Every experiment, shortest first.
-all: synthesis equiv compat modelcheck
+all: opencompat synthesis equiv compat modelcheck
 
 # Pact compatibility-checking time (mode 3, 1 and 8 threads).
 compat:
@@ -28,6 +28,10 @@ equiv:
 	bash scripts/run_axi_mux_write_cycle_equiv.sh
 	bash scripts/run_ace_cycle_equiv.sh
 	bash scripts/run_tilelink_cycle_equiv.sh
+
+# Compatibility verdicts for the AXI communication-error cases (opencompat/).
+opencompat:
+	python3 scripts/run_opencompat.py
 
 # Session type check of every benchmark process against its interfaces.
 check:

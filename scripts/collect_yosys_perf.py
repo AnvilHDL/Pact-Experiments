@@ -710,9 +710,7 @@ def rows_for_pact_case(case: dict, defaults: dict, config: RunConfig) -> list[di
     for module, is_core in selected_modules:
         module_text = extract_module_text(generated_sv, module)
         if module_text is None:
-            # Fall back to the whole file if isolation didn't find a clean
-            # module...endmodule span (e.g. an unexpected shape) - safer to
-            # keep prior behaviour than to silently synthesize nothing.
+            # No clean module span found: synthesize the whole file.
             files = [generated_sv]
         else:
             isolated_dir.mkdir(parents=True, exist_ok=True)
@@ -816,9 +814,7 @@ def main() -> int:
             case_rows.extend(rows_for_sv_case(case, defaults, config))
         per_case_rows[case["name"]] = case_rows
 
-    # sv_subtract needs OTHER cases' SV aggregates, possibly from a different
-    # case in this same run - so subtraction + comparison happen in a second
-    # pass, once every case's own aggregate has been computed.
+    # sv_subtract needs other cases' aggregates, so it runs in a second pass.
     sv_aggregates_by_case = {
         name: row
         for name, rows in per_case_rows.items()

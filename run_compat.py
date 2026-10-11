@@ -30,14 +30,13 @@ TEST_CASES_DIR = os.path.join(BASE_DIR, "src/compat")
 COMPILER_DIR = os.path.abspath(os.environ.get("PACT_DIR", os.path.join(BASE_DIR, "..", "Pact")))
 COMPILER_PATH = os.path.join(COMPILER_DIR, "_build", "default", "bin", "main.exe")
 
-# Every invocation of this script gets its own timestamped directory so
-# concurrent/repeated runs never clobber each other's logs.
+# One timestamped log directory per invocation.
 RUN_TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
 RUN_LOG_DIR = os.path.join(LOGS_ROOT, RUN_TIMESTAMP)
 HEARTBEAT_SECONDS = 30
 
 
-# copy the result in error directory by appending error as prefix to the file name
+# Copy a failing log to error_logs/error_<file>.log.
 def error_handler(out_log, file_name):
     os.makedirs(ERROR_DIR, exist_ok=True)
     file_base_name = os.path.basename(file_name)
@@ -45,7 +44,6 @@ def error_handler(out_log, file_name):
     shutil.copyfile(out_log, error_file)
 
 
-# Find String with "Game Analysis Completed : %b\n  (%b) is the answer"  ;
 def result_handler(out_log, file_name, returncode=0):
     with open(out_log, 'r') as f:
         verdicts = re.findall(r'Compatibility: (true|false|error)\b', f.read())
@@ -72,9 +70,7 @@ def exit_description(returncode):
 def run_compat(file, mode, on_wait):
     file_base = os.path.basename(file)
 
-    # Timestamped, per-file log that persists after the run (not a deleted
-    # tempfile) so concurrent --jobs N runs each get their own file and the
-    # output stays inspectable afterwards.
+    # One log per file, kept after the run.
     os.makedirs(RUN_LOG_DIR, exist_ok=True)
     log_path = os.path.join(RUN_LOG_DIR, f"{file_base}.log")
     artifact_dir = os.path.join(RUN_LOG_DIR, file_base)

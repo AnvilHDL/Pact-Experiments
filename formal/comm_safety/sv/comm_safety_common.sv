@@ -182,24 +182,6 @@ module comm_fifo_formal(input logic clk_i, input logic rst_ni);
         slv_age <= '0;
       end
 
-      // ---- L: a pushed item is popped within DrainBound ----
-      // (a nondeterministically chosen push is tracked until the queue has
-      // drained past it; with in-order pops that is the first pop after it
-      // when the tracked push was the oldest, so this bounds the drain of
-      // the head of the queue)
-      // if (!tracking_push && push_fire && track_this_push) begin
-      //   tracking_push <= 1'b1;
-      //   live_age <= '0;
-      // end else if (tracking_push && pop_fire) begin
-      //   tracking_push <= 1'b0;
-      //   live_age <= '0;
-      // end else if (tracking_push) begin
-      //   live_age <= live_age + 1'b1;
-      //   assert(live_age < DrainBound);
-      // end else begin
-      //   live_age <= '0;
-      // end
-
       // ---- L: every participant's progress marker recurs within ProgressBound ----
       if (mst_progress) begin
         mst_prog_age <= '0;
@@ -317,20 +299,6 @@ module comm_stream_fifo_formal(input logic clk_i, input logic rst_ni);
       `COMM_S_ASSERT(slv_open || slv_attempt || !out_fire);
       slv_open <= slv_open | slv_attempt;
       if (slv_open || slv_attempt) slv_fires <= slv_fires_now;
-
-      // // ---- L: in-flight attempts complete within AttemptBound ----
-      // if (mst_busy) begin
-      //   mst_age <= mst_age + 1'b1;
-      //   assert(mst_age < AttemptBound);
-      // end else begin
-      //   mst_age <= '0;
-      // end
-      // if (slv_busy) begin
-      //   slv_age <= slv_age + 1'b1;
-      //   assert(slv_age < AttemptBound);
-      // end else begin
-      //   slv_age <= '0;
-      // end
 
       // ---- L: an offered push is accepted within AttemptBound ----
       if (valid_i && !ready_o) begin
@@ -454,14 +422,6 @@ module comm_spill_formal(input logic clk_i, input logic rst_ni);
       end else begin
         in_wait_age <= '0;
       end
-
-      // // ---- L: the item at the head of the register is taken within DrainBound ----
-      // if (valid_o && !ready_i) begin
-      //   out_wait_age <= out_wait_age + 1'b1;
-      //   assert(out_wait_age < DrainBound);
-      // end else begin
-      //   out_wait_age <= '0;
-      // end
 
       // ---- L: the register participant makes progress within ProgressBound ----
       if (in_fire || out_fire) begin

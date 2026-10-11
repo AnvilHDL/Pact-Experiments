@@ -1,0 +1,78 @@
+{
+  "checker": "pact -just-check -debug-choice 3",
+  "cases": {
+    "adbg_axi_biu": {
+      "label": "AXI debug BIU",
+      "setting": "pairwise",
+      "files": {
+        "originals/adbg_axi_biu/type_adbg_axi_biu.anvil": {
+          "adbg_axi_biu_pool": "incompatible",
+          "adbg_axi_biu_aw_first_pool": "compatible"
+        }
+      }
+    },
+    "axi_test": {
+      "label": "AXI test infrastructure",
+      "setting": "pairwise",
+      "files": {
+        "originals/axi_test/type_axi_test.anvil": {
+          "axi_test_aw_then_w_pool": "incompatible",
+          "axi_test_fixed_pool": "compatible"
+        }
+      }
+    },
+    "axi_demux": {
+      "label": "AXI demux",
+      "setting": "open",
+      "files": {
+        "originals/axi_demux/type_demux_simplified.anvil": {
+          "demux_simplified_w_first_pool": "incompatible",
+          "demux_simplified_aw_first_pool": "compatible"
+        }
+      }
+    },
+    "axi_per_id": {
+      "label": "AXI per-ID monitor",
+      "setting": "open",
+      "files": {
+        "originals/axi_test/type_axi_per_id.anvil": {
+          "axi_per_id_reuse_pool": "incompatible",
+          "axi_per_id_unique_pool": "compatible"
+        }
+      }
+    },
+    "axi_pipeline": {
+      "label": "AXI demux/mux pipeline",
+      "setting": "open",
+      "files": {
+        "originals/axi_mux/type_axi_pipeline.anvil": {
+          "pipeline_w_first_stages": "compatible",
+          "pipeline_w_first_pool": "incompatible",
+          "pipeline_aw_first_pool": "compatible"
+        }
+      }
+    },
+    "axi_mux": {
+      "label": "AXI mux",
+      "setting": "open",
+      "files": {
+        "originals/axi_mux/type_axi_mux.anvil": {
+          "mux_w_first_pool": "incompatible",
+          "mux_aw_first_pool": "compatible"
+        }
+      }
+    },
+    "axi_demux_stages": {
+      "label": "AXI demux, router stages (main text)",
+      "setting": "open",
+      "files": {
+        "originals/axi_demux/type_axi_demux_stages.anvil": {
+          "demux_w_first_2": "compatible",
+          "demux_w_first_3": "compatible",
+          "demux_w_first_4": "incompatible",
+          "demux_aw_first_4": "compatible"
+        }
+      }
+    }
+  }
+}

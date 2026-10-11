@@ -44,10 +44,7 @@ proc stream_fifo<T : type>(stream_fifo_if){
 proc stream_fifo_master<T : type>(master_itfc){
     reg cyc : logic[8];
 
-    // Schedule re-derived from the SystemVerilog testbench trace after the
-    // stub periods were matched to fifo_test.sv (master %3, slave %7, plus the
-    // power-of-two burst term). Each `cycle N` is the gap to the next event, so
-    // the running sum is that event's absolute cycle in the SV trace.
+    // Each `cycle N` is the gap to the next event in the SV testbench trace.
     loop{
         cycle 2 >>
         send fifo_ep.push(32'd0) >>
@@ -120,12 +117,8 @@ proc stream_fifo_master<T : type>(master_itfc){
 }
 
 proc stream_fifo_slave<T : type>(slave_itfc){
-    // Schedule re-derived from the SystemVerilog testbench trace after the
-    // stub periods were matched to fifo_test.sv (master %3, slave %7, plus the
-    // power-of-two burst term). Each `cycle N` is the gap to the next event, so
-    // the running sum is that event's absolute cycle in the SV trace.
-    // The printed cycle is a literal here (as upstream), so it must carry the
-    // SV trace's absolute cycle for the trace diff to line up.
+    // Each `cycle N` is the gap to the next event in the SV testbench trace.
+    // Printed cycles are literals holding the SV trace's absolute cycle.
     loop{
         cycle 3 >>
         let p0 = recv fifo_ep.pop >>

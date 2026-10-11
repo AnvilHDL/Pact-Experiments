@@ -1,94 +1,40 @@
-# PACT — 12 real communicating components (open-setting)
+# AXI communication-error cases
 
-Retained, **unmodified** upstream RTL for the 12 rows of the communication-safety
-table, kept in the **open-system setting**: each component's boundary interface
-is exposed and the environment is left unspecified, matching how a PACT open type
-states the contract expected *from* the interfacing environment. No environment
-is simulated; the deliverable is the real source + a per-row analysis
-(`ANNOTATIONS.md`) of its implicit contract and the inconsistency PACT would
-catch.
+Small Pact demonstrations of the cases in the paper's appendix table *Completed AXI communication-error case studies*. Each directory under `originals/` holds:
 
-## Summary
+- the upstream RTL, unmodified;
+- `ISSUE.md`, a short description of the issue;
+- `type_*.anvil`, Pact types and pools. There are no processes; the cases are checked on types only.
 
-| # | Component (retained) | Repo | Kind | Setting | Provenance |
-|---|----------------------|------|------|---------|------------|
-| 1 | `adbg_axi_biu.sv` | adv_dbg_if | order | closed-pairwise | **FILED** (pulpino #182) |
-| 2 | `axi_test.sv` (`send_aw`/`send_w`) | pulp/axi | order | closed-pairwise | **FILED** (axi #21) |
-| 3 | `axi_demux.sv` | pulp/axi | order | **open** | DOCUMENTED |
-| 4 | `axis_fifo.v` | verilog-axis | timing | closed-pairwise | DOCUMENTED |
-| 5 | `axi_test.sv` (per-ID monitor) | pulp/axi | order | **open** | CLASS |
-| 6 | `axi_xbar.sv` | pulp/axi | order | **open** | DOCUMENTED (≈ paper Fig. 2) |
-| 7 | `wbuart.v` | wbuart32 | missing | closed-pairwise | **FILED** (litex #572) |
-| 8 | `wbuart.v` (narrow side) | wbuart32 | order | closed-pairwise | CLASS (litex #572) |
-| 9 | `ccu_fsm.sv` (+ace/snoop intf) | pulp/ace | order | **open** | DOCUMENTED (Culsans) |
-| 10 | `ccu_fsm.sv` | pulp/ace | order/race | **open** | CLASS |
-| 11 | `axi_demux.sv`, `axi_mux.sv` | pulp/axi | order | **open** | CLASS (eXpect ICCAD'24) |
-| 12 | `axi_mux.sv` | pulp/axi | order | **open** | DOCUMENTED (thesis) |
+Each case has a pool that reproduces the mismatch, which Pact reports as incompatible, and a control pool that differs only in the order of messages, which Pact reports as compatible.
 
-`order` dominates once ordering mismatches are included — both sides assert
-everything, but in a sequence the peer does not admit. `missing` (a required
-action never offered) and `timing` (right order, wrong cycle) are the other two.
+## Run
 
-## Provenance levels
-
-- **FILED** — filed upstream issue with the offending code (rows 1, 2, 7; row 8 same issue).
-- **DOCUMENTED** — real named component + a documented rule it can violate (rows 3, 4, 6, 9, 12).
-- **CLASS** — representative of a documented class; no single pinned upstream bug — *verify before citing* (rows 5, 8, 10, 11).
-
-## Source links (commit-pinned permalinks)
-
-All links are pinned to the exact commit fetched, so they will not drift. Where a
-row has a specific region of interest, the link deep-links to those lines.
-
-| Retained file | Upstream permalink (with bug region) |
-|---------------|--------------------------------------|
-| `adbg_axi_biu.sv` | [adv_dbg_if @ c4d7aa1 · rtl/adbg_axi_biu.sv#L509-L545](https://github.com/pulp-platform/adv_dbg_if/blob/c4d7aa177ef96b0fdff8748f81bd15489446c95a/rtl/adbg_axi_biu.sv#L509-L545) |
-| `axi_test.sv` | [axi @ e55ae2a · src/axi_test.sv#L80-L96](https://github.com/pulp-platform/axi/blob/e55ae2a7ee606ee3cfd4257f63982a971b704407/src/axi_test.sv#L80-L96) |
-| `axi_demux.sv` | [axi @ e55ae2a · src/axi_demux.sv#L56-L92](https://github.com/pulp-platform/axi/blob/e55ae2a7ee606ee3cfd4257f63982a971b704407/src/axi_demux.sv#L56-L92) |
-| `axi_mux.sv` | [axi @ e55ae2a · src/axi_mux.sv#L34-L162](https://github.com/pulp-platform/axi/blob/e55ae2a7ee606ee3cfd4257f63982a971b704407/src/axi_mux.sv#L34-L162) |
-| `axi_xbar.sv` | [axi @ e55ae2a · src/axi_xbar.sv](https://github.com/pulp-platform/axi/blob/e55ae2a7ee606ee3cfd4257f63982a971b704407/src/axi_xbar.sv) |
-| `wbuart.v` | [wbuart32 @ f43a6b8 · rtl/wbuart.v#L61-L67](https://github.com/ZipCPU/wbuart32/blob/f43a6b83c3a70fb2ac0696a45c5545b233fb860b/rtl/wbuart.v#L61-L67) |
-| `axis_fifo.v` | [verilog-axis @ 48ff7a7 · rtl/axis_fifo.v#L47-L116](https://github.com/alexforencich/verilog-axis/blob/48ff7a7e2ef782cf778d47910cf85835c64b1bce/rtl/axis_fifo.v#L47-L116) |
-| `ccu_fsm.sv` | [ace @ f919f5c · src/ccu_fsm.sv#L22-L60](https://github.com/pulp-platform/ace/blob/f919f5cabf41961321bf37327ab4eb726dfdbd0c/src/ccu_fsm.sv#L22-L60) |
-| `ace_ccu_top.sv` | [ace @ f919f5c · src/ace_ccu_top.sv](https://github.com/pulp-platform/ace/blob/f919f5cabf41961321bf37327ab4eb726dfdbd0c/src/ace_ccu_top.sv) |
-| `ace_intf.sv` | [ace @ f919f5c · src/ace_intf.sv](https://github.com/pulp-platform/ace/blob/f919f5cabf41961321bf37327ab4eb726dfdbd0c/src/ace_intf.sv) |
-| `snoop_intf.sv` | [ace @ f919f5c · src/snoop_intf.sv](https://github.com/pulp-platform/ace/blob/f919f5cabf41961321bf37327ab4eb726dfdbd0c/src/snoop_intf.sv) |
-| `ace_pkg.sv` | [ace @ f919f5c · src/ace_pkg.sv](https://github.com/pulp-platform/ace/blob/f919f5cabf41961321bf37327ab4eb726dfdbd0c/src/ace_pkg.sv) |
-| `snoop_pkg.sv` | [ace @ f919f5c · src/snoop_pkg.sv](https://github.com/pulp-platform/ace/blob/f919f5cabf41961321bf37327ab4eb726dfdbd0c/src/snoop_pkg.sv) |
-| `ace_trs_dec.sv` | [ace @ f919f5c · src/ace_trs_dec.sv](https://github.com/pulp-platform/ace/blob/f919f5cabf41961321bf37327ab4eb726dfdbd0c/src/ace_trs_dec.sv) |
-| `culsans_top.sv` | [culsans @ a3d7416 · rtl/src/culsans_top.sv#L651-L690](https://github.com/pulp-platform/culsans/blob/a3d741600d03bba2f21b795eda4f6faf7124a152/rtl/src/culsans_top.sv#L651-L690) |
-| `culsans_pkg.sv` | [culsans @ a3d7416 · rtl/include/culsans_pkg.sv](https://github.com/pulp-platform/culsans/blob/a3d741600d03bba2f21b795eda4f6faf7124a152/rtl/include/culsans_pkg.sv) |
-
-### Repo landing pages
-
-- pulp-platform/adv_dbg_if — https://github.com/pulp-platform/adv_dbg_if
-- pulp-platform/axi — https://github.com/pulp-platform/axi
-- ZipCPU/wbuart32 — https://github.com/ZipCPU/wbuart32
-- alexforencich/verilog-axis — https://github.com/alexforencich/verilog-axis
-- pulp-platform/ace — https://github.com/pulp-platform/ace
-- pulp-platform/culsans — https://github.com/pulp-platform/culsans
-
-### Filed-issue references (for `FILED` rows)
-
-- Row 1 — pulpino #182: https://github.com/pulp-platform/pulpino/issues/182
-- Row 2 — axi #21: https://github.com/pulp-platform/axi/issues/21
-- Rows 7/8 — litex #572: https://github.com/enjoy-digital/litex/issues/572
-
-## Layout
-
-```
-originals/            retained upstream RTL, untouched (the deliverable)
-ANNOTATIONS.md        per-row open-setting analysis + exact lines + PACT mapping
-didactic_reference/   the 4 earlier runnable simplified demos (superseded, illustrative)
+```sh
+make opencompat                          # all cases, about a second
+python3 scripts/run_opencompat.py --case axi_mux
 ```
 
-## Caveats worth stating in the paper
+Results are written to `results/opencompat_<time>/comparison.md` as `expected / measured`; expected verdicts are in `expected/opencompat.json`. To check one file by hand:
 
-- The `CLASS` rows (5, 8, 10, 11) retain a real component to expose the boundary,
-  but the specific inconsistency is representative of a documented class, not a
-  single filed bug. Rows 7/8 and their retained `wbuart.v` are a *correct* slave
-  used to show the open Wishbone interface; the bug itself is litex #572 (migen).
-- Rows 3, 5, 6, 9, 10, 11, 12 are the ones whose verdict genuinely depends on the
-  environment — they justify PACT's open type machinery / Rabin game. Rows 1, 2,
-  4, 7, 8 are decided pairwise and showcase modular local checking.
+```sh
+cd opencompat/originals/axi_mux
+../../../scripts/pact -just-check -debug-choice 3 type_axi_mux.anvil
 ```
+
+A **pairwise** case has both sides of the boundary in the pool. An **open** case leaves some channel ends unconnected; it is incompatible only if no environment on those ends can make it compatible. Pools are checked with the simultaneous check (`-debug-choice 3`).
+
+## Cases
+
+| Paper row | Setting | File | Incompatible | Compatible |
+| --- | --- | --- | --- | --- |
+| AXI debug BIU | Pairwise | `adbg_axi_biu/type_adbg_axi_biu.anvil` | `adbg_axi_biu_pool` | `adbg_axi_biu_aw_first_pool` |
+| AXI test infrastructure | Pairwise | `axi_test/type_axi_test.anvil` | `axi_test_aw_then_w_pool` | `axi_test_fixed_pool` |
+| AXI demux | Open | `axi_demux/type_demux_simplified.anvil` | `demux_simplified_w_first_pool` | `demux_simplified_aw_first_pool` |
+| AXI per-ID monitor | Open | `axi_test/type_axi_per_id.anvil` | `axi_per_id_reuse_pool` | `axi_per_id_unique_pool` |
+| AXI demux/mux pipeline | Open | `axi_mux/type_axi_pipeline.anvil` | `pipeline_w_first_pool` | `pipeline_w_first_stages`, `pipeline_aw_first_pool` |
+| AXI mux | Open | `axi_mux/type_axi_mux.anvil` | `mux_w_first_pool` | `mux_aw_first_pool` |
+
+In the pipeline, each stage handles a single channel, so `pipeline_w_first_stages` (the stages without their route FIFOs) accepts a client that sends W first. Adding the FIFOs fixes the order, and the same client is rejected.
+
+The paper's main text also checks the benchmark AXI demux incrementally, with a client that sends W first. `axi_demux/type_axi_demux_stages.anvil` adds the benchmark's router stages one at a time. The client is accepted with 2 and 3 participants (`demux_w_first_2`, `demux_w_first_3`) and rejected with 4 of the router pool's 10 (`demux_w_first_4`).

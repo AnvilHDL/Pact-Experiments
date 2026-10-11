@@ -8,8 +8,59 @@ Benchmarks and scripts for the evaluation of Pact. Ten hardware designs are writ
 | Model-checking time (SV, SymbiYosys) | `make modelcheck` | `results/timing_<time>/comparison.md` |
 | Area and timing (Pact vs. SV) | `make synthesis` | `results/synthesis_<time>/comparison.md` |
 | Cycle-level trace equivalence (Pact vs. SV) | `make equiv` | `results/equiv/` |
+| Real-world AXI communication errors (Pact) | `make opencompat` | `results/opencompat_<time>/comparison.md` |
 
 Every `comparison.md` lists each value as `expected / measured`. Expected values are stored in `expected/*.json`.
+
+> **Note** The results below are revised from the submitted version of the paper, and improve on it: generated circuits are smaller, and compatibility checks are faster. The compiler optimizations behind them are described in [OPTIMIZATIONS.md](OPTIMIZATIONS.md).
+
+## Main results
+
+> For artifact reviewers, [updates](result-updates.md) summarizes the compiler optimizations that improve on the results reported in the paper.
+
+The values below are the expected values in `expected/*.json`, measured on the reference machine described under [Requirements](#requirements).
+
+### Checking communication safety
+
+Pact checks the pool of each benchmark for compatibility (`make compat`). SymbiYosys checks the SV design against the safety (S) and liveness (L) assertions (`make modelcheck`). Times are wall-clock seconds. Each SymbiYosys run uses two processes, one for the base case and one for the induction step, so the Pact 1-thread column is the closest comparison.
+
+| Benchmark | Part. | Pact verdict | Pact, 1 thr. (s) | Pact, 8 thr. (s) | SymbiYosys, S + L | SymbiYosys, S only | SymbiYosys, L only |
+| --- | ---: | --- | ---: | ---: | --- | --- | --- |
+| FIFO | 3 | compatible | 0.007 | 0.015 | proved, 3355 | proved, 6470 | proved, 2026 |
+| Stream FIFO | 3 | compatible | 0.007 | 0.015 | timeout | timeout | timeout |
+| Spill register | 3 | compatible | 0.015 | 0.015 | timeout | timeout | timeout |
+| Arbiter | 6 | compatible | 0.114 | 0.064 | proved, 3307 | proved, 27.3 | proved, 3149 |
+| ACE | 9 | compatible | 127 | 20.6 | timeout | unproved, 3825 | timeout |
+| TileLink | 10 | compatible | 8.0 | 1.3 | proved, 2839 | proved, 2862 | proved, 2143 |
+| AXI demux, read | 8 | compatible | 30.3 | 5.2 | unproved, 314 | unproved, 109 | unproved, 3138 |
+| AXI demux, write | 10 | compatible | 564 | 85.8 | unproved, 516 | unproved, 79.2 | timeout |
+| AXI mux, read | 9 | compatible | 109 | 16.6 | timeout | unproved, 249 | timeout |
+| AXI mux, write | 11 | compatible | 1188 | 173 | timeout | unproved, 515 | timeout |
+
+Every Pact check finishes with a verdict: the longest takes 20 min on one thread and 3 min on eight. SymbiYosys proves both groups of assertions for 3 of the 10 designs. For the others, a run either reaches the 2 h limit or ends unproved; the status words are defined under [Model-checking time](#model-checking-time).
+
+### Area and timing
+
+Pact designs are compiled at `-O 3` and synthesized with the SV references to sky130 cells (`make synthesis`). Slack is the worst setup slack at 100 MHz.
+
+| Benchmark | Pact area (µm²) | SV area (µm²) | Pact/SV | Pact FFs | SV FFs | Pact slack (ns) | SV slack (ns) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| FIFO | 11,658.7 | 11,616.1 | 1.00 | 270 | 266 | 4.65 | 4.80 |
+| Stream FIFO | 11,671.2 | 11,486.0 | 1.02 | 270 | 264 | 4.52 | 4.76 |
+| Spill register | 3,363.2 | 2,770.2 | 1.21 | 72 | 66 | 5.28 | 6.01 |
+| Arbiter | 1,044.8 | 1,386.3 | 0.75 | 7 | 7 | 4.85 | 4.93 |
+| ACE | 4,792.1 | 8,423.1 | 0.57 | 106 | 173 | 6.79 | 6.12 |
+| TileLink | 1,941.9 | 2,279.7 | 0.85 | 14 | 20 | 6.80 | 5.04 |
+| AXI demux, read | 2,947.8 | 1,978.1 | 1.49 | 46 | 26 | 4.13 | 6.13 |
+| AXI demux, write | 4,461.8 | 2,726.4 | 1.64 | 86 | 53 | 5.72 | 6.80 |
+| AXI mux, read | 3,489.6 | 2,602.5 | 1.34 | 52 | 33 | 4.34 | 4.70 |
+| AXI mux, write | 6,035.8 | 4,216.5 | 1.43 | 89 | 60 | 4.38 | 5.91 |
+
+The geometric-mean area ratio is 1.08, and every design meets 100 MHz.
+
+### Trace equivalence
+
+Each of the ten Pact designs produces the same events, in the same cycles, as its SV reference on the supplied stimuli (`make equiv`).
 
 ## Requirements
 
@@ -28,6 +79,7 @@ Expected values were measured on 2× AMD EPYC 9115 (32 cores, 64 threads) with 1
 | `make modelcheck` | about 35 h of run time in total (30 runs, 13 of them reach the 2 h limit): about 9 h with `SV_JOBS=4`, about 4 h with `SV_JOBS=15` |
 | `make synthesis` | about 10 min |
 | `make equiv` | a few minutes per benchmark |
+| `make opencompat` | a few seconds |
 
 ## Setup
 
@@ -128,5 +180,7 @@ Each script simulates the Pact design and the SV testbench with Verilator, using
 | `formal/comm_safety/` | SymbiYosys configurations and assertion harnesses |
 | `synthesis/`, `scripts/yosys_perf_manifest.json` | Synthesis wrappers and the module list per benchmark |
 | `axi`, `common_cells`, `ace`, `tilelink` | Upstream SV sources (git submodules) |
+| `opencompat/` | Real-world AXI communication-error cases ([README](opencompat/README.md)) |
 | `expected/` | Expected values for `comparison.md` |
+| `OPTIMIZATIONS.md` | Compiler optimizations used for these results |
 | `scripts/` | Experiment scripts |

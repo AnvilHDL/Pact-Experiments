@@ -1,40 +1,23 @@
-// PACT open type for Row 1 (ANNOTATIONS.md) — adbg_axi_biu.sv.
-// Full cycle-by-cycle protocol prose (both boundaries): see PROTOCOL.md in this
-// directory. This file only encodes the AXI-facing S_AXIADDR/S_AXIDATA behavior
-// documented there (the debug-host pool below encodes PROTOCOL.md's other half).
-//
-// PROTOCOL.md's key finding for the bug: in S_AXIADDR the manager asserts aw_valid
-// AND w_valid EVERY cycle it remains in that state (recomputed combinationally,
-// not latched), so aw_req/w_req below are levels the manager keeps re-driving
-// until each is independently granted — NOT a single-shot pair of actions. Three
-// exits exist from S_AXIADDR (lines 535-540):
-//   - aw_ready&&!w_ready this cycle -> S_AXIDATA (w_req kept re-driven alone there
-//     until w_gnt; aw_req now stays low, so AW can never be re-offered again).
-//   - aw_ready&&w_ready this cycle  -> S_AXIRESP directly (both close together).
-//   - !aw_ready (regardless of w_ready, INCLUDING w_ready=1) -> next_fsm_state
-//     keeps its default = current state, i.e. stay in S_AXIADDR and re-assert
-//     aw_req/w_req identically next cycle. If the subordinate granted w_gnt on
-//     this stalled cycle (legal — AMBA lets W close before AW), the manager has
-//     no state that remembers that: it goes on offering w_req again next cycle
-//     with no path to AXIRESP until aw_gnt is *also* seen. `biu_axi_itfc`'s `X`
-//     branch below is exactly this: w_req may repeat one or more times while
-//     aw_req is still outstanding, and only ends when aw_gnt finally arrives.
-//
-// `legal_subordinate_itfc` types a spec-legal AXI subordinate that may grant
-// w_gnt before aw_gnt (AMBA does not require AW-before-W acceptance, and does
-// not require the manager to keep re-offering a beat that already closed).
-// Composed: the subordinate's w-first branch grants w_gnt while aw_req is still
-// pending: the manager's type has no way to record that and continues re-driving
-// w_req, which the subordinate's type (a single w! per transaction) has already
-// moved past — Row 1 is closed-pairwise: no environment reconciles a subordinate
-// that may answer w-first with a manager whose only forward-progress edge needs
-// aw_gnt specifically, regardless of w_gnt's own state.
+// AXI debug BIU (adv_dbg_if, adbg_axi_biu.sv, lines 509-545; pulpino issue #182).
+// In S_AXIADDR the manager drives aw_valid and w_valid, but leaves the state only on aw_ready:
+// a W accepted before AW is not recorded, so the manager offers W only after AW.
 
+// A legal subordinate that takes W before AW.
 pool adbg_axi_biu_pool {
     ep_le -- ep_ri : ch;
     i1 : rec X . ^(
-        ep.aw_req : rec Y . ^(ep.w_req, * : #1;Y),
+        #ep.aw_req : rec Y . ^(#ep.w_req, * : #1;Y),
         * : #1;X
     );#1,
     i2 : ep.w_req;#1;ep.aw_req;#1
+}
+
+// A subordinate that takes AW first.
+pool adbg_axi_biu_aw_first_pool {
+    ep_le -- ep_ri : ch;
+    i1 : rec X . ^(
+        #ep.aw_req : rec Y . ^(#ep.w_req, * : #1;Y),
+        * : #1;X
+    );#1,
+    i2 : ep.aw_req;#1;ep.w_req;#1
 }

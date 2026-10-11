@@ -5,7 +5,6 @@ proc spill_reg <T: type> (spill_register_itfc){
     reg b : T;
     reg afull : logic;
     reg bfull : logic;
-    // reg cyc : logic[8]; // debug/bookkeeping only
     loop{
         fair if (~ (*afull || *bfull)){
             let in_data = recv inp_ep.req >>
@@ -20,9 +19,7 @@ proc spill_reg <T: type> (spill_register_itfc){
             else{
                 *a
             } >>
-            // dprint "[Cycle %d] Spill Register: Ready to send data %d" (*cyc, out) >>
             try isend out_ep.data(out) {()} >>
-            // dprint "[Cycle %d] Spill Register: Sent data %d, waiting for spill signal" (*cyc, out) >>
             (
             offer {
                 in_data = irecv inp_ep.req => (
@@ -89,19 +86,13 @@ proc spill_reg <T: type> (spill_register_itfc){
 
         }        
     }
-    // loop{
-    //     set cyc := *cyc + 8'd1
-    // }
 }
 
 
 proc spill_master<T : type>(master_itfc){
     reg cyc : logic[8];
 
-    // Schedule re-derived from the SystemVerilog testbench trace after the
-    // stub periods were matched to fifo_test.sv (master %3, slave %7, plus the
-    // power-of-two burst term). Each `cycle N` is the gap to the next event, so
-    // the running sum is that event's absolute cycle in the SV trace.
+    // Each `cycle N` is the gap to the next event in the SV testbench trace.
     loop{
         cycle 2 >>
         send reg_ep.req(32'd0) >>
@@ -137,10 +128,7 @@ proc spill_master<T : type>(master_itfc){
 proc spill_slave<T : type>(slave_itfc){
     reg cyc : logic[8];
 
-    // Schedule re-derived from the SystemVerilog testbench trace after the
-    // stub periods were matched to fifo_test.sv (master %3, slave %7, plus the
-    // power-of-two burst term). Each `cycle N` is the gap to the next event, so
-    // the running sum is that event's absolute cycle in the SV trace.
+    // Each `cycle N` is the gap to the next event in the SV testbench trace.
     loop{
         cycle 4 >>
         let r0 = recv reg_ep.data >>

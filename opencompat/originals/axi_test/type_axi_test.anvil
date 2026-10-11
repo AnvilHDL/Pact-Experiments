@@ -1,95 +1,15 @@
-// Structural PACT type for axi_test.sv rows 2 and 5.
-//
-// axi_test.sv is a testbench package.  The relevant concrete boundary for
-// these rows is a manager-side AXI write interface: AW and W requests go out,
-// and B responses come back.  IDs live in aw_pack_t/b_pack_t payloads, as in
-// the real AXI signals; the type below does not split one event per ID.
+// AXI test infrastructure (pulp-platform/axi, axi_test.sv; changelog v0.15.1).
 
-// Row 2 expectation: AW and W are independent channels.  Either order is legal
-// for a single write transaction.
-interface axi_write_independent_driver_itfc(ep : right axi_write_ch) =
-    rec X . (
-        (ep.aw_req ; ep.aw_gnt ; ep.w_req ; ep.w_gnt ; #1 ; X)
-      + (ep.w_req ; ep.w_gnt ; ep.aw_req ; ep.aw_gnt ; #1 ; X)
-    )
-
-interface axi_write_independent_peer_itfc(ep : left axi_write_ch) =
-    rec X . (
-        (ep.aw_req ; ep.aw_gnt ; ep.w_req ; ep.w_gnt ; #1 ; X)
-      + (ep.w_req ; ep.w_gnt ; ep.aw_req ; ep.aw_gnt ; #1 ; X)
-    )
-
-// Hazardous expectation: a checker/environment that insists on AW-before-W
-// rejects the legal W-before-AW traces produced by axi_test.
-interface aw_before_w_expectation_itfc(ep : left axi_write_ch) =
-    rec X . ep.aw_req ; ep.aw_gnt ; ep.w_req ; ep.w_gnt ; #1 ; X
-
-interface w_before_aw_driver_itfc(ep : right axi_write_ch) =
-    rec X . ep.w_req ; ep.w_gnt ; ep.aw_req ; ep.aw_gnt ; #1 ; X
-
-pool axi_test_row2_expected_pool {
-    ep -- ep2 : axi_write_ch;
-    idriver : axi_write_independent_driver_itfc(ep),
-    ipeer : axi_write_independent_peer_itfc(ep2)
+// Earlier driver: W only after AW is accepted. The subordinate takes W before AW.
+pool axi_test_aw_then_w_pool {
+    ep_le -- ep_ri : ch;
+    idrv : ep.aw ; ep.w ; ep.b ; #1,
+    isub : ep.w ; ep.aw ; ep.b ; #1
 }
 
-pool axi_test_row2_hazard_pool {
-    ep -- ep2 : axi_write_ch;
-    idriver : w_before_aw_driver_itfc(ep),
-    ipeer : aw_before_w_expectation_itfc(ep2)
-}
-
-// Row 5 expectation: UNIQUE_IDS-like behavior means a second AW carrying the
-// same ID is not presented until the earlier B for that ID has returned.  The
-// ID equality is a payload obligation over aw_pack_t.id/b_pack_t.id; this
-// structural type keeps the real channel shape and models the sequencing.
-interface unique_id_write_monitor_itfc(ep : left axi_write_ch) =
-    rec X . ep.aw_req ; ep.aw_gnt ; ep.b_res ; #1 ; X
-
-interface unique_id_write_driver_itfc(ep : right axi_write_ch) =
-    rec X . ep.aw_req ; ep.aw_gnt ; ep.b_res ; #1 ; X
-
-interface reused_id_write_driver_itfc(ep : right axi_write_ch) =
-    rec X . ep.aw_req ; ep.aw_gnt ; ep.aw_req ; ep.aw_gnt ; ep.b_res ; ep.b_res ; #1 ; X
-
-pool axi_test_row5_expected_pool {
-    ep -- ep2 : axi_write_ch;
-    idriver : unique_id_write_driver_itfc(ep),
-    imonitor : unique_id_write_monitor_itfc(ep2)
-}
-
-pool axi_test_row5_hazard_pool {
-    ep -- ep2 : axi_write_ch;
-    idriver : reused_id_write_driver_itfc(ep),
-    imonitor : unique_id_write_monitor_itfc(ep2)
-}
-
-chan axi_write_ch {
-    right aw_req : (aw_pack_t@#1),
-    left  aw_gnt : (void@#1),
-    right w_req  : (w_pack_t@#1),
-    left  w_gnt  : (void@#1),
-    left  b_res  : (b_pack_t@#1)
-}
-
-type id_t = logic[4];
-type addr_t = logic[32];
-type data_t = logic[32];
-type strb_t = logic[4];
-type resp_t = logic[2];
-
-struct aw_pack_t {
-    id : id_t,
-    addr : addr_t
-}
-
-struct w_pack_t {
-    data : data_t,
-    strb : strb_t,
-    last : logic
-}
-
-struct b_pack_t {
-    id : id_t,
-    resp : resp_t
+// Fixed driver: AW and W are independent.
+pool axi_test_fixed_pool {
+    ep_le -- ep_ri : ch;
+    idrv : (ep.aw || ep.w) ; ep.b ; #1,
+    isub : ep.w ; ep.aw ; ep.b ; #1
 }

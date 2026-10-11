@@ -1,6 +1,6 @@
 # Cycle equivalence
 
-Each script compiles a tracked RTL testbench and its matching PACT process
+Each script compiles a tracked RTL testbench and its matching Pact process
 model. The simulations emit timestamped events, which the script compares after
 normalizing whitespace and event ordering within a cycle. Cycle numbers,
 payloads, and event counts must agree. A build failure or trace mismatch returns
@@ -36,9 +36,9 @@ step budgets rather than wall-clock limits. A changed budget must still cover
 the same events on both sides.
 
 The AXI tests exercise sequential requests and responses across four endpoints.
-The PACT router models use one-entry bookkeeping FIFOs. The supplied traces
-match the RTL stimuli; this does not establish equivalence for arbitrary queue
-depths or concurrent traffic.
+The Pact router models use 8-entry bookkeeping FIFOs, as the RTL does
+(`MaxTrans = 8`). The supplied traces match the RTL stimuli; this does not
+establish equivalence for arbitrary traffic.
 
 ACE uses `ccu_fsm_tb2.sv` with `ACE_TB_DUT_TRACE` and compares independently
 simulated DUT and process events. Its formal harness uses `ccu_fsm_tb.sv`, which

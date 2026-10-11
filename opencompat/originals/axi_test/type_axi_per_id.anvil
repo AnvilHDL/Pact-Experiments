@@ -1,0 +1,16 @@
+// AXI per-ID monitor (pulp-platform/axi, axi_test.sv): one outstanding write per ID.
+// The monitor forwards m to s; the subordinate side s is left open. All writes use one ID.
+
+// The manager reuses the ID before its B returns.
+pool axi_per_id_reuse_pool {
+    ep_le -- ep_ri : ch;
+    imgr : m.aw ; m.aw ; m.b ; m.b ; #1,
+    imon : m.aw ; s.aw ; s.b ; m.b ; #1
+}
+
+// The manager waits for B before reusing the ID.
+pool axi_per_id_unique_pool {
+    ep_le -- ep_ri : ch;
+    imgr : m.aw ; m.b ; #1,
+    imon : m.aw ; s.aw ; s.b ; m.b ; #1
+}

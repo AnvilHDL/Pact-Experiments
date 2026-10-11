@@ -1,0 +1,36 @@
+// AXI demux feeding an AXI mux (pulp-platform/axi), one AW stage, W stage and route FIFO each.
+// Each stage handles one channel; the manager side m is left open.
+
+// Client sends W before AW; without the FIFOs, the environment supplies the routes.
+pool pipeline_w_first_stages {
+    ep_le -- ep_ri : ch;
+    iclient : c.w ; c.aw ; #1,
+    idaw : c.aw ; dq.push ; d.aw ; #1,
+    idw : dq.pop ; c.w ; d.w ; #1,
+    imaw : d.aw ; mq.push ; m.aw ; #1,
+    imw : mq.pop ; d.w ; m.w ; #1
+}
+
+// With the route FIFOs, W waits for its AW.
+pool pipeline_w_first_pool {
+    ep_le -- ep_ri : ch;
+    iclient : c.w ; c.aw ; #1,
+    idaw : c.aw ; dq.push ; d.aw ; #1,
+    idw : dq.pop ; c.w ; d.w ; #1,
+    idq : dq.push ; #1 ; dq.pop ; #1,
+    imaw : d.aw ; mq.push ; m.aw ; #1,
+    imw : mq.pop ; d.w ; m.w ; #1,
+    imq : mq.push ; #1 ; mq.pop ; #1
+}
+
+// Client sends AW before W.
+pool pipeline_aw_first_pool {
+    ep_le -- ep_ri : ch;
+    iclient : c.aw ; c.w ; #1,
+    idaw : c.aw ; dq.push ; d.aw ; #1,
+    idw : dq.pop ; c.w ; d.w ; #1,
+    idq : dq.push ; #1 ; dq.pop ; #1,
+    imaw : d.aw ; mq.push ; m.aw ; #1,
+    imw : mq.pop ; d.w ; m.w ; #1,
+    imq : mq.push ; #1 ; mq.pop ; #1
+}
